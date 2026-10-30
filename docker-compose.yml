@@ -1,0 +1,37 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: checker-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    container_name: checker-api
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+  celery_worker:
+    build: .
+    container_name: checker-worker
+    restart: always
+    depends_on:
+      - redis
+    command: ["celery", "-A", "app.workers.tasks.celery_app", "worker", "--loglevel=info"]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    volumes:
+      - .:/app
+

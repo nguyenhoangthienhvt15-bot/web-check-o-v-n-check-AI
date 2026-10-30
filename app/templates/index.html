@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ thống Thẩm định Tính toàn vẹn Học thuật & Giám định AI | SYNAPES AUDIT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js cho Biểu đồ Cột và Biểu đồ Miền 5 Trục Pháp y -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Thư viện xuất bản PDF chuẩn học thuật -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* Sử dụng 100% Font Times New Roman cho văn bản và bản in học thuật */
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #26292E; /* Nền xám đậm chuẩn Google Drive PDF Viewer */
+    }
+    .font-times {
+      font-family: 'Times New Roman', Times, serif !important;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Quy tắc chống tràn / cắt đôi dòng và bảng khi xuất PDF */
+    .pdf-page-break {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+
+    .pdf-no-break,
+    #printable-report-container tr,
+    #printable-report-container td,
+    #printable-report-container th,
+    #printable-report-container li,
+    #printable-report-container p,
+    #printable-report-container table {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    #printable-report-container td,
+    #printable-report-container th {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Drive PDF Paper Sheet Canvas - 100% Times New Roman */
+    .drive-paper-page {
+      background: #FFFFFF;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.12);
+      width: 100%;
+      max-width: 880px;
+      min-height: 1100px;
+      margin: 24px auto;
+      padding: 60px 80px;
+      color: #111827;
+      line-height: 1.65;
+      font-size: 13pt;
+      font-family: 'Times New Roman', Times, serif !important;
+      position: relative;
+    }
+
+    /* Hình ảnh trong file docx giữ nguyên 100% kích thước & định dạng */
+    .drive-paper-page img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 24px auto;
+      border-radius: 2px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    /* Bảng biểu chuẩn tài liệu học thuật */
+    .drive-paper-page table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 12pt;
+      font-family: 'Times New Roman', Times, serif !important;
+    }
+    .drive-paper-page th, .drive-paper-page td {
+      border: 1px solid #94A3B8;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .drive-paper-page th {
+      background-color: #F1F5F9;
+      font-weight: bold;
+    }
+
+    /* Dạ quang Highlight Drive */
+    .hl-high-ai {
+      background-color: rgba(244, 63, 94, 0.25);
+      border-bottom: 2px solid #E11D48;
+      padding: 1px 3px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .hl-high-ai:hover, .hl-high-ai.active-sent {
+      background-color: rgba(244, 63, 94, 0.45);
+      outline: 2px solid #BE123C;
+    }
+
+    .hl-medium-ai {
+      background-color: rgba(245, 158, 11, 0.25);
+      border-bottom: 2px dashed #D97706;
+      padding: 1px 3px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .hl-medium-ai:hover, .hl-medium-ai.active-sent {
+      background-color: rgba(245, 158, 11, 0.45);
+      outline: 2px solid #B45309;
+    }
+
+    .hl-plag {
+      background-color: rgba(59, 130, 246, 0.25);
+      border-bottom: 2px solid #2563EB;
+      padding: 1px 3px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .hl-plag:hover, .hl-plag.active-sent {
+      background-color: rgba(59, 130, 246, 0.45);
+      outline: 2px solid #1D4ED8;
+    }
+
+    .hl-human {
+      cursor: pointer;
+      padding: 1px 3px;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .hl-human:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    .hl-human.active-sent {
+      outline: 2px solid #475569;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .hl-header {
+      font-weight: bold;
+      color: #0F172A;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-size: 14pt;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1E2024;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #474B53;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #646974;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-100">
+
+  <!-- ================= TOP TOOLBAR (Google Drive PDF Style) ================= -->
+  <header class="h-14 bg-[#1B1D21] border-b border-[#2C2F36] px-4 flex items-center justify-between z-30 shrink-0">
+    
+    <!-- Left: File Metadata -->
+    <div class="flex items-center space-x-3 truncate max-w-md">
+      <!-- Icon PDF dạng trắng đen đơn sắc chuẩn mực -->
+      <div class="w-8 h-8 rounded bg-black text-white border border-zinc-600 flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+        PDF
+      </div>
+      <div class="truncate">
+        <h1 id="topbar-filename" class="text-xs sm:text-sm font-semibold text-slate-100 truncate">
+          Báo_cáo_Thẩm_định_Tính_toàn_vẹn.docx
+        </h1>
+        <p class="text-[11px] text-slate-400 font-mono-num" id="topbar-meta">Đang chờ tài liệu</p>
+      </div>
+    </div>
+
+    <!-- Center: View Mode Switcher + Zoom Controls -->
+    <div class="hidden md:flex items-center space-x-2 text-xs font-mono-num text-slate-300">
+      
+      <!-- Chuyển đổi hiển thị -->
+      <div class="flex items-center bg-[#26282E] p-0.5 rounded border border-[#3A3E46] text-[11px]">
+        <button id="btn-view-rich" onclick="switchDocumentView('rich')" class="px-3 py-1 rounded bg-indigo-600 font-semibold text-white transition">
+          📄 Văn bản gốc (Ảnh & Bảng)
+        </button>
+        <button id="btn-view-sentences" onclick="switchDocumentView('sentences')" class="px-3 py-1 rounded text-slate-300 hover:text-white transition">
+          🔍 Soát lỗi 100% từng câu (<span id="total-sent-badge">0</span> câu)
+        </button>
+        <button id="btn-view-media" onclick="switchDocumentView('media')" class="px-3 py-1 rounded text-slate-300 hover:text-white transition">
+          🖼️ Thẩm định Hình & Bảng (<span id="total-media-badge">0</span> mục)
+        </button>
+      </div>
+
+      <div class="h-4 w-px bg-slate-700 mx-1"></div>
+
+      <!-- Zoom -->
+      <button onclick="adjustZoom(-10)" class="p-1.5 hover:bg-slate-700 rounded text-slate-300" title="Thu nhỏ">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+      </button>
+      <span id="zoom-level" class="text-xs px-1">100%</span>
+      <button onclick="adjustZoom(10)" class="p-1.5 hover:bg-slate-700 rounded text-slate-300" title="Phóng to">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+      </button>
+    </div>
+
+    <!-- Right: Actions (Xuất PDF Times New Roman, Tải tệp mới) -->
+    <div class="flex items-center space-x-2 text-xs">
+      
+      <button 
+        id="btn-download-pdf"
+        onclick="downloadOfficialTimesNewRomanReportPDF()"
+        class="hidden px-3.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-600 font-medium shadow-xs transition flex items-center gap-1.5 font-times text-sm"
+        title="Tải Báo cáo Thẩm định Học thuật Toàn diện định dạng PDF (100% Times New Roman)"
+      >
+        <svg class="w-4 h-4 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        <span>Tải Báo cáo PDF (Times New Roman)</span>
+      </button>
+
+      <button 
+        onclick="showUploadModal()"
+        class="px-3.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition flex items-center gap-1.5"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"></path></svg>
+        <span>Tải tệp mới</span>
+      </button>
+
+      <!-- Toggle Right Sidebar -->
+      <button 
+        onclick="toggleSidePanel()"
+        class="p-1.5 hover:bg-slate-700 rounded text-slate-300 md:hidden"
+        title="Ẩn/Hiện thanh chẩn đoán"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- CENTER: DOCUMENT CANVAS (Google Drive PDF Sheet) -->
+    <main class="flex-1 overflow-y-auto bg-[#26292E] p-4 sm:p-8 flex justify-center items-start">
+      
+      <div id="drive-paper" class="drive-paper-page transition-transform duration-200 origin-top">
+        
+        <!-- Header tài liệu mô phỏng văn bản thực -->
+        <div class="border-b border-slate-300 pb-3 mb-6 flex justify-between items-center text-xs text-slate-500 font-mono-num font-times">
+          <span>HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT – SYNAPES AUDIT</span>
+          <span id="paper-date-time">30/10/2026</span>
+        </div>
+
+        <!-- Chế độ 1: Hiển thị văn bản gốc bảo toàn 100% hình ảnh (base64) & bảng biểu -->
+        <div id="paper-rich-content" class="space-y-4 font-times text-justify">
+          <div class="text-center py-20 text-slate-400">
+            <svg class="w-12 h-12 mx-auto mb-3 text-slate-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <p class="text-sm font-times">Vui lòng tải lên tài liệu DOCX hoặc PDF để tiến hành giám định 100% văn bản & hình ảnh...</p>
+          </div>
+        </div>
+
+        <!-- Chế độ 2: Hiển thị Soát lỗi 100% từng câu từ đầu đến cuối -->
+        <div id="paper-sentences-content" class="hidden space-y-2 font-times text-justify leading-relaxed">
+          <!-- Từng câu độc lập được render tại đây -->
+        </div>
+
+        <!-- Chế độ 3: Giám định Pháp y Hình ảnh, Biểu đồ & Bảng biểu -->
+        <div id="paper-media-content" class="hidden space-y-6 font-times">
+          <div class="border-b-2 border-indigo-600 pb-2 mb-4">
+            <h3 class="text-lg font-bold text-slate-900 uppercase">KẾT QUẢ THẨM ĐỊNH PHÁP Y HÌNH ẢNH, SƠ ĐỒ KHỐI VÀ BẢNG BIỂU</h3>
+            <p class="text-xs text-slate-500 italic">Kiểm tra tính toàn vẹn nguồn gốc trích dẫn và quy chuẩn học thuật</p>
+          </div>
+          
+          <div class="space-y-4">
+            <h4 class="font-bold text-slate-800 text-sm border-b border-slate-200 pb-1">1. Danh mục Hình ảnh & Biểu đồ:</h4>
+            <div id="media-findings-list" class="space-y-3 text-xs">
+              <!-- Render danh sách hình ảnh -->
+            </div>
+          </div>
+
+          <div class="space-y-4 pt-4">
+            <h4 class="font-bold text-slate-800 text-sm border-b border-slate-200 pb-1">2. Danh mục Bảng số liệu Thực nghiệm:</h4>
+            <div id="tables-findings-list" class="space-y-3 text-xs">
+              <!-- Render danh sách bảng -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- RIGHT: FORENSIC INSPECTOR PANEL (Thanh công cụ chẩn đoán chuyên sâu) -->
+    <aside id="side-inspector" class="w-80 sm:w-96 bg-[#1D1F23] border-l border-[#2E3138] flex flex-col shrink-0 z-20 overflow-y-auto">
+      
+      <!-- Header Sidebar -->
+      <div class="p-3.5 border-b border-[#2E3138] flex items-center justify-between bg-[#191B1E]">
+        <div class="flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono-num">
+            Thẩm định & Hướng dẫn sửa
+          </h2>
+        </div>
+        <span id="side-verdict-badge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+          Chờ phân tích
+        </span>
+      </div>
+
+      <div class="p-4 space-y-4 flex-1">
+        
+        <!-- Block 1: Chỉ số Trọng yếu (AI, Đạo văn, Độ nguyên bản) -->
+        <div class="grid grid-cols-2 gap-2 text-center">
+          <div class="p-3 bg-[#24272D] rounded-lg border border-[#333740]">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Xác suất do AI</p>
+            <p id="stat-ai-pct" class="text-2xl font-bold font-mono-num text-rose-500">0%</p>
+            <p id="stat-ai-ratio" class="text-[10.5px] text-slate-400 font-mono-num mt-0.5">0/0 câu nghi vấn</p>
+          </div>
+          <div class="p-3 bg-[#24272D] rounded-lg border border-[#333740]">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wide">Trùng lặp Đạo văn</p>
+            <p id="stat-plag-pct" class="text-2xl font-bold font-mono-num text-blue-400">0%</p>
+            <p class="text-[10.5px] text-slate-400 font-mono-num mt-0.5">MinHash LSH Index</p>
+          </div>
+        </div>
+
+        <!-- Block 2: Kiểm tra Tính đồng nhất Hành văn (Stylometric Consistency) -->
+        <div class="p-3.5 bg-[#24272D] rounded-lg border border-[#333740] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase text-slate-300">Tính đồng nhất hành văn:</span>
+            <span class="text-[9px] px-1.5 py-0.5 bg-indigo-900/60 text-indigo-300 rounded border border-indigo-700">Stylometry</span>
+          </div>
+          <div id="stat-consistency-box" class="p-2 bg-[#1A1C20] rounded border border-[#2E3138] text-[11px] font-times text-indigo-200">
+            Đang phân tích 100% tài liệu từ đầu đến cuối...
+          </div>
+        </div>
+
+        <!-- Block 3: Biểu đồ Cột 5 Phân đoạn Toàn bài -->
+        <div class="p-3.5 bg-[#24272D] rounded-lg border border-[#333740] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase text-slate-300">Mật độ AI qua 5 phân đoạn:</span>
+            <span class="text-[9px] text-slate-400 font-mono-num">100% bài viết</span>
+          </div>
+          <div class="h-28 w-full">
+            <canvas id="barChartSections"></canvas>
+          </div>
+          <p class="text-[9.5px] text-slate-400 text-center font-times italic">
+            Phân bổ tỷ lệ AI trải từ Mở đầu, Cơ sở lý thuyết, Phương pháp đề xuất, Triển khai thực nghiệm đến Kết luận.
+          </p>
+        </div>
+
+        <!-- Block 4: Biểu đồ Miền Radar 5 Trục Pháp y -->
+        <div class="p-3.5 bg-[#24272D] rounded-lg border border-[#333740] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase text-slate-300">Biểu đồ miền: 5 Trục Tiêu chí:</span>
+            <span class="text-[9px] text-rose-400 font-mono-num">Forensic Radar</span>
+          </div>
+          <div class="h-44 w-full">
+            <canvas id="radarChartIntegrity"></canvas>
+          </div>
+          <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400 font-mono-num pt-1 border-t border-[#333740]">
+            <div>• Perplexity: <strong id="m-ppl" class="text-slate-200">--</strong></div>
+            <div>• Burstiness: <strong id="m-burst" class="text-slate-200">--</strong></div>
+            <div>• Đa dạng từ (TTR): <strong id="m-ttr" class="text-slate-200">--</strong></div>
+            <div>• Binoculars: <strong id="m-bino" class="text-slate-200">--</strong></div>
+          </div>
+        </div>
+
+        <!-- Block 5: Chi tiết câu đang chọn & Hướng dẫn sửa bài -->
+        <div id="inspector-sentence-card" class="p-3.5 bg-[#24272D] rounded-lg border border-[#333740] space-y-3">
+          
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase text-slate-300">Câu đang được kiểm tra:</span>
+            <span id="active-sent-id" class="text-[10px] font-mono-num px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+              Câu #--
+            </span>
+          </div>
+
+          <blockquote id="active-sent-quote" class="p-2.5 bg-[#1A1C20] rounded border-l-2 border-indigo-500 text-xs italic text-slate-200 font-times leading-relaxed">
+            “Chọn một câu bất kỳ trên tài liệu để xem phân tích chi tiết...”
+          </blockquote>
+
+          <div class="space-y-1.5 text-xs font-times">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 text-[11px]">Mức độ nghi vấn:</span>
+              <span id="active-sent-score" class="font-bold text-slate-300 font-mono-num">--</span>
+            </div>
+            
+            <div class="text-slate-300 text-[11px] pt-1">
+              <strong class="text-amber-400 block mb-1">Dấu hiệu nhận diện kỹ thuật:</strong>
+              <ul id="active-sent-diags" class="list-disc list-inside space-y-1 text-slate-400 pl-1">
+                <li>--</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Gợi ý viết lại tự nhiên (Humanized Rewrite) -->
+          <div id="rewrite-box" class="pt-2 border-t border-[#333740] space-y-2 hidden">
+            <div class="flex items-center justify-between">
+              <strong class="text-emerald-400 text-[11px] font-bold flex items-center gap-1">
+                <span>Đề xuất biên tập học thuật:</span>
+              </strong>
+              <button onclick="copyRewriteText()" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-mono-num">
+                Sao chép
+              </button>
+            </div>
+            <div id="rewrite-text" class="p-2.5 bg-[#14231E] rounded border border-[#1E4D3E] text-xs text-emerald-200 font-times leading-relaxed">
+              --
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Block 6: Ký hiệu Dạ quang trên PDF -->
+        <div class="p-3.5 bg-[#1A1C20] rounded-lg border border-[#333740] text-xs space-y-2">
+          <span class="font-bold text-slate-300 text-[11px] uppercase tracking-wider block">Ký hiệu Dạ quang trên PDF:</span>
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-3 rounded bg-rose-500/40 border-b-2 border-rose-500 shrink-0"></span>
+              <span><strong>Màu đỏ:</strong> Khả năng rất cao sinh bởi AI (&gt;70%)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-3 rounded bg-amber-500/40 border-b-2 border-dashed border-amber-500 shrink-0"></span>
+              <span><strong>Màu vàng:</strong> Nghi vấn can thiệp / biên tập bằng AI (50-70%)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-3 rounded bg-blue-500/40 border-b-2 border-blue-500 shrink-0"></span>
+              <span><strong>Màu xanh lam:</strong> Trùng khớp cơ sở dữ liệu đối sánh</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer tác giả trên Sidebar -->
+      <div class="p-3 border-t border-[#2E3138] text-[11px] text-slate-400 text-center font-mono-num bg-[#191B1E]">
+        Thiết kế: <strong class="text-indigo-400">KS Nguyễn Hoàng Thiện [SYNAPES EDU]</strong>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ================= UPLOAD MODAL DIALOG ================= -->
+  <div id="upload-modal" class="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-[#212429] border border-[#363A42] rounded-xl max-w-lg w-full p-6 text-slate-200 shadow-2xl space-y-5">
+      
+      <div class="flex items-center justify-between border-b border-[#363A42] pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>📄 Thẩm định Toàn văn Tài liệu Học thuật</span>
+        </h3>
+        <button onclick="hideUploadModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+
+      <div 
+        id="modal-dropzone"
+        onclick="document.getElementById('modal-file-input').click()"
+        ondragover="handleModalDrag(event, true)"
+        ondragleave="handleModalDrag(event, false)"
+        ondrop="handleModalDrop(event)"
+        class="border-2 border-dashed border-slate-600 hover:border-indigo-400 rounded-lg p-8 text-center cursor-pointer bg-[#1A1C20] hover:bg-[#1E2126] transition"
+      >
+        <input type="file" id="modal-file-input" class="hidden" accept=".docx,.pdf,.txt,.doc" onchange="onModalFileSelect(event)">
+        <div class="space-y-2">
+          <div class="w-10 h-10 mx-auto rounded-full bg-slate-800 text-indigo-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          </div>
+          <p class="text-sm font-semibold text-white">
+            Nhấp hoặc Kéo thả tệp Word (.docx) hoặc PDF vào đây
+          </p>
+          <p class="text-xs text-slate-400 font-mono-num">
+            Thẩm định 100% tài liệu từ đầu đến cuối • Giữ nguyên ảnh và bảng
+          </p>
+        </div>
+      </div>
+
+      <div id="modal-selected-file" class="hidden p-3 bg-[#1A1C20] rounded border border-slate-700 text-xs flex justify-between items-center">
+        <span id="modal-filename" class="font-mono-num font-semibold text-indigo-300 truncate"></span>
+        <button onclick="clearModalFile(event)" class="text-rose-400 hover:text-rose-300">Xóa</button>
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-2">
+        <button onclick="hideUploadModal()" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold">
+          Hủy bỏ
+        </button>
+        <button 
+          id="modal-submit-btn"
+          onclick="runModalAnalysis()" 
+          class="px-5 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs transition flex items-center gap-2"
+        >
+          <span id="modal-spinner" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <span id="modal-submit-label">Bắt đầu Thẩm định</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= BẢN IN / BÁO CÁO PDF ĐẲNG CẤP XUẤT BẢN CHUẨN 100% TIMES NEW ROMAN ================= -->
+  <!-- Tuân thủ chặt chẽ Nghị định 30/2020/NĐ-CP và phong cách giám định học thuật iThenticate / Turnitin -->
+  <div id="printable-report-container" class="hidden bg-white text-black font-times" style="width: 800px; margin: 0 auto; font-family: 'Times New Roman', Times, serif !important; color: #000000; line-height: 1.35; font-size: 10.5pt;">
+    
+    <!-- TRANG 1: BIÊN BẢN TỔNG QUAN GIÁM ĐỊNH HỌC THUẬT (Vừa vặn tuyệt đối 1 trang A4) -->
+    <div class="pdf-section-page" style="padding: 10px 10px 0 10px;">
+      
+      <!-- Quốc hiệu & Tiêu ngữ chuẩn Nghị định 30/2020/NĐ-CP (Đảm bảo tuyệt đối không bao giờ bị rớt dòng) -->
+      <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 16px;">
+        <tr>
+          <td style="width: 42%; text-align: center; vertical-align: top; border: none; padding: 0;">
+            <div style="font-size: 9pt; font-weight: bold; text-transform: uppercase; line-height: 1.25;">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</div>
+            <div style="font-size: 8.5pt; font-weight: bold; text-transform: uppercase; margin-top: 3px; line-height: 1.25;">TRUNG TÂM GIÁM ĐỊNH PHÁP Y SYNAPES AUDIT</div>
+            <div style="font-size: 8.5pt; margin-top: 3px;">Số: <span id="pdf-report-code">SYN-2026/BB-GĐHT-09</span></div>
+          </td>
+          <td style="width: 58%; text-align: center; vertical-align: top; border: none; padding: 0;">
+            <div style="font-size: 9.5pt; font-weight: bold; text-transform: uppercase; white-space: nowrap !important; letter-spacing: -0.2px; line-height: 1.25;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+            <div style="font-size: 10pt; font-weight: bold; margin-top: 2px; white-space: nowrap !important;">Độc lập – Tự do – Hạnh phúc</div>
+            <div style="width: 130px; height: 1px; background: #000000; margin: 3px auto 5px auto;"></div>
+            <div style="font-size: 9pt; font-style: italic; white-space: nowrap !important;">TP. Hồ Chí Minh, <span id="pdf-date">ngày 30 tháng 10 năm 2026</span></div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Tên Văn bản Chính thức -->
+      <div style="text-align: center; margin: 16px 0 14px 0;" class="pdf-no-break">
+        <h1 style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase; margin: 0; line-height: 1.3; color: #000000;">
+          BIÊN BẢN GIÁM ĐỊNH PHÁP Y HỌC THUẬT
+        </h1>
+        <div style="font-size: 10pt; font-weight: bold; margin-top: 3px; text-transform: uppercase; color: #000000;">
+          VỀ TÍNH TOÀN VẸN NỘI DUNG, ĐỒNG NHẤT HÀNH VĂN VÀ NGUY CƠ CAN THIỆP CỦA TRÍ TUỆ NHÂN TẠO (AI)
+        </div>
+        <p style="font-size: 8.5pt; font-style: italic; color: #333333; margin-top: 3px;">
+          (Căn cứ Tiêu chuẩn Liêm chính Học thuật Quốc gia, Phương pháp luận Binoculars ICML '24 & MinHash LSH)
+        </p>
+      </div>
+
+      <!-- I. Căn cứ Pháp lý & Phương pháp luận -->
+      <div style="margin-bottom: 12px; font-size: 9.5pt;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px;">
+          I. CĂN CỨ PHÁP LÝ VÀ PHƯƠNG PHÁP LUẬN GIÁM ĐỊNH
+        </div>
+        <p style="margin: 2px 0; text-align: justify; line-height: 1.35;">
+          - Căn cứ Quy chế Đào tạo và Thẩm định Công trình Nghiên cứu Khoa học hiện hành;<br/>
+          - Căn cứ giải thuật phân tích độ cong phân phối xác suất văn bản <strong>Binoculars Zero-Shot (ICML 2024)</strong> và mô hình đánh giá tính biến thiên cú pháp đa tầng (Forensic Stylometry);<br/>
+          - Căn cứ hệ thống đối sánh trùng lặp chỉ mục <strong>MinHash Locality Sensitive Hashing (LSH)</strong> với kích thước tập shingle $k=4$.
+        </p>
+      </div>
+
+      <!-- II. Thông tin Hồ sơ Tài liệu -->
+      <div style="margin-bottom: 12px; font-size: 10pt;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px;">
+          II. THÔNG TIN HỒ SƠ TÀI LIỆU YÊU CẦU GIÁM ĐỊNH
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; border: none;">
+          <tr>
+            <td style="width: 28%; font-weight: bold; padding: 2px 0; border: none;">1. Tên tài liệu:</td>
+            <td id="pdf-doc-title" style="padding: 2px 0; border: none;">--</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; padding: 2px 0; border: none;">2. Quy mô văn bản:</td>
+            <td id="pdf-doc-meta" style="padding: 2px 0; border: none;">--</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; padding: 2px 0; border: none;">3. Tính đồng nhất hành văn:</td>
+            <td id="pdf-consistency" style="padding: 2px 0; color: #000000; font-weight: bold; border: none;">--</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; padding: 2px 0; border: none;">4. Kết luận giám định:</td>
+            <td id="pdf-verdict" style="padding: 2px 0; font-weight: bold; color: #000000; border: none;">--</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- III. Kết quả Giám định Định lượng Toàn văn -->
+      <div style="margin-bottom: 12px;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 5px; font-size: 10pt;">
+          III. KẾT QUẢ ĐỊNH LƯỢNG TOÀN VĂN (100% TÀI LIỆU TỪ ĐẦU ĐẾN CUỐI)
+        </div>
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 9pt; border: 1px solid #000;">
+          <tr style="background-color: #F8FAFC; font-weight: bold;">
+            <th style="border: 1px solid #000; padding: 4px;">Xác suất do AI (AI Probability)</th>
+            <th style="border: 1px solid #000; padding: 4px;">Trùng lặp Đạo văn (Plagiarism)</th>
+            <th style="border: 1px solid #000; padding: 4px;">Độ thuần Nguyên bản (Originality)</th>
+            <th style="border: 1px solid #000; padding: 4px;">Perplexity (PPL)</th>
+            <th style="border: 1px solid #000; padding: 4px;">Burstiness (B)</th>
+          </tr>
+          <tr>
+            <td id="pdf-ai-score" style="border: 1px solid #000; padding: 5px; font-size: 11pt; font-weight: bold; color: #000000;">0%</td>
+            <td id="pdf-plag-score" style="border: 1px solid #000; padding: 5px; font-size: 11pt; font-weight: bold; color: #000000;">0%</td>
+            <td id="pdf-orig-score" style="border: 1px solid #000; padding: 5px; font-size: 11pt; font-weight: bold; color: #000000;">100%</td>
+            <td id="pdf-ppl-score" style="border: 1px solid #000; padding: 5px; font-weight: bold; color: #000000;">--</td>
+            <td id="pdf-burst-score" style="border: 1px solid #000; padding: 5px; font-weight: bold; color: #000000;">--</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- IV. Thẩm định Thành phần Phi văn bản: Hình ảnh, Biểu đồ, Bảng số liệu -->
+      <div style="margin-bottom: 8px;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px; font-size: 10pt;">
+          IV. GIÁM ĐỊNH THÀNH PHẦN PHI VĂN BẢN (HÌNH ẢNH, SƠ ĐỒ KHỐI, BẢNG BIỂU)
+        </div>
+        <div id="pdf-media-section">
+          <!-- Bảng tổng kết thẩm định ảnh & bảng biểu gọn gàng súc tích chuẩn hành chính -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TRANG 2: ĐỒ HỌA TRỰC QUAN & KẾT LUẬN CỦA HỘI ĐỒNG (Tách trang độc lập A4) -->
+    <div class="pdf-page-break pdf-section-page" style="padding: 10px 10px 0 10px;">
+      
+      <!-- V. BIỂU ĐỒ TỔNG KẾT & BIỂU ĐỒ MIỀN ĐÁNH GIÁ 5 TRỤC TIÊU CHÍ (TÍCH HỢP TRỰC TIẾP) -->
+      <div style="margin-bottom: 14px;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 6px; font-size: 10pt;">
+          V. BIỂU ĐỒ TỔNG KẾT PHÂN BỐ VÀ BIỂU ĐỒ MIỀN 5 TRỤC PHÁP Y
+        </div>
+
+        <!-- Khung 2 biểu đồ trực quan in trong PDF -->
+        <div style="display: flex; justify-content: space-between; gap: 10px; margin: 6px 0;">
+          
+          <div style="width: 49%; border: 1px solid #000; padding: 5px; text-align: center; background: #FFFFFF;">
+            <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-bottom: 3px; color: #000000;">
+              HÌNH 1: MẬT ĐỘ AI QUA 5 PHÂN ĐOẠN CẤU TRÚC
+            </div>
+            <img id="pdf-barchart-img" style="width: 100%; height: 140px; object-fit: contain; display: block; margin: 0 auto;" />
+            <div style="font-size: 7.5pt; font-style: italic; color: #475569; margin-top: 2px;">
+              (Đo lường tỷ lệ câu văn AI theo từng phân đoạn cấu trúc)
+            </div>
+          </div>
+
+          <div style="width: 49%; border: 1px solid #000; padding: 5px; text-align: center; background: #FFFFFF;">
+            <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-bottom: 3px; color: #000000;">
+              HÌNH 2: BIỂU ĐỒ MIỀN 5 TRỤC PHÁP Y NGÔN NGỮ HỌC
+            </div>
+            <img id="pdf-radarchart-img" style="width: 100%; height: 140px; object-fit: contain; display: block; margin: 0 auto;" />
+            <div style="font-size: 7.5pt; font-style: italic; color: #475569; margin-top: 2px;">
+              (Đánh giá độ đơn điệu PPL, nhịp câu, sáo ngữ & dự đoán cú pháp)
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bảng số liệu phân bổ 5 phân đoạn -->
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 8.5pt; border: 1px solid #000; margin-top: 4px;">
+          <tr style="background-color: #F8FAFC; font-weight: bold;">
+            <th style="border: 1px solid #000; padding: 3px;">Phân đoạn 1: Mở đầu</th>
+            <th style="border: 1px solid #000; padding: 3px;">Phân đoạn 2: Cơ sở LT</th>
+            <th style="border: 1px solid #000; padding: 3px;">Phân đoạn 3: Phương pháp</th>
+            <th style="border: 1px solid #000; padding: 3px;">Phân đoạn 4: Thực nghiệm</th>
+            <th style="border: 1px solid #000; padding: 3px;">Phân đoạn 5: Kết luận</th>
+          </tr>
+          <tr>
+            <td id="pdf-sec-1" style="border: 1px solid #000; padding: 3px; font-weight: bold;">0%</td>
+            <td id="pdf-sec-2" style="border: 1px solid #000; padding: 3px; font-weight: bold;">0%</td>
+            <td id="pdf-sec-3" style="border: 1px solid #000; padding: 3px; font-weight: bold;">0%</td>
+            <td id="pdf-sec-4" style="border: 1px solid #000; padding: 3px; font-weight: bold;">0%</td>
+            <td id="pdf-sec-5" style="border: 1px solid #000; padding: 3px; font-weight: bold;">0%</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- VII. QUY CHUẨN HIỆU CHỈNH HỌC THUẬT & KHUYẾN NGHỊ CỦA HỘI ĐỒNG -->
+      <div style="margin-bottom: 14px; font-size: 9.5pt;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px; font-size: 10pt;">
+          VII. QUY CHUẨN HIỆU CHỈNH HỌC THUẬT & KHUYẾN NGHỊ CỦA HỘI ĐỒNG
+        </div>
+        <div style="line-height: 1.4; text-align: justify; padding: 2px 0;">
+          <p style="margin: 2px 0;">
+            <strong>1. Chuyển đổi thể bị động và cấu trúc định nghĩa dịch máy:</strong> Chuyển các câu dạng thụ động trừu tượng (<em>"được thiết kế nhằm...", "được coi là..."</em>) sang thể chủ động gắn với các thao tác kỹ thuật và thực nghiệm cụ thể của nhóm nghiên cứu.
+          </p>
+          <p style="margin: 2px 0;">
+            <strong>2. Triệt tiêu liên từ tương quan và từ nối sáo rỗng:</strong> Loại bỏ các cặp liên từ cân đối giả định (<em>"không chỉ... mà còn...", "ở cả... lẫn..."</em>) và các từ nối chuyển tiếp máy móc ở đầu câu (<em>"bên cạnh đó", "ngoài ra", "mặt khác"</em>).
+          </p>
+          <p style="margin: 2px 0;">
+            <strong>3. Bổ sung tham số định lượng thực nghiệm:</strong> Thay thế các khẳng định cảm tính định tính (<em>"đạt hiệu quả rất lớn", "tối ưu nhất"</em>) bằng các giá trị đo đạc có khoảng sai số thực nghiệm ($\pm \sigma$) và đối chuẩn với tài liệu tham khảo chính thức (IEEE/ACOG).
+          </p>
+        </div>
+      </div>
+
+      <!-- VIII. Xác nhận của Hội đồng Thẩm định & Chữ ký số -->
+      <div style="display: flex; justify-content: space-between; margin-top: 18px;" class="pdf-no-break">
+        <div style="text-align: center; width: 45%;">
+          <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">ĐƠN VỊ THẨM ĐỊNH ĐỘC LẬP</div>
+          <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký điện tử & Đóng dấu xác thực)</div>
+          <div style="height: 50px; margin: 6px auto; border: 1px dashed #000000; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #000000;">
+            [ CON DẤU XÁC THỰC SỐ HÓA SYNAPES ]
+          </div>
+          <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">SYNAPES INTEGRITY CENTER</div>
+        </div>
+        <div style="text-align: center; width: 48%;">
+          <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG</div>
+          <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký, ghi rõ họ tên)</div>
+          <div style="height: 50px; margin: 6px auto; display: flex; align-items: center; justify-content: center; font-style: italic; color: #000000; font-weight: bold; font-size: 13pt;">
+            Nguyễn Hoàng Thiện
+          </div>
+          <div style="font-weight: bold; font-size: 10pt; text-transform: uppercase;">KS NGUYỄN HOÀNG THIỆN</div>
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; color: #000000; margin-top: 1px;">
+            TRƯỞNG BAN CHUYỂN ĐỔI SỐ VÀ TRÍ TUỆ NHÂN TẠO
+          </div>
+          <div style="font-size: 8pt; color: #000000; margin-top: 1px;">
+            Chuyên gia Pháp y Ngôn ngữ học [SYNAPES EDU]
+          </div>
+          <div style="font-size: 7.5pt; color: #333333; margin-top: 1px;">
+            Email: nguyenhoangthien.hvt.15@gmail.com
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TRANG 3+: BẢNG MA TRẬN ĐỐI SOÁT PHÁP Y HỌC THUẬT (Được phân trang động chuẩn A4, chống cắt đôi hàng 100%) -->
+    <div id="pdf-matrix-pages-container">
+      <!-- Toàn bộ các trang đối soát chi tiết sẽ được render tại đây theo từng đợt 5 hàng/trang -->
+    </div>
+
+  </div>
+
+  <script>
+    let globalAuditData = null;
+    let currentZoom = 100;
+    let modalFile = null;
+    let currentDocumentView = 'rich';
+
+    let barChartInstance = null;
+    let radarChartInstance = null;
+
+    function adjustZoom(delta) {
+      currentZoom = Math.max(70, Math.min(160, currentZoom + delta));
+      document.getElementById('zoom-level').innerText = `${currentZoom}%`;
+      const paper = document.getElementById('drive-paper');
+      paper.style.transform = `scale(${currentZoom / 100})`;
+    }
+
+    function toggleSidePanel() {
+      const panel = document.getElementById('side-inspector');
+      panel.classList.toggle('hidden');
+    }
+
+    function showUploadModal() {
+      document.getElementById('upload-modal').classList.remove('hidden');
+    }
+
+    function hideUploadModal() {
+      document.getElementById('upload-modal').classList.add('hidden');
+    }
+
+    function handleModalDrag(e, active) {
+      e.preventDefault();
+      const dropzone = document.getElementById('modal-dropzone');
+      if (active) {
+        dropzone.classList.add('border-indigo-400', 'bg-[#22252A]');
+      } else {
+        dropzone.classList.remove('border-indigo-400', 'bg-[#22252A]');
+      }
+    }
+
+    function handleModalDrop(e) {
+      e.preventDefault();
+      handleModalDrag(e, false);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        selectFile(e.dataTransfer.files[0]);
+      }
+    }
+
+    function onModalFileSelect(e) {
+      if (e.target.files && e.target.files.length > 0) {
+        selectFile(e.target.files[0]);
+      }
+    }
+
+    function selectFile(file) {
+      modalFile = file;
+      document.getElementById('modal-filename').innerText = file.name;
+      document.getElementById('modal-selected-file').classList.remove('hidden');
+    }
+
+    function clearModalFile(e) {
+      e.stopPropagation();
+      modalFile = null;
+      document.getElementById('modal-file-input').value = "";
+      document.getElementById('modal-selected-file').classList.add('hidden');
+    }
+
+    function switchDocumentView(mode) {
+      currentDocumentView = mode;
+      const btnRich = document.getElementById('btn-view-rich');
+      const btnSent = document.getElementById('btn-view-sentences');
+      const btnMedia = document.getElementById('btn-view-media');
+
+      const richDiv = document.getElementById('paper-rich-content');
+      const sentDiv = document.getElementById('paper-sentences-content');
+      const mediaDiv = document.getElementById('paper-media-content');
+
+      // Reset styles
+      btnRich.className = "px-3 py-1 rounded text-slate-300 hover:text-white transition";
+      btnSent.className = "px-3 py-1 rounded text-slate-300 hover:text-white transition";
+      btnMedia.className = "px-3 py-1 rounded text-slate-300 hover:text-white transition";
+
+      richDiv.classList.add('hidden');
+      sentDiv.classList.add('hidden');
+      mediaDiv.classList.add('hidden');
+
+      if (mode === 'rich') {
+        btnRich.className = "px-3 py-1 rounded bg-indigo-600 font-semibold text-white transition";
+        richDiv.classList.remove('hidden');
+      } else if (mode === 'sentences') {
+        btnSent.className = "px-3 py-1 rounded bg-indigo-600 font-semibold text-white transition";
+        sentDiv.classList.remove('hidden');
+      } else if (mode === 'media') {
+        btnMedia.className = "px-3 py-1 rounded bg-indigo-600 font-semibold text-white transition";
+        mediaDiv.classList.remove('hidden');
+      }
+    }
+
+    async function runModalAnalysis() {
+      if (!modalFile) {
+        alert("Vui lòng kéo thả hoặc chọn tệp Word (.docx) hoặc PDF.");
+        return;
+      }
+
+      const btn = document.getElementById('modal-submit-btn');
+      const spinner = document.getElementById('modal-spinner');
+      const label = document.getElementById('modal-submit-label');
+
+      btn.disabled = true;
+      spinner.classList.remove('hidden');
+      label.innerText = "Đang thẩm định 100% tài liệu...";
+
+      try {
+        const formData = new FormData();
+        formData.append('file', modalFile);
+
+        const response = await fetch('/api/v1/scan/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || "Không thể phân tích tài liệu.");
+        }
+
+        const data = await response.json();
+        globalAuditData = data;
+        hideUploadModal();
+        renderDriveViewer(data);
+
+      } catch (err) {
+        alert("Lỗi thẩm định: " + err.message);
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('hidden');
+        label.innerText = "Bắt đầu Thẩm định";
+      }
+    }
+
+    function renderDriveViewer(data) {
+      // 1. Cập nhật Topbar & Metadata
+      document.getElementById('topbar-filename').innerText = data.filename || "Tai_lieu_nghien_cuu.docx";
+      document.getElementById('topbar-meta').innerText = `${data.total_words} từ • ${data.total_sentences} câu • Phân tích lúc ${new Date().toLocaleTimeString('vi-VN')}`;
+      document.getElementById('total-sent-badge').innerText = data.total_sentences;
+      
+      const totalMedia = (data.structural_audit?.images_count || 0) + (data.structural_audit?.tables_count || 0);
+      document.getElementById('total-media-badge').innerText = totalMedia;
+
+      document.getElementById('btn-download-pdf').classList.remove('hidden');
+
+      // 2. Cập nhật Sidebar Số liệu Trọng yếu
+      const aiPercent = data.ai_detection.ai_percentage;
+      const plagPercent = data.plagiarism.max_similarity_percentage;
+
+      document.getElementById('stat-ai-pct').innerText = `${aiPercent}%`;
+      document.getElementById('stat-ai-ratio').innerText = `${data.ai_sentence_count}/${data.total_sentences} câu`;
+      document.getElementById('stat-plag-pct').innerText = `${plagPercent}%`;
+
+      const verdictBadge = document.getElementById('side-verdict-badge');
+      if (aiPercent >= 45 || plagPercent >= 30) {
+        verdictBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-900/60 text-rose-300 border border-rose-700";
+        verdictBadge.innerText = "NGUY CƠ CAO (AI-GENERATED)";
+      } else if (aiPercent >= 20 || plagPercent >= 15) {
+        verdictBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-amber-900/60 text-amber-300 border border-amber-700";
+        verdictBadge.innerText = "CẦN LƯU Ý (AI-ASSISTED)";
+      } else {
+        verdictBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700";
+        verdictBadge.innerText = "AN TOÀN HỌC THUẬT";
+      }
+
+      // Đánh giá tính đồng nhất hành văn
+      const consistencyText = data.ai_detection.stylometric_consistency || "Đang phân tích...";
+      document.getElementById('stat-consistency-box').innerText = consistencyText;
+
+      // Cập nhật chỉ số định lượng
+      document.getElementById('m-ppl').innerText = data.ai_detection.perplexity;
+      document.getElementById('m-burst').innerText = data.ai_detection.burstiness;
+      document.getElementById('m-ttr').innerText = data.ai_detection.lexical_diversity;
+      document.getElementById('m-bino').innerText = data.ai_detection.binoculars_score;
+
+      // 3. Khởi tạo Biểu đồ Cột & Biểu đồ Miền
+      renderCharts(data);
+
+      // 4. Render Chế độ 1: 100% Nội dung gốc (Ảnh & Bảng 100% Times New Roman)
+      const richContent = document.getElementById('paper-rich-content');
+      document.getElementById('paper-date-time').innerText = new Date().toLocaleDateString('vi-VN');
+
+      if (data.rendered_html && data.rendered_html.trim().length > 0) {
+        let highlightedHTML = data.rendered_html;
+
+        // Chuẩn hóa khoảng trắng & ký tự trước khi highlight
+        highlightedHTML = highlightedHTML.replace(/&nbsp;/g, ' ');
+
+        data.sentences.forEach(s => {
+          if (!s.is_header && (s.risk_level === 'high_ai' || s.risk_level === 'medium_ai' || s.risk_level === 'plagiarism')) {
+            const cleanText = s.text.trim();
+            if (cleanText.length > 8) {
+              const escaped = cleanText.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+              const regex = new RegExp(`(${escaped})`, 'g');
+              const hlClass = s.risk_level === 'plagiarism' ? 'hl-plag' : (s.risk_level === 'high_ai' ? 'hl-high-ai' : 'hl-medium-ai');
+              highlightedHTML = highlightedHTML.replace(regex, `<span class="${hlClass}" id="rich-sent-${s.id}" onclick="window.activateSentenceById(${s.id})">$1</span>`);
+            }
+          }
+        });
+
+        richContent.innerHTML = highlightedHTML;
+      } else {
+        richContent.innerText = data.full_text;
+      }
+
+      // 5. Render Chế độ 2: Soát lỗi 100% từng câu từ đầu đến cuối (100% Times New Roman)
+      const sentContent = document.getElementById('paper-sentences-content');
+      sentContent.innerHTML = "";
+
+      data.sentences.forEach(s => {
+        if (s.is_header) {
+          const h = document.createElement('div');
+          h.className = "hl-header font-times";
+          h.innerText = s.text;
+          sentContent.appendChild(h);
+        } else {
+          const span = document.createElement('span');
+          span.id = `sent-span-${s.id}`;
+          span.innerText = s.text + " ";
+          span.className = "font-times ";
+
+          if (s.risk_level === 'plagiarism') {
+            span.className += "hl-plag";
+          } else if (s.risk_level === 'high_ai') {
+            span.className += "hl-high-ai";
+          } else if (s.risk_level === 'medium_ai') {
+            span.className += "hl-medium-ai";
+          } else {
+            span.className += "hl-human";
+          }
+
+          span.onclick = () => activateSentence(s);
+          sentContent.appendChild(span);
+        }
+      });
+
+      // 6. Render Chế độ 3: Giám định Pháp y Hình ảnh, Sơ đồ & Bảng số liệu
+      renderMediaFindings(data.structural_audit);
+
+      // Mặc định chọn câu nghi vấn đầu tiên
+      const firstSuspect = data.sentences.find(s => !s.is_header && (s.risk_level === 'high_ai' || s.risk_level === 'medium_ai')) || data.sentences[0];
+      if (firstSuspect) {
+        activateSentence(firstSuspect);
+      }
+    }
+
+    function renderMediaFindings(audit) {
+      const mediaList = document.getElementById('media-findings-list');
+      const tableList = document.getElementById('tables-findings-list');
+      mediaList.innerHTML = "";
+      tableList.innerHTML = "";
+
+      if (!audit || (!audit.media_findings?.length && !audit.tables_findings?.length)) {
+        mediaList.innerHTML = "<p class='text-slate-500 italic'>Không tìm thấy hình ảnh hoặc sơ đồ trong tài liệu.</p>";
+        tableList.innerHTML = "<p class='text-slate-500 italic'>Không tìm thấy bảng biểu số liệu trong tài liệu.</p>";
+        return;
+      }
+
+      if (audit.media_findings?.length) {
+        audit.media_findings.forEach(m => {
+          const item = document.createElement('div');
+          item.className = "p-3 bg-slate-50 rounded border border-slate-200 text-slate-800";
+          const badgeClass = m.status === 'HỢP LỆ' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300';
+          item.innerHTML = `
+            <div class="flex items-center justify-between mb-1">
+              <strong>Hình ảnh #${m.index}</strong>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${m.status}</span>
+            </div>
+            <p class="text-slate-600">${m.notes}</p>
+          `;
+          mediaList.appendChild(item);
+        });
+      } else {
+        mediaList.innerHTML = "<p class='text-slate-500 italic'>Không phát hiện tệp hình ảnh.</p>";
+      }
+
+      if (audit.tables_findings?.length) {
+        audit.tables_findings.forEach(t => {
+          const item = document.createElement('div');
+          item.className = "p-3 bg-slate-50 rounded border border-slate-200 text-slate-800";
+          const badgeClass = t.status === 'HỢP LỆ' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300';
+          item.innerHTML = `
+            <div class="flex items-center justify-between mb-1">
+              <strong>Bảng số liệu #${t.index}</strong>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${t.status}</span>
+            </div>
+            <p class="text-slate-600">${t.notes}</p>
+          `;
+          tableList.appendChild(item);
+        });
+      } else {
+        tableList.innerHTML = "<p class='text-slate-500 italic'>Không phát hiện bảng biểu số liệu.</p>";
+      }
+    }
+
+    function renderCharts(data) {
+      // 1. Biểu đồ Cột (Bar Chart) 5 phân đoạn
+      const ctxBar = document.getElementById('barChartSections').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
+
+      const secData = data.ai_detection.section_distribution || [60, 75, 80, 70, 65];
+      barChartInstance = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: ['Mở đầu', 'Cơ sở LT', 'Phương pháp', 'Thực nghiệm', 'Kết luận'],
+          datasets: [{
+            label: 'Mật độ AI (%)',
+            data: secData,
+            backgroundColor: secData.map(v => v >= 50 ? 'rgba(225, 29, 72, 0.75)' : 'rgba(99, 102, 241, 0.75)'),
+            borderColor: secData.map(v => v >= 50 ? '#E11D48' : '#6366F1'),
+            borderWidth: 1,
+            borderRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, ticks: { color: '#94A3B8', font: { size: 9 } }, grid: { color: '#33363D' } },
+            x: { ticks: { color: '#CBD5E1', font: { size: 9 } }, grid: { display: false } }
+          }
+        }
+      });
+
+      // 2. Biểu đồ Miền / Radar (5-Axis Integrity Radar)
+      const ctxRadar = document.getElementById('radarChartIntegrity').getContext('2d');
+      if (radarChartInstance) radarChartInstance.destroy();
+
+      const r = data.ai_detection.radar_metrics || {
+        perplexity_uniformity: 80, rhythm_monotony: 75, cliche_density: 85,
+        syntactic_predictability: 80, empirical_void: 75
+      };
+
+      radarChartInstance = new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: ['Đồng nhất PPL', 'Đơn điệu nhịp câu', 'Mật độ sáo ngữ', 'Dự đoán cú pháp', 'Khoảng trống thực tế'],
+          datasets: [{
+            label: 'Độ thiên lệch AI',
+            data: [r.perplexity_uniformity, r.rhythm_monotony, r.cliche_density, r.syntactic_predictability, r.empirical_void],
+            backgroundColor: 'rgba(244, 63, 94, 0.3)',
+            borderColor: '#F43F5E',
+            pointBackgroundColor: '#F43F5E',
+            borderWidth: 1.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              min: 0, max: 100,
+              ticks: { display: false },
+              grid: { color: '#33363D' },
+              angleLines: { color: '#33363D' },
+              pointLabels: { color: '#94A3B8', font: { size: 9 } }
+            }
+          }
+        }
+      });
+    }
+
+    window.activateSentenceById = function(id) {
+      if (!globalAuditData) return;
+      const s = globalAuditData.sentences.find(item => item.id === id);
+      if (s) activateSentence(s);
+    };
+
+    function activateSentence(s) {
+      document.querySelectorAll('#paper-content span, #paper-rich-content span, #paper-sentences-content span').forEach(el => el.classList.remove('active-sent'));
+      
+      const targetRich = document.getElementById(`rich-sent-${s.id}`);
+      if (targetRich) targetRich.classList.add('active-sent');
+
+      const targetSent = document.getElementById(`sent-span-${s.id}`);
+      if (targetSent) targetSent.classList.add('active-sent');
+
+      document.getElementById('active-sent-id').innerText = `Câu #${s.id} (${s.word_count} từ)`;
+      document.getElementById('active-sent-quote').innerText = `“${s.text}”`;
+
+      const scoreEl = document.getElementById('active-sent-score');
+      if (s.risk_level === 'plagiarism') {
+        scoreEl.innerText = "Trùng lặp Đạo văn (Plagiarism)";
+        scoreEl.className = "font-bold text-blue-400";
+      } else if (s.risk_level === 'high_ai') {
+        scoreEl.innerText = `${s.ai_confidence}% (Khả năng rất cao sinh bởi AI)`;
+        scoreEl.className = "font-bold text-rose-400";
+      } else if (s.risk_level === 'medium_ai') {
+        scoreEl.innerText = `${s.ai_confidence}% (Nghi vấn can thiệp bằng AI)`;
+        scoreEl.className = "font-bold text-amber-400";
+      } else {
+        scoreEl.innerText = "0% (Văn phong tự nhiên của con người)";
+        scoreEl.className = "font-bold text-emerald-400";
+      }
+
+      const diagsList = document.getElementById('active-sent-diags');
+      diagsList.innerHTML = "";
+      if (s.diagnostics && s.diagnostics.length > 0) {
+        s.diagnostics.forEach(d => {
+          const li = document.createElement('li');
+          li.innerText = d;
+          diagsList.appendChild(li);
+        });
+      } else {
+        diagsList.innerHTML = "<li>Văn phong tự nhiên, cấu trúc diễn đạt mang phong cách tác giả.</li>";
+      }
+
+      const rewriteBox = document.getElementById('rewrite-box');
+      if (s.rewrite_suggestion) {
+        rewriteBox.classList.remove('hidden');
+        document.getElementById('rewrite-text').innerText = s.rewrite_suggestion;
+      } else {
+        rewriteBox.classList.add('hidden');
+      }
+    }
+
+    function copyRewriteText() {
+      const text = document.getElementById('rewrite-text').innerText;
+      navigator.clipboard.writeText(text);
+      alert("Đã sao chép câu đề xuất biên tập vào bộ nhớ tạm!");
+    }
+
+    function generateMonochromePDFCharts(data) {
+      // 1. Offscreen Canvas Bar Chart trắng đen chuẩn in ấn
+      const cBar = document.createElement('canvas');
+      cBar.width = 600;
+      cBar.height = 320;
+      const ctxB = cBar.getContext('2d');
+      ctxB.fillStyle = '#FFFFFF';
+      ctxB.fillRect(0, 0, 600, 320);
+
+      const secData = data.ai_detection.section_distribution || [60, 75, 80, 70, 65];
+      const chartBar = new Chart(ctxB, {
+        type: 'bar',
+        data: {
+          labels: ['Mở đầu', 'Cơ sở LT', 'Phương pháp', 'Thực nghiệm', 'Kết luận'],
+          datasets: [{
+            label: 'Mật độ AI (%)',
+            data: secData,
+            backgroundColor: '#1E2024',
+            borderColor: '#000000',
+            borderWidth: 1.5,
+            borderRadius: 2
+          }]
+        },
+        options: {
+          animation: false,
+          responsive: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, ticks: { color: '#000000', font: { size: 12, family: 'Times New Roman' } }, grid: { color: '#E2E8F0' } },
+            x: { ticks: { color: '#000000', font: { size: 12, family: 'Times New Roman', weight: 'bold' } }, grid: { display: false } }
+          }
+        }
+      });
+      const barImg = cBar.toDataURL('image/png', 1.0);
+      chartBar.destroy();
+
+      // 2. Offscreen Canvas Radar Chart trắng đen chuẩn in ấn
+      const cRadar = document.createElement('canvas');
+      cRadar.width = 600;
+      cRadar.height = 320;
+      const ctxR = cRadar.getContext('2d');
+      ctxR.fillStyle = '#FFFFFF';
+      ctxR.fillRect(0, 0, 600, 320);
+
+      const r = data.ai_detection.radar_metrics || {
+        perplexity_uniformity: 80, rhythm_monotony: 75, cliche_density: 85,
+        syntactic_predictability: 80, empirical_void: 75
+      };
+      const chartRadar = new Chart(ctxR, {
+        type: 'radar',
+        data: {
+          labels: ['Đồng nhất PPL', 'Đơn điệu nhịp', 'Mật độ sáo ngữ', 'Dự đoán cú pháp', 'Khoảng trống thực tế'],
+          datasets: [{
+            data: [r.perplexity_uniformity, r.rhythm_monotony, r.cliche_density, r.syntactic_predictability, r.empirical_void],
+            backgroundColor: 'rgba(0, 0, 0, 0.15)',
+            borderColor: '#000000',
+            pointBackgroundColor: '#000000',
+            pointBorderColor: '#000000',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          animation: false,
+          responsive: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              min: 0, max: 100,
+              ticks: { display: false },
+              grid: { color: '#CBD5E1' },
+              angleLines: { color: '#94A3B8' },
+              pointLabels: { color: '#000000', font: { size: 11, family: 'Times New Roman', weight: 'bold' } }
+            }
+          }
+        }
+      });
+      const radarImg = cRadar.toDataURL('image/png', 1.0);
+      chartRadar.destroy();
+
+      return { barImg, radarImg };
+    }
+
+    // ================= XUẤT BÁO CÁO PDF ĐẲNG CẤP 100% TIMES NEW ROMAN =================
+    function downloadOfficialTimesNewRomanReportPDF() {
+      if (!globalAuditData) return;
+
+      const data = globalAuditData;
+      const pdfContainer = document.getElementById('printable-report-container');
+
+      document.getElementById('pdf-doc-title').innerText = data.filename;
+      const now = new Date();
+      const dateStr = `ngày ${String(now.getDate()).padStart(2, '0')} tháng ${String(now.getMonth() + 1).padStart(2, '0')} năm ${now.getFullYear()}`;
+      document.getElementById('pdf-date').innerText = dateStr;
+      document.getElementById('pdf-doc-meta').innerText = `${data.total_words} từ • ${data.total_sentences} câu phân tích toàn văn (${data.structural_audit?.images_count || 0} hình ảnh, ${data.structural_audit?.tables_count || 0} bảng)`;
+
+      const ai = data.ai_detection.ai_percentage;
+      const plag = data.plagiarism.max_similarity_percentage;
+      document.getElementById('pdf-ai-score').innerText = `${ai}%`;
+      document.getElementById('pdf-plag-score').innerText = `${plag}%`;
+      document.getElementById('pdf-orig-score').innerText = `${data.originality_percentage}%`;
+      document.getElementById('pdf-ppl-score').innerText = data.ai_detection.perplexity;
+      document.getElementById('pdf-burst-score').innerText = data.ai_detection.burstiness;
+
+      document.getElementById('pdf-consistency').innerText = data.ai_detection.stylometric_consistency || "Đồng nhất cao";
+      document.getElementById('pdf-verdict').innerText = (ai >= 45 || plag >= 30) ? "NGUY CƠ CAO (CẦN CHỈNH SỬA TOÀN VĂN)" : "ĐẠT CHUẨN TOÀN VẸN HỌC THUẬT";
+
+      // Chèn biểu đồ trực quan dạng trắng đen sắc nét vào bản in PDF (Base64 data URI)
+      try {
+        const { barImg, radarImg } = generateMonochromePDFCharts(data);
+        document.getElementById('pdf-barchart-img').src = barImg;
+        document.getElementById('pdf-radarchart-img').src = radarImg;
+      } catch (e) {
+        console.error("Lỗi tạo biểu đồ PDF:", e);
+      }
+
+      // 5 Phân đoạn
+      const secs = data.ai_detection.section_distribution || [0, 0, 0, 0, 0];
+      document.getElementById('pdf-sec-1').innerText = `${secs[0] || 0}%`;
+      document.getElementById('pdf-sec-2').innerText = `${secs[1] || 0}%`;
+      document.getElementById('pdf-sec-3').innerText = `${secs[2] || 0}%`;
+      document.getElementById('pdf-sec-4').innerText = `${secs[3] || 0}%`;
+      document.getElementById('pdf-sec-5').innerText = `${secs[4] || 0}%`;
+
+      // Giám định thành phần phi văn bản (Bảng tổng hợp gọn gàng, tuyệt đối không làm tràn Trang 1)
+      const mediaSec = document.getElementById('pdf-media-section');
+      const struct = data.structural_audit || { images_count: 0, tables_count: 0, media_findings: [], tables_findings: [] };
+      const imgCount = struct.images_count || 0;
+      const tblCount = struct.tables_count || 0;
+      
+      let imgSummary = "Không phát hiện đối tượng hình ảnh hoặc sơ đồ đồ họa.";
+      if (imgCount > 0) {
+        const needAttn = (struct.media_findings || []).filter(m => m.status && m.status.includes('LƯU Ý')).length;
+        imgSummary = `Đã rà soát ${imgCount} hình ảnh/sơ đồ. ${needAttn > 0 ? `Phát hiện ${needAttn} hình cần chuẩn hóa nhãn chú thích chính quy (Caption) và bổ sung nguồn minh chứng học thuật.` : 'Toàn bộ hình ảnh có chú thích và nguồn trích dẫn hợp lệ.'}`;
+      }
+
+      let tblSummary = "Không phát hiện bảng biểu ma trận số liệu.";
+      if (tblCount > 0) {
+        const tblAttn = (struct.tables_findings || []).filter(t => t.status && t.status.includes('LƯU Ý')).length;
+        tblSummary = `Đã rà soát ${tblCount} bảng số liệu. ${tblAttn > 0 ? `Phát hiện ${tblAttn} bảng cần bổ sung đơn vị đo lường và tham chiếu số liệu.` : 'Toàn bộ bảng biểu số liệu đạt chuẩn định dạng học thuật.'}`;
+      }
+
+      mediaSec.innerHTML = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 8.5pt; border: 1px solid #000; margin-top: 3px;">
+          <tr style="background-color: #F8FAFC; font-weight: bold;">
+            <th style="border: 1px solid #000; padding: 3px 5px; width: 32%; text-align: left;">Thành phần phi văn bản</th>
+            <th style="border: 1px solid #000; padding: 3px 5px; width: 18%; text-align: center;">Số lượng rà soát</th>
+            <th style="border: 1px solid #000; padding: 3px 5px; width: 50%; text-align: left;">Kết luận giám định & Yêu cầu chuẩn hóa</th>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #000; padding: 4px 5px; font-weight: bold;">1. Hình ảnh, Sơ đồ khối, Đồ họa</td>
+            <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; font-weight: bold;">${imgCount} đối tượng</td>
+            <td style="border: 1px solid #000; padding: 4px 5px; text-align: justify;">${imgSummary}</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #000; padding: 4px 5px; font-weight: bold;">2. Bảng biểu, Ma trận số liệu</td>
+            <td style="border: 1px solid #000; padding: 4px 5px; text-align: center; font-weight: bold;">${tblCount} đối tượng</td>
+            <td style="border: 1px solid #000; padding: 4px 5px; text-align: justify;">${tblSummary}</td>
+          </tr>
+        </table>
+      `;
+
+      // Render BẢNG MA TRẬN ĐỐI SOÁT PHÁP Y HỌC THUẬT (Phân trang chuẩn A4, chống cắt đôi hàng 100%)
+      const matrixPagesContainer = document.getElementById('pdf-matrix-pages-container');
+      matrixPagesContainer.innerHTML = "";
+
+      const suspectSentences = data.sentences.filter(s => !s.is_header && (s.is_ai || s.is_plagiarism));
+
+      if (suspectSentences.length === 0) {
+        matrixPagesContainer.innerHTML = `
+          <div class="pdf-page-break pdf-section-page" style="padding: 10px 10px 0 10px;">
+            <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 8px; font-size: 10pt;">
+              VI. BẢNG MA TRẬN ĐỐI SOÁT PHÁP Y & ĐỀ XUẤT BIÊN TẬP HỌC THUẬT (100% TÀI LIỆU)
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 9pt; border: 1px solid #000;">
+              <tr>
+                <td style="border: 1px solid #000; padding: 14px; text-align: center; color: #000000; font-style: italic;">
+                  Không phát hiện câu văn nghi vấn nào. Toàn bộ tài liệu thể hiện phong cách diễn đạt tự nhiên và độc lập của tác giả.
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+      } else {
+        const CHUNK_SIZE = 5;
+        const totalChunks = Math.ceil(suspectSentences.length / CHUNK_SIZE);
+
+        for (let c = 0; c < totalChunks; c++) {
+          const chunk = suspectSentences.slice(c * CHUNK_SIZE, (c + 1) * CHUNK_SIZE);
+          const pageDiv = document.createElement('div');
+          pageDiv.className = 'pdf-page-break pdf-section-page';
+          pageDiv.style.padding = '10px 10px 0 10px';
+
+          let rowsHtml = '';
+          chunk.forEach((s, idxInChunk) => {
+            const globalIdx = c * CHUNK_SIZE + idxInChunk + 1;
+            const bgColor = idxInChunk % 2 === 0 ? '#FFFFFF' : '#F9F9F9';
+            const riskText = s.is_plagiarism ? "Trùng lặp Đạo văn" : `${s.ai_confidence}% (${s.ai_confidence >= 70 ? 'Rất cao' : 'Trung bình'})`;
+
+            rowsHtml += `
+              <tr style="background-color: ${bgColor}; page-break-inside: avoid !important; break-inside: avoid !important;">
+                <td style="border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; width: 6%;">${globalIdx}</td>
+                <td style="border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; width: 12%; white-space: nowrap;">Câu #${s.id}</td>
+                <td style="border: 1px solid #000; padding: 5px 6px; text-align: justify; font-style: italic; width: 38%; font-size: 8.5pt;">“${s.text}”</td>
+                <td style="border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; width: 16%; white-space: nowrap; font-size: 8.5pt;">${riskText}</td>
+                <td style="border: 1px solid #000; padding: 5px 6px; text-align: justify; width: 28%; font-size: 8pt;">
+                  <div style="margin-bottom: 3px;"><strong>Dấu hiệu:</strong> ${s.diagnostics.join('; ')}</div>
+                  ${s.rewrite_suggestion ? `<div style="padding-top: 3px; border-top: 1px dashed #666666;"><strong>Đề xuất sửa:</strong> <em>“${s.rewrite_suggestion}”</em></div>` : ''}
+                </td>
+              </tr>
+            `;
+          });
+
+          pageDiv.innerHTML = `
+            <div style="margin-bottom: 8px;">
+              <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 6px; font-size: 9.5pt; display: flex; justify-content: space-between;">
+                <span>VI. BẢNG MA TRẬN ĐỐI SOÁT PHÁP Y & ĐỀ XUẤT BIÊN TẬP HỌC THUẬT</span>
+                <span style="font-size: 8.5pt; font-style: italic; font-weight: normal;">(Bảng ${c + 1}/${totalChunks} • ${suspectSentences.length} câu nghi vấn)</span>
+              </div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 8.5pt; border: 1px solid #000; font-family: 'Times New Roman', Times, serif;">
+                <thead>
+                  <tr style="background-color: #F1F5F9; font-weight: bold; text-align: center;">
+                    <th style="border: 1px solid #000; padding: 4px 2px; width: 6%;">STT</th>
+                    <th style="border: 1px solid #000; padding: 4px 2px; width: 12%; white-space: nowrap;">Vị trí</th>
+                    <th style="border: 1px solid #000; padding: 4px 5px; width: 38%;">Trích lục đoạn văn gốc</th>
+                    <th style="border: 1px solid #000; padding: 4px 2px; width: 16%; white-space: nowrap;">Xác suất AI</th>
+                    <th style="border: 1px solid #000; padding: 4px 5px; width: 28%;">Chẩn đoán pháp y & Đề xuất biên tập</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rowsHtml}
+                </tbody>
+              </table>
+              <div style="text-align: right; font-size: 7.5pt; font-style: italic; color: #444444; margin-top: 5px;">
+                Biên bản Giám định Học thuật SYNAPES AUDIT • Bảng đối soát ${c + 1}/${totalChunks}
+              </div>
+            </div>
+          `;
+          matrixPagesContainer.appendChild(pageDiv);
+        }
+      }
+
+      pdfContainer.classList.remove('hidden');
+
+      // Tên file xuất ra đúng quy chuẩn yêu cầu: "Báo cáo kết luận Văn bản [Tên file đã tải lên] SYNAPES EDU.pdf"
+      const rawName = (data.filename || "Tai_lieu").replace(/\.[^/.]+$/, "").trim();
+      const sanitizedName = rawName.replace(/[\\/:*?"<>|]/g, '');
+      const downloadFilename = `Báo cáo kết luận Văn bản ${sanitizedName} SYNAPES EDU.pdf`;
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: downloadFilename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { 
+          mode: ['css', 'legacy'], 
+          before: '.pdf-page-break'
+        }
+      };
+
+      html2pdf().set(opt).from(pdfContainer).save().then(() => {
+        pdfContainer.classList.add('hidden');
+      });
+    }
+
+    window.onload = () => {
+      showUploadModal();
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: checker-redis
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  api:
+    image: ghcr.io/${IMAGE_NAME}:latest
+    container_name: checker-api
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://checker-redis:6379/0
+      - CELERY_BROKER_URL=redis://checker-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://checker-redis:6379/1
+    ports:
+      - "8000:8000"
+
+  celery_worker:
+    image: ghcr.io/${IMAGE_NAME}:latest
+    container_name: checker-worker
+    restart: always
+    depends_on:
+      - redis
+    command: ["celery", "-A", "app.workers.tasks.celery_app", "worker", "--loglevel=info"]
+    environment:
+      - REDIS_URL=redis://checker-redis:6379/0
+      - CELERY_BROKER_URL=redis://checker-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://checker-redis:6379/1
+
