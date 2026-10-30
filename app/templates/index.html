@@ -9,17 +9,107 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Thư viện xuất bản PDF chuẩn học thuật -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- KaTeX hỗ trợ biên dịch công thức toán học học thuật chuẩn xác (GitHub: KaTeX/KaTeX) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <style>
     /* Sử dụng 100% Font Times New Roman cho văn bản và bản in học thuật */
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #26292E; /* Nền xám đậm chuẩn Google Drive PDF Viewer */
+      background-color: #121316; /* Nền Slate tối giản sang trọng */
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     .font-times {
       font-family: 'Times New Roman', Times, serif !important;
     }
     .font-mono-num {
       font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ================= HỆ THỐNG GIAO DIỆN CRAFT VINTAGE, DARK & OCEAN ================= */
+    /* 1. Theme Vintage (Giấy ngả vàng phục cổ học thuật) */
+    body.theme-vintage {
+      background-color: #F5F2EB !important;
+      color: #1C1917 !important;
+    }
+    body.theme-vintage header {
+      background-color: #EAE5DB !important;
+      border-color: #D6CEBE !important;
+      color: #1C1917 !important;
+    }
+    body.theme-vintage .main-viewport {
+      background-color: #ECE7DC !important;
+    }
+    body.theme-vintage .drive-paper-page {
+      background: #FCFAF6 !important;
+      box-shadow: 0 10px 40px rgba(50, 40, 30, 0.12), 0 0 0 1px rgba(120, 100, 70, 0.15) !important;
+      color: #1C1917 !important;
+    }
+    body.theme-vintage aside {
+      background-color: #EFEBE2 !important;
+      border-color: #D6CEBE !important;
+      color: #1C1917 !important;
+    }
+    body.theme-vintage .stat-box {
+      background-color: #F8F5EE !important;
+      border-color: #D6CEBE !important;
+      color: #1C1917 !important;
+    }
+    body.theme-vintage .theme-toggle-group {
+      background-color: #DDD6C7 !important;
+      border-color: #C8BEAC !important;
+    }
+    body.theme-vintage .theme-btn-active {
+      background-color: #57534E !important;
+      color: #FFFFFF !important;
+    }
+
+    /* 2. Theme Dark (Tối giản Obsidian Slate) */
+    body.theme-dark {
+      background-color: #121316 !important;
+      color: #E2E8F0 !important;
+    }
+    body.theme-dark header {
+      background-color: #181920 !important;
+      border-color: #272A35 !important;
+    }
+    body.theme-dark .main-viewport {
+      background-color: #14151B !important;
+    }
+    body.theme-dark aside {
+      background-color: #181920 !important;
+      border-color: #272A35 !important;
+    }
+    body.theme-dark .drive-paper-page {
+      background: #FFFFFF !important;
+      color: #0F172A !important;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    /* 3. Theme Ocean Wave (Gam màu Sóng biển Đồ họa Cao) */
+    body.theme-ocean {
+      background-color: #040914 !important;
+      color: #E2E8F0 !important;
+    }
+    body.theme-ocean header {
+      background-color: rgba(6, 15, 30, 0.88) !important;
+      backdrop-filter: blur(14px) !important;
+      border-color: #1B3556 !important;
+    }
+    body.theme-ocean .main-viewport {
+      background: transparent !important;
+    }
+    body.theme-ocean aside {
+      background-color: rgba(6, 15, 30, 0.90) !important;
+      backdrop-filter: blur(16px) !important;
+      border-color: #1B3556 !important;
+    }
+    body.theme-ocean .drive-paper-page {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(14px) !important;
+      color: #0F172A !important;
+      box-shadow: 0 16px 50px rgba(0, 20, 50, 0.5), 0 0 0 1px rgba(0, 240, 255, 0.25) !important;
     }
 
     /* Quy tắc chống tràn / cắt đôi dòng và bảng khi xuất PDF */
@@ -214,17 +304,40 @@
       </button>
     </div>
 
-    <!-- Right: Actions (Xuất PDF Times New Roman, Tải tệp mới) -->
+    <!-- Right: Actions (Bộ chuyển Giao diện, Xuất Báo cáo, Tải tệp mới) -->
     <div class="flex items-center space-x-2 text-xs">
       
+      <!-- Bộ chuyển đổi giao diện Craft: Cổ điển (Vintage) | Tối giản (Dark) | Sóng biển Đồ họa cao (Ocean Waves) -->
+      <div class="flex items-center bg-[#202228] p-0.5 rounded border border-[#373A44] text-[11px] theme-toggle-group">
+        <button id="theme-btn-vintage" onclick="setAppTheme('vintage')" class="px-2 py-1 rounded transition text-slate-300 hover:text-white flex items-center gap-1" title="Giao diện Cổ điển (Giấy phục cổ)">
+          <span>📜 Cổ điển</span>
+        </button>
+        <button id="theme-btn-dark" onclick="setAppTheme('dark')" class="px-2 py-1 rounded transition text-white bg-zinc-700 shadow-xs flex items-center gap-1" title="Giao diện Tối giản (Obsidian Slate)">
+          <span>🌑 Tối giản</span>
+        </button>
+        <button id="theme-btn-ocean" onclick="setAppTheme('ocean')" class="px-2 py-1 rounded transition text-slate-300 hover:text-white flex items-center gap-1" title="Gam màu Sóng biển Đồ họa cao">
+          <span>🌊 Sóng biển</span>
+        </button>
+      </div>
+
+      <!-- Tùy chỉnh Gam màu Sóng biển (Tự động hiển thị khi kích hoạt Sóng biển) -->
+      <div id="ocean-palette-control" class="hidden flex items-center bg-[#152238] border border-[#233B60] px-2 py-1 rounded text-[11px] gap-1 text-cyan-200">
+        <span class="text-[10px] uppercase font-bold text-cyan-400">Gam màu:</span>
+        <select id="ocean-palette-select" onchange="changeOceanPalette(this.value)" class="bg-transparent text-xs text-white outline-none cursor-pointer">
+          <option value="bioluminescent" class="bg-slate-900 text-white">Dạ quang Biển sâu</option>
+          <option value="sunset" class="bg-slate-900 text-white">Hoàng hôn Biển khơi</option>
+          <option value="emerald" class="bg-slate-900 text-white">Ngọc bích Vịnh đảo</option>
+        </select>
+      </div>
+
       <button 
         id="btn-download-pdf"
         onclick="downloadOfficialTimesNewRomanReportPDF()"
         class="hidden px-3.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-600 font-medium shadow-xs transition flex items-center gap-1.5 font-times text-sm"
-        title="Tải Báo cáo Thẩm định Học thuật Toàn diện định dạng PDF (100% Times New Roman)"
+        title="Tải Báo cáo Thẩm định Học thuật Toàn diện định dạng PDF"
       >
         <svg class="w-4 h-4 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        <span>Tải Báo cáo PDF (Times New Roman)</span>
+        <span>Tải Báo cáo</span>
       </button>
 
       <button 
@@ -251,9 +364,12 @@
   <div class="flex-1 flex overflow-hidden relative">
 
     <!-- CENTER: DOCUMENT CANVAS (Google Drive PDF Sheet) -->
-    <main class="flex-1 overflow-y-auto bg-[#26292E] p-4 sm:p-8 flex justify-center items-start">
+    <main class="flex-1 overflow-y-auto bg-[#26292E] p-4 sm:p-8 flex justify-center items-start relative main-viewport">
       
-      <div id="drive-paper" class="drive-paper-page transition-transform duration-200 origin-top">
+      <!-- Canvas hiệu ứng Sóng biển chuyển động liên tục đồ họa cao -->
+      <canvas id="ocean-canvas" class="hidden absolute inset-0 pointer-events-none z-0 w-full h-full"></canvas>
+
+      <div id="drive-paper" class="drive-paper-page transition-transform duration-200 origin-top relative z-10">
         
         <!-- Header tài liệu mô phỏng văn bản thực -->
         <div class="border-b border-slate-300 pb-3 mb-6 flex justify-between items-center text-xs text-slate-500 font-mono-num font-times">
@@ -549,7 +665,7 @@
         <p style="margin: 2px 0; text-align: justify; line-height: 1.35;">
           - Căn cứ Quy chế Đào tạo và Thẩm định Công trình Nghiên cứu Khoa học hiện hành;<br/>
           - Căn cứ giải thuật phân tích độ cong phân phối xác suất văn bản <strong>Binoculars Zero-Shot (ICML 2024)</strong> và mô hình đánh giá tính biến thiên cú pháp đa tầng (Forensic Stylometry);<br/>
-          - Căn cứ hệ thống đối sánh trùng lặp chỉ mục <strong>MinHash Locality Sensitive Hashing (LSH)</strong> với kích thước tập shingle $k=4$.
+          - Căn cứ hệ thống đối sánh trùng lặp chỉ mục <strong>MinHash Locality Sensitive Hashing (LSH)</strong> với kích thước tập shingle <span class="katex-inline" data-expr="k = 4">k = 4</span>.
         </p>
       </div>
 
@@ -679,7 +795,7 @@
             <strong>2. Triệt tiêu liên từ tương quan và từ nối sáo rỗng:</strong> Loại bỏ các cặp liên từ cân đối giả định (<em>"không chỉ... mà còn...", "ở cả... lẫn..."</em>) và các từ nối chuyển tiếp máy móc ở đầu câu (<em>"bên cạnh đó", "ngoài ra", "mặt khác"</em>).
           </p>
           <p style="margin: 2px 0;">
-            <strong>3. Bổ sung tham số định lượng thực nghiệm:</strong> Thay thế các khẳng định cảm tính định tính (<em>"đạt hiệu quả rất lớn", "tối ưu nhất"</em>) bằng các giá trị đo đạc có khoảng sai số thực nghiệm ($\pm \sigma$) và đối chuẩn với tài liệu tham khảo chính thức (IEEE/ACOG).
+            <strong>3. Bổ sung tham số định lượng thực nghiệm:</strong> Thay thế các khẳng định cảm tính định tính (<em>"đạt hiệu quả rất lớn", "tối ưu nhất"</em>) bằng các giá trị đo đạc có khoảng sai số thực nghiệm (<span class="katex-inline" data-expr="\pm \sigma">\pm \sigma</span>) và đối chuẩn với tài liệu tham khảo chính thức (IEEE/ACOG).
           </p>
         </div>
       </div>
@@ -1334,7 +1450,8 @@
           </div>
         `;
       } else {
-        const CHUNK_SIZE = 5;
+        // CHUNK_SIZE = 3: Giới hạn tối đa 3 câu/trang để triệt tiêu 100% nguy cơ cắt đôi hàng khi qua trang
+        const CHUNK_SIZE = 3;
         const totalChunks = Math.ceil(suspectSentences.length / CHUNK_SIZE);
 
         for (let c = 0; c < totalChunks; c++) {
@@ -1351,11 +1468,11 @@
 
             rowsHtml += `
               <tr style="background-color: ${bgColor}; page-break-inside: avoid !important; break-inside: avoid !important;">
-                <td style="border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; width: 6%;">${globalIdx}</td>
-                <td style="border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; width: 12%; white-space: nowrap;">Câu #${s.id}</td>
-                <td style="border: 1px solid #000; padding: 5px 6px; text-align: justify; font-style: italic; width: 38%; font-size: 8.5pt;">“${s.text}”</td>
-                <td style="border: 1px solid #000; padding: 5px 3px; text-align: center; font-weight: bold; width: 16%; white-space: nowrap; font-size: 8.5pt;">${riskText}</td>
-                <td style="border: 1px solid #000; padding: 5px 6px; text-align: justify; width: 28%; font-size: 8pt;">
+                <td style="border: 1px solid #000; padding: 4px 3px; text-align: center; font-weight: bold; width: 6%;">${globalIdx}</td>
+                <td style="border: 1px solid #000; padding: 4px 3px; text-align: center; font-weight: bold; width: 12%; white-space: nowrap;">Câu #${s.id}</td>
+                <td style="border: 1px solid #000; padding: 4px 6px; text-align: justify; font-style: italic; width: 38%; font-size: 8.5pt;">“${s.text}”</td>
+                <td style="border: 1px solid #000; padding: 4px 3px; text-align: center; font-weight: bold; width: 16%; white-space: nowrap; font-size: 8.5pt;">${riskText}</td>
+                <td style="border: 1px solid #000; padding: 4px 6px; text-align: justify; width: 28%; font-size: 8pt;">
                   <div style="margin-bottom: 3px;"><strong>Dấu hiệu:</strong> ${s.diagnostics.join('; ')}</div>
                   ${s.rewrite_suggestion ? `<div style="padding-top: 3px; border-top: 1px dashed #666666;"><strong>Đề xuất sửa:</strong> <em>“${s.rewrite_suggestion}”</em></div>` : ''}
                 </td>
@@ -1394,6 +1511,29 @@
 
       pdfContainer.classList.remove('hidden');
 
+      // Tối ưu hóa và biên dịch toàn bộ công thức LaTeX (KaTeX) trước khi vẽ PDF
+      if (window.katex) {
+        document.querySelectorAll('#printable-report-container .katex-inline').forEach(el => {
+          const expr = el.getAttribute('data-expr') || el.innerText;
+          try {
+            katex.render(expr, el, { throwOnError: false });
+          } catch(e) {
+            console.warn("KaTeX render error:", e);
+          }
+        });
+        if (window.renderMathInElement) {
+          try {
+            renderMathInElement(pdfContainer, {
+              delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false }
+              ],
+              throwOnError: false
+            });
+          } catch(e) {}
+        }
+      }
+
       // Tên file xuất ra đúng quy chuẩn yêu cầu: "Báo cáo kết luận Văn bản [Tên file đã tải lên] SYNAPES EDU.pdf"
       const rawName = (data.filename || "Tai_lieu").replace(/\.[^/.]+$/, "").trim();
       const sanitizedName = rawName.replace(/[\\/:*?"<>|]/g, '');
@@ -1416,7 +1556,155 @@
       });
     }
 
+    // ================= OCEAN WAVE HIGH-GRAPHICS SHADER ANIMATION =================
+    let oceanAnimationId = null;
+    let oceanPalette = 'bioluminescent';
+    let waveStep = 0;
+    let currentAppTheme = 'dark';
+
+    const OCEAN_PALETTES = {
+      bioluminescent: {
+        bg: '#030814',
+        layer1: { fill: 'rgba(3, 20, 50, 0.75)', stroke: '#0A3B75' },
+        layer2: { fill: 'rgba(2, 45, 95, 0.65)', stroke: '#0077B6' },
+        layer3: { fill: 'rgba(0, 119, 182, 0.55)', stroke: '#00B4D8' },
+        layer4: { fill: 'rgba(0, 180, 216, 0.45)', stroke: '#90E0EF' },
+        crest: '#CAF0F8'
+      },
+      sunset: {
+        bg: '#14051B',
+        layer1: { fill: 'rgba(35, 10, 55, 0.75)', stroke: '#581C87' },
+        layer2: { fill: 'rgba(88, 28, 135, 0.65)', stroke: '#9333EA' },
+        layer3: { fill: 'rgba(190, 24, 93, 0.55)', stroke: '#E11D48' },
+        layer4: { fill: 'rgba(245, 158, 11, 0.45)', stroke: '#FBBF24' },
+        crest: '#FDE68A'
+      },
+      emerald: {
+        bg: '#021B14',
+        layer1: { fill: 'rgba(4, 40, 30, 0.75)', stroke: '#064E3B' },
+        layer2: { fill: 'rgba(6, 78, 59, 0.65)', stroke: '#047857' },
+        layer3: { fill: 'rgba(16, 185, 129, 0.55)', stroke: '#10B981' },
+        layer4: { fill: 'rgba(52, 211, 153, 0.45)', stroke: '#6EE7B7' },
+        crest: '#A7F3D0'
+      }
+    };
+
+    function startOceanWave() {
+      const canvas = document.getElementById('ocean-canvas');
+      if (!canvas) return;
+      canvas.classList.remove('hidden');
+
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = canvas.offsetWidth || window.innerWidth;
+      let h = canvas.height = canvas.offsetHeight || window.innerHeight;
+
+      const handleResize = () => {
+        if (!canvas) return;
+        w = canvas.width = canvas.offsetWidth || window.innerWidth;
+        h = canvas.height = canvas.offsetHeight || window.innerHeight;
+      };
+      window.addEventListener('resize', handleResize);
+
+      function draw() {
+        if (currentAppTheme !== 'ocean') return;
+
+        waveStep += 0.025;
+        ctx.clearRect(0, 0, w, h);
+
+        const pal = OCEAN_PALETTES[oceanPalette] || OCEAN_PALETTES.bioluminescent;
+
+        // Gradient nền sâu thẳm
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+        bgGrad.addColorStop(0, pal.bg);
+        bgGrad.addColorStop(1, '#010307');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Biên độ dập dềnh lên xuống theo nhịp thở đại dương (Vertical Heaving Surge)
+        const verticalSurge = Math.sin(waveStep * 0.45) * 45;
+        const baseLine = h * 0.58 + verticalSurge;
+
+        // Vẽ 4 tầng sóng đa hài hòa liên tục chuyển màu
+        drawSingleWave(ctx, w, h, baseLine + 70, 0.003, waveStep * 0.7, 50, pal.layer1);
+        drawSingleWave(ctx, w, h, baseLine + 35, 0.005, waveStep * 1.1, 40, pal.layer2);
+        drawSingleWave(ctx, w, h, baseLine, 0.007, waveStep * 1.5, 30, pal.layer3);
+        drawSingleWave(ctx, w, h, baseLine - 30, 0.009, waveStep * 2.0, 22, pal.layer4, pal.crest);
+
+        oceanAnimationId = requestAnimationFrame(draw);
+      }
+
+      if (oceanAnimationId) cancelAnimationFrame(oceanAnimationId);
+      oceanAnimationId = requestAnimationFrame(draw);
+    }
+
+    function drawSingleWave(ctx, w, h, yBase, freq, timeOffset, amp, layerColor, crestColor) {
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      ctx.lineTo(0, yBase);
+
+      for (let x = 0; x <= w; x += 8) {
+        const y = yBase + Math.sin(x * freq + timeOffset) * amp + Math.cos(x * freq * 0.6 + timeOffset * 0.8) * (amp * 0.45);
+        ctx.lineTo(x, y);
+      }
+
+      ctx.lineTo(w, h);
+      ctx.closePath();
+
+      ctx.fillStyle = layerColor.fill;
+      ctx.fill();
+
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = layerColor.stroke;
+      ctx.stroke();
+
+      if (crestColor) {
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = crestColor;
+        ctx.stroke();
+      }
+    }
+
+    function stopOceanWave() {
+      if (oceanAnimationId) {
+        cancelAnimationFrame(oceanAnimationId);
+        oceanAnimationId = null;
+      }
+      const canvas = document.getElementById('ocean-canvas');
+      if (canvas) canvas.classList.add('hidden');
+    }
+
+    function changeOceanPalette(pal) {
+      oceanPalette = pal;
+    }
+
+    function setAppTheme(theme) {
+      currentAppTheme = theme;
+      document.body.classList.remove('theme-vintage', 'theme-dark', 'theme-ocean');
+      document.body.classList.add(`theme-${theme}`);
+
+      // Cập nhật trạng thái nút chọn theme
+      ['vintage', 'dark', 'ocean'].forEach(t => {
+        const btn = document.getElementById(`theme-btn-${t}`);
+        if (!btn) return;
+        if (t === theme) {
+          btn.className = "px-2.5 py-1 rounded font-semibold text-white bg-zinc-700 shadow-xs transition flex items-center gap-1";
+        } else {
+          btn.className = "px-2.5 py-1 rounded text-slate-300 hover:text-white transition flex items-center gap-1";
+        }
+      });
+
+      const palCtrl = document.getElementById('ocean-palette-control');
+      if (theme === 'ocean') {
+        if (palCtrl) palCtrl.classList.remove('hidden');
+        startOceanWave();
+      } else {
+        if (palCtrl) palCtrl.classList.add('hidden');
+        stopOceanWave();
+      }
+    }
+
     window.onload = () => {
+      setAppTheme('dark');
       showUploadModal();
     };
   </script>
