@@ -176,3 +176,4 @@ class AcademicSourceVerificationEngine:
             "type2_academic": type2_academic,
             "type3_comprehensive": type3_comprehensive
         }
+
