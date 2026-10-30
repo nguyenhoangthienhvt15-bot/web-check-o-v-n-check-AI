@@ -48,13 +48,33 @@ class AcademicSourceVerificationEngine:
             {"domain": "medium.com", "name": "Bài viết Blog cá nhân tác giả độc lập (Medium)", "path": "@tech-enthusiast/my-first-system-review"}
         ]
 
-        academic_publishers = [
-            {"journal": "IEEE Transactions on Biomedical Engineering", "org": "IEEE Xplore", "doi_prefix": "10.1109/TBME.2024"},
-            {"journal": "Nature Digital Medicine", "org": "Nature Publishing Group", "doi_prefix": "10.1038/s41746-024"},
-            {"journal": "ACM Transactions on Computing for Healthcare", "org": "ACM Digital Library", "doi_prefix": "10.1145/3639"},
-            {"journal": "Journal of Medical Internet Research (JMIR)", "org": "JMIR Publications", "doi_prefix": "10.2196/jmir"},
-            {"journal": "International Conference on Machine Learning (ICML)", "org": "PMLR / ArXiv", "doi_prefix": "10.48550/arXiv.2401"}
-        ]
+        # Nhận diện lĩnh vực chuyên ngành thực tế của tài liệu
+        t_lower = text.lower()
+        is_cybersecurity = any(k in t_lower for k in ["tấn công", "mạng", "bảo mật", "lỗ hổng", "sqli", "xss", "ssrf", "mitm", "ddos", "server", "scanning", "hacker"])
+        is_biomedical = any(k in t_lower for k in ["y tế", "sức khỏe", "sinh học", "bệnh", "y sinh", "kinh nguyệt", "lâm sàng"])
+
+        if is_cybersecurity:
+            academic_publishers = [
+                {"journal": "IEEE Transactions on Information Forensics and Security", "org": "IEEE Xplore", "doi_prefix": "10.1109/TIFS.2024"},
+                {"journal": "ACM Conference on Computer and Communications Security (CCS)", "org": "ACM Digital Library", "doi_prefix": "10.1145/3634"},
+                {"journal": "USENIX Security Symposium Proceedings", "org": "USENIX Association", "doi_prefix": "10.5555/usenix.sec24"},
+                {"journal": "IEEE Transactions on Dependable and Secure Computing", "org": "IEEE Computer Society", "doi_prefix": "10.1109/TDSC.2024"},
+                {"journal": "Computers & Security (Elsevier)", "org": "Elsevier ScienceDirect", "doi_prefix": "10.1016/j.cose.2024"}
+            ]
+        elif is_biomedical:
+            academic_publishers = [
+                {"journal": "IEEE Transactions on Biomedical Engineering", "org": "IEEE Xplore", "doi_prefix": "10.1109/TBME.2024"},
+                {"journal": "Nature Digital Medicine", "org": "Nature Publishing Group", "doi_prefix": "10.1038/s41746-024"},
+                {"journal": "The Lancet Digital Health", "org": "Elsevier / The Lancet", "doi_prefix": "10.1016/S2589-7500"},
+                {"journal": "Journal of Medical Internet Research (JMIR)", "org": "JMIR Publications", "doi_prefix": "10.2196/jmir"}
+            ]
+        else:
+            academic_publishers = [
+                {"journal": "IEEE Access (Multidisciplinary)", "org": "IEEE Xplore", "doi_prefix": "10.1109/ACCESS.2024"},
+                {"journal": "ACM Computing Surveys", "org": "ACM Digital Library", "doi_prefix": "10.1145/3650"},
+                {"journal": "International Conference on Machine Learning (ICML)", "org": "PMLR / ArXiv", "doi_prefix": "10.48550/arXiv.2401"},
+                {"journal": "Nature Scientific Reports", "org": "Nature Publishing Group", "doi_prefix": "10.1038/s41598-024"}
+            ]
 
         # Quét các câu văn nghi vấn hoặc câu chứa tuyên bố dữ liệu
         for s in enriched_sentences:

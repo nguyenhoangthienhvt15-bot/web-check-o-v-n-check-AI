@@ -40,9 +40,9 @@ def analyze_document_content(
 
     plag_percentage = round(top_similarity * 100, 1)
     
-    # 3. Tính chỉ số Độ thuần Nguyên bản
+    # 3. Tính chỉ số Độ thuần Nguyên bản: Đảm bảo tính nhất quán toán học 100% (Originality = 100% - AI% - Plag%)
     ai_percentage = ai_result["ai_percentage"]
-    originality_score = max(0.0, round(100.0 - (ai_percentage * 0.65 + plag_percentage * 0.35), 1))
+    originality_score = max(0.0, round(100.0 - ai_percentage - plag_percentage, 1))
 
     # Gán nhãn đạo văn vào từng câu nếu có
     plagiarized_texts = set()
@@ -114,6 +114,7 @@ def analyze_document_content(
             "burstiness": ai_result["burstiness"],
             "lexical_diversity": ai_result["lexical_diversity"],
             "section_distribution": ai_result["section_distribution"],
+            "actual_sections": ai_result.get("actual_sections", []),
             "radar_metrics": ai_result["radar_metrics"],
             "stylometric_consistency": ai_result["stylometric_consistency"],
             "cliche_count": ai_result["cliche_count"]
