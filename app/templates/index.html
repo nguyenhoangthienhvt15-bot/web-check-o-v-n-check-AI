@@ -210,62 +210,62 @@
 <body class="theme-light h-screen flex flex-col overflow-hidden relative bg-[#F8FAFC]">
 
   <!-- ================= TOPBAR (PAPERMARK MINIMAL LIGHT HEADER) ================= -->
-  <header class="h-14 min-h-[56px] max-h-14 border-b border-slate-200 shrink-0 flex items-center justify-between px-4 z-30 bg-white select-none overflow-hidden">
+  <header class="h-14 min-h-[56px] max-h-14 border-b border-slate-200 shrink-0 flex items-center justify-between px-3 sm:px-4 z-30 bg-white select-none overflow-hidden">
     
     <!-- Left: Brand Logo & Document Status Pill -->
-    <div class="flex items-center gap-3 shrink-0">
-      <div class="flex items-center gap-2.5 shrink-0">
+    <div class="flex items-center gap-2.5 shrink-0">
+      <div class="flex items-center gap-2 shrink-0">
         <div class="h-9 w-9 rounded-lg bg-white p-0.5 shadow-2xs border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-slate-100 transition hover:scale-105 cursor-pointer">
           <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo" class="h-full w-full object-contain rounded-md select-none" />
         </div>
         <div class="flex flex-col justify-center shrink-0">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5">
             <span class="font-bold text-sm tracking-tight text-slate-900" id="topbar-brand-title">SYNAPES AUDIT</span>
             <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono-num border border-slate-200 font-semibold tracking-wide">v3.0</span>
           </div>
-          <p class="text-[10px] text-slate-500 leading-tight mt-0.5">Hệ thống Giám định Pháp y Học thuật & Thẩm tra Nguồn</p>
+          <p class="text-[10px] text-slate-500 leading-tight mt-0.5 hidden xl:block">Giám định Pháp y Học thuật & Thẩm tra Nguồn</p>
         </div>
       </div>
 
-      <div class="h-6 w-px bg-slate-200 hidden md:block shrink-0"></div>
+      <div class="h-6 w-px bg-slate-200 hidden xl:block shrink-0"></div>
 
-      <!-- File Status Badge (Chống vỡ/xuống dòng 100%) -->
-      <div id="topbar-doc-badge" class="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs shadow-2xs transition shrink-0 whitespace-nowrap">
+      <!-- File Status Badge (Hiển thị mượt mà trên màn hình rộng, ẩn trên màn hình nhỏ để bảo toàn nút Tải tệp mới) -->
+      <div id="topbar-doc-badge" class="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs shadow-2xs transition shrink-0 whitespace-nowrap">
         <span class="w-2 h-2 rounded-full bg-slate-400 shrink-0" id="topbar-doc-status-dot"></span>
-        <span id="topbar-filename" class="font-medium text-slate-700 truncate max-w-[140px] whitespace-nowrap">Sẵn sàng thẩm định</span>
+        <span id="topbar-filename" class="font-medium text-slate-700 truncate max-w-[120px] whitespace-nowrap">Sẵn sàng thẩm định</span>
         <span id="topbar-meta" class="text-[10.5px] text-slate-400 font-mono-num border-l border-slate-200 pl-2 whitespace-nowrap shrink-0">0 từ • 0 câu</span>
       </div>
     </div>
 
     <!-- Center: View Mode Switcher (Clean Light Segmented Control) -->
-    <div class="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-medium shadow-2xs shrink-0">
-      <button id="btn-view-rich" onclick="switchDocumentView('rich')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80 whitespace-nowrap">
+    <div class="flex items-center bg-slate-100/90 p-0.5 rounded-xl border border-slate-200/80 text-xs font-medium shadow-2xs shrink-0">
+      <button id="btn-view-rich" onclick="switchDocumentView('rich')" class="px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg transition flex items-center gap-1 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80 whitespace-nowrap">
         <span>📄</span> Văn bản gốc
       </button>
-      <button id="btn-view-sentences" onclick="switchDocumentView('sentences')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
-        <span>🔬</span> Pháp y từng câu <span id="total-sent-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold">0</span>
+      <button id="btn-view-sentences" onclick="switchDocumentView('sentences')" class="px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg transition flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
+        <span>🔬</span> Pháp y câu <span id="total-sent-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold">0</span>
       </button>
-      <button id="btn-view-media" onclick="switchDocumentView('media')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
+      <button id="btn-view-media" onclick="switchDocumentView('media')" class="px-2.5 py-1 sm:px-3 sm:py-1 rounded-lg transition flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
         <span>🖼️</span> Sơ đồ & Bảng <span id="total-media-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold">0</span>
       </button>
     </div>
 
-    <!-- Right: Zoom & Action Buttons (Cơ chế RGB chạy ngầm toàn hệ thống) -->
-    <div class="flex items-center gap-2 shrink-0">
-      <!-- Zoom controls -->
-      <div class="hidden lg:flex items-center bg-slate-100 rounded-lg border border-slate-200 p-0.5 text-xs text-slate-700 font-mono-num shrink-0">
+    <!-- Right: Zoom & Action Buttons (BẢO TOÀN 100% NẰM TRONG KHUNG HÌNH) -->
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <!-- Zoom controls (hiển thị trên màn hình rộng) -->
+      <div class="hidden 2xl:flex items-center bg-slate-100 rounded-lg border border-slate-200 p-0.5 text-xs text-slate-700 font-mono-num shrink-0">
         <button onclick="adjustZoom(-10)" class="px-2 py-0.5 hover:bg-white rounded hover:shadow-2xs transition font-bold text-slate-500 hover:text-slate-900">-</button>
         <span id="zoom-text" class="px-2 font-medium">100%</span>
         <button onclick="adjustZoom(10)" class="px-2 py-0.5 hover:bg-white rounded hover:shadow-2xs transition font-bold text-slate-500 hover:text-slate-900">+</button>
       </div>
 
       <!-- Tải báo cáo PDF chính (Clean Light Secondary Button) -->
-      <button id="btn-download-pdf" onclick="downloadOfficialTimesNewRomanReportPDF()" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:border-slate-400 whitespace-nowrap shrink-0">
+      <button id="btn-download-pdf" onclick="downloadOfficialTimesNewRomanReportPDF()" class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:border-slate-400 whitespace-nowrap shrink-0">
         <span>📥</span> Tải Báo cáo PDF
       </button>
 
-      <!-- Nút tải tệp mới (Dynamic RGB Gradient Primary CTA) -->
-      <button onclick="showUploadModal()" id="btn-upload-cta" class="px-3.5 py-1.5 rounded-lg text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:opacity-95 whitespace-nowrap shrink-0" style="background: linear-gradient(135deg, rgb(59, 130, 246), rgb(99, 102, 241));">
+      <!-- Nút tải tệp mới (BẢO TOÀN 100% KHÔNG BAO GIỜ BỊ TRÀN VIỀN) -->
+      <button onclick="showUploadModal()" id="btn-upload-cta" class="px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-lg text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:opacity-95 whitespace-nowrap shrink-0" style="background: linear-gradient(135deg, rgb(59, 130, 246), rgb(99, 102, 241));">
         <span>⬆</span> Tải tệp mới
       </button>
     </div>
@@ -1188,7 +1188,7 @@
       const docBadge = document.getElementById('topbar-doc-badge');
       const docDot = document.getElementById('topbar-doc-status-dot');
       if (docBadge) {
-        docBadge.className = "hidden md:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs shadow-2xs transition shrink-0 whitespace-nowrap";
+        docBadge.className = "hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs shadow-2xs transition shrink-0 whitespace-nowrap";
       }
       if (docDot) {
         docDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0";
