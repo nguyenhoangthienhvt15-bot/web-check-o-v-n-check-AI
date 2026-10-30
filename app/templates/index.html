@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SYNAPES AUDIT | Hệ thống Giám định Tính toàn vẹn Học thuật & Thẩm tra Nguồn Trích dẫn</title>
+  <link rel="icon" type="image/jpeg" href="/static/img/synapes-logo.jpg">
   
   <!-- Tailwind CSS & Google Fonts (Plus Jakarta Sans, JetBrains Mono) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -55,6 +56,9 @@
     body.theme-light header {
       background-color: #FFFFFF !important;
       border-color: #E2E8F0 !important;
+      color: #0F172A !important;
+    }
+    body.theme-light #topbar-brand-title {
       color: #0F172A !important;
     }
     body.theme-light .main-viewport {
@@ -185,16 +189,16 @@
     
     <!-- Left: Brand Logo & Document Breadcrumb -->
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-          SA
+      <div class="flex items-center gap-2.5">
+        <div class="h-9 w-9 rounded-lg bg-white p-0.5 shadow-sm border border-slate-700/50 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-white/10 group cursor-pointer transition hover:scale-105">
+          <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo" class="h-full w-full object-contain rounded-md select-none" />
         </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-bold text-sm tracking-tight text-white">SYNAPES AUDIT</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-900/60 text-indigo-300 font-mono-num border border-indigo-700/60">v3.0 Core</span>
+        <div class="flex flex-col justify-center">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm tracking-tight text-white transition-colors" id="topbar-brand-title">SYNAPES AUDIT</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-900/60 text-indigo-300 font-mono-num border border-indigo-700/60 font-semibold tracking-wide">v3.0 Core</span>
           </div>
-          <p class="text-[10px] pm-muted-text">Hệ thống Giám định Pháp y Học thuật & Thẩm tra Nguồn</p>
+          <p class="text-[10px] pm-muted-text leading-tight mt-0.5">Hệ thống Giám định Pháp y Học thuật & Thẩm tra Nguồn</p>
         </div>
       </div>
 
@@ -513,11 +517,19 @@
   <div id="upload-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50">
     <div class="pm-card rounded-2xl border max-w-lg w-full p-6 text-slate-200 shadow-2xl space-y-5">
       
-      <div class="flex items-center justify-between border-b pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <span>📄 Thẩm định Toàn văn Tài liệu Học thuật</span>
-        </h3>
-        <button onclick="hideUploadModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+      <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-white p-0.5 shadow-sm border border-slate-700/50 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-white/10">
+            <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo" class="h-full w-full object-contain rounded-md select-none" />
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>Thẩm định Toàn văn Tài liệu Học thuật</span>
+            </h3>
+            <p class="text-[10px] pm-muted-text">SYNAPES AUDIT • Tiêu chuẩn Liêm chính Học thuật Quốc gia</p>
+          </div>
+        </div>
+        <button onclick="hideUploadModal()" class="text-slate-400 hover:text-white text-xl font-bold p-1 leading-none transition">&times;</button>
       </div>
 
       <div 
@@ -552,8 +564,10 @@
     <div class="bg-[#171B22] border border-[#242A35] rounded-2xl w-full max-w-4xl h-[92vh] flex flex-col shadow-2xl overflow-hidden">
       <!-- Modal Header -->
       <div class="px-5 py-3 border-b border-[#242A35] flex items-center justify-between bg-[#12151B]">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">📄</span>
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-8 rounded-lg bg-white p-0.5 shadow-sm border border-slate-700/50 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-white/10">
+            <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo" class="h-full w-full object-contain rounded-md select-none" />
+          </div>
           <div>
             <h3 id="preview-modal-title" class="text-sm font-bold text-slate-100 font-times">Xem trước Báo cáo Giám định Nguồn</h3>
             <p id="preview-modal-subtitle" class="text-[11px] pm-muted-text font-times">Quy chuẩn thể thức hành chính & font 100% Times New Roman</p>
@@ -584,12 +598,17 @@
       <!-- Quốc hiệu & Tiêu ngữ chuẩn Nghị định 30/2020/NĐ-CP (Đã bỏ gạch chân đè chữ) -->
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: none;">
         <tr>
-          <td style="width: 42%; text-align: center; vertical-align: top; border: none; padding: 0;">
-            <div style="font-size: 8.5pt; font-weight: bold; text-transform: uppercase; line-height: 1.25;">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</div>
-            <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; margin-top: 2px; line-height: 1.25;">TRUNG TÂM GIÁM ĐỊNH PHÁP Y SYNAPES AUDIT</div>
-            <div style="font-size: 8pt; margin-top: 2px;">Số: <span id="pdf-report-code">SYN-2026/BB-GĐHT-09</span></div>
+          <td style="width: 44%; text-align: left; vertical-align: top; border: none; padding: 0;">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <img src="/static/img/synapes-logo.jpg" style="height: 36px; width: 36px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; padding: 1px; flex-shrink: 0;" alt="SYNAPES Logo" />
+              <div>
+                <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; line-height: 1.25;">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</div>
+                <div style="font-size: 7.5pt; font-weight: bold; text-transform: uppercase; margin-top: 1px; line-height: 1.25; color: #1e3a8a;">TRUNG TÂM GIÁM ĐỊNH PHÁP Y SYNAPES AUDIT</div>
+                <div style="font-size: 7.5pt; margin-top: 1px;">Số: <span id="pdf-report-code">SYN-2026/BB-GĐHT-09</span></div>
+              </div>
+            </div>
           </td>
-          <td style="width: 58%; text-align: center; vertical-align: top; border: none; padding: 0;">
+          <td style="width: 56%; text-align: center; vertical-align: top; border: none; padding: 0;">
             <div style="font-size: 9pt; font-weight: bold; text-transform: uppercase; white-space: nowrap !important; letter-spacing: -0.2px; line-height: 1.25;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
             <div style="font-size: 9.5pt; font-weight: bold; margin-top: 2px; white-space: nowrap !important;">Độc lập – Tự do – Hạnh phúc</div>
             <div style="font-size: 8.5pt; font-style: italic; margin-top: 4px; white-space: nowrap !important;">TP. Hồ Chí Minh, <span id="pdf-date">ngày 30 tháng 10 năm 2026</span></div>
@@ -1788,10 +1807,15 @@
           <!-- Header hành chính -->
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: none;">
             <tr>
-              <td style="width: 44%; text-align: center; vertical-align: top; border: none; padding: 0;">
-                <div style="font-size: 8.5pt; font-weight: bold; text-transform: uppercase; line-height: 1.25;">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</div>
-                <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; margin-top: 2px; line-height: 1.25;">TRUNG TÂM GIÁM ĐỊNH PHÁP Y SYNAPES AUDIT</div>
-                <div style="font-size: 8pt; margin-top: 2px;">Số: <span>${cfg.code}</span></div>
+              <td style="width: 44%; text-align: left; vertical-align: top; border: none; padding: 0;">
+                <div style="display: flex; align-items: flex-start; gap: 8px;">
+                  <img src="/static/img/synapes-logo.jpg" style="height: 36px; width: 36px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; padding: 1px; flex-shrink: 0;" alt="SYNAPES Logo" />
+                  <div>
+                    <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; line-height: 1.25;">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</div>
+                    <div style="font-size: 7.5pt; font-weight: bold; text-transform: uppercase; margin-top: 1px; line-height: 1.25; color: #1e3a8a;">TRUNG TÂM GIÁM ĐỊNH PHÁP Y SYNAPES AUDIT</div>
+                    <div style="font-size: 7.5pt; margin-top: 1px;">Số: <span>${cfg.code}</span></div>
+                  </div>
+                </div>
               </td>
               <td style="width: 56%; text-align: center; vertical-align: top; border: none; padding: 0;">
                 <div style="font-size: 9pt; font-weight: bold; text-transform: uppercase; white-space: nowrap !important; letter-spacing: -0.2px; line-height: 1.25;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
