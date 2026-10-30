@@ -3,10 +3,12 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any, Dict
 from app.workers.tasks import run_full_document_scan, celery_app, plagiarism_engine
 from app.engines.ai_detector import DeepForensicAcademicAIDetector
+from app.engines.source_verifier import AcademicSourceVerificationEngine
 from app.utils.extractor import extract_document
 
 router = APIRouter()
 ai_detector = DeepForensicAcademicAIDetector()
+source_verifier = AcademicSourceVerificationEngine()
 
 class ScanSubmissionRequest(BaseModel):
     content: str = Field(..., min_length=20, description="Nội dung văn bản cần kiểm tra")
@@ -89,6 +91,9 @@ def analyze_document_content(
         "tables_findings": []
     }
 
+    # 4. Thẩm tra và Đối soát Nguồn Trích dẫn Đa tầng (3 Dạng: Thiếu kiểm chứng, Khoa học uy tín, Tổng hợp)
+    sources_audit = source_verifier.verify_sources(text, enriched_sentences)
+
     return {
         "status": "COMPLETED",
         "filename": filename or "Tài liệu học thuật",
@@ -100,6 +105,7 @@ def analyze_document_content(
         "full_text": text,
         "rendered_html": rendered_html or "", # Bảo toàn 100% hình ảnh (base64) và bảng biểu
         "structural_audit": struct,           # Thẩm định pháp y hình ảnh, sơ đồ và bảng biểu
+        "sources_verification": sources_audit, # Hệ thống trích dẫn & kiểm chứng nguồn 3 dạng
         "ai_detection": {
             "binoculars_score": ai_result["binoculars_score"],
             "is_ai_generated": ai_result["is_ai_generated"],

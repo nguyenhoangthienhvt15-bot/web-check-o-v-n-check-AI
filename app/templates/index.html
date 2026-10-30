@@ -556,6 +556,76 @@
           </div>
         </div>
 
+        <!-- Block 7: HỆ THỐNG TRÍCH DẪN & ĐỐI SOÁT NGUỒN LIÊM CHÍNH (3 DẠNG) -->
+        <div class="p-3.5 bg-[#20232A] rounded-lg border border-[#3A3F4B] space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase text-amber-300 flex items-center gap-1.5">
+              <span>📚</span> ĐỐI SOÁT NGUỒN TRÍCH DẪN (3 DẠNG)
+            </span>
+            <span id="badge-total-sources" class="text-[9px] px-1.5 py-0.5 bg-amber-950/70 text-amber-300 rounded border border-amber-700 font-mono-num">
+              0 nguồn
+            </span>
+          </div>
+
+          <!-- Dạng 1: Nguồn thiếu kiểm chứng -->
+          <div class="p-2.5 bg-[#181A1F] rounded border border-rose-900/60 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-bold text-rose-400">Dạng 1: Nguồn thiếu kiểm chứng</span>
+              <span id="badge-sources-type1" class="text-[9px] px-1.5 py-0.2 bg-rose-950 text-rose-300 rounded border border-rose-800 font-mono-num">0 nguồn</span>
+            </div>
+            <p class="text-[9.5px] text-slate-400 font-times italic leading-snug">
+              Mạng xã hội, diễn đàn, báo lá cải, blog cá nhân (Cần loại bỏ / cảnh báo).
+            </p>
+            <div class="flex gap-1.5 pt-1">
+              <button onclick="previewSourceReportPDF('type1')" class="flex-1 py-1 px-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded border border-slate-600 font-medium transition flex items-center justify-center gap-1">
+                <span>👁️</span> Đọc trước PDF
+              </button>
+              <button onclick="downloadSourceReportPDF('type1')" class="flex-1 py-1 px-1 bg-rose-900/70 hover:bg-rose-800 text-rose-100 text-[10px] rounded border border-rose-700 font-medium transition flex items-center justify-center gap-1">
+                <span>📥</span> Tải Báo cáo
+              </button>
+            </div>
+          </div>
+
+          <!-- Dạng 2: Nguồn khoa học uy tín -->
+          <div class="p-2.5 bg-[#181A1F] rounded border border-emerald-900/60 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-bold text-emerald-400">Dạng 2: Nguồn khoa học uy tín</span>
+              <span id="badge-sources-type2" class="text-[9px] px-1.5 py-0.2 bg-emerald-950 text-emerald-300 rounded border border-emerald-800 font-mono-num">0 nguồn</span>
+            </div>
+            <p class="text-[9.5px] text-slate-400 font-times italic leading-snug">
+              Google Scholar, DOI, bài báo quốc tế, tạp chí Scopus/ISI, viện nghiên cứu.
+            </p>
+            <div class="flex gap-1.5 pt-1">
+              <button onclick="previewSourceReportPDF('type2')" class="flex-1 py-1 px-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded border border-slate-600 font-medium transition flex items-center justify-center gap-1">
+                <span>👁️</span> Đọc trước PDF
+              </button>
+              <button onclick="downloadSourceReportPDF('type2')" class="flex-1 py-1 px-1 bg-emerald-900/70 hover:bg-emerald-800 text-emerald-100 text-[10px] rounded border border-emerald-700 font-medium transition flex items-center justify-center gap-1">
+                <span>📥</span> Tải Báo cáo
+              </button>
+            </div>
+          </div>
+
+          <!-- Dạng 3: Tổng hợp toàn diện mọi nguồn -->
+          <div class="p-2.5 bg-[#181A1F] rounded border border-indigo-900/60 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10.5px] font-bold text-indigo-300">Dạng 3: Ma trận tổng hợp toàn diện</span>
+              <span id="badge-sources-type3" class="text-[9px] px-1.5 py-0.2 bg-indigo-950 text-indigo-300 rounded border border-indigo-800 font-mono-num">0 nguồn</span>
+            </div>
+            <p class="text-[9.5px] text-slate-400 font-times italic leading-snug">
+              Tổng hòa tất cả các nguồn liên quan (chính thống & phi chính thống).
+            </p>
+            <div class="flex gap-1.5 pt-1">
+              <button onclick="previewSourceReportPDF('type3')" class="flex-1 py-1 px-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded border border-slate-600 font-medium transition flex items-center justify-center gap-1">
+                <span>👁️</span> Đọc trước PDF
+              </button>
+              <button onclick="downloadSourceReportPDF('type3')" class="flex-1 py-1 px-1 bg-indigo-900/70 hover:bg-indigo-800 text-indigo-100 text-[10px] rounded border border-indigo-700 font-medium transition flex items-center justify-center gap-1">
+                <span>📥</span> Tải Báo cáo
+              </button>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       <!-- Footer tác giả trên Sidebar -->
@@ -837,6 +907,37 @@
 
   </div>
 
+  <!-- ================= MODAL XEM TRƯỚC BÁO CÁO NGUỒN PDF (PDF PREVIEW MODAL) ================= -->
+  <div id="pdf-preview-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-5">
+    <div class="bg-[#1C1F26] border border-[#363A42] rounded-xl w-full max-w-4xl h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3 border-b border-[#2E3138] flex items-center justify-between bg-[#16181D]">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">📄</span>
+          <div>
+            <h3 id="preview-modal-title" class="text-sm font-bold text-slate-100 font-times">Xem trước Báo cáo Giám định Nguồn</h3>
+            <p id="preview-modal-subtitle" class="text-[11px] text-slate-400 font-times">Quy chuẩn thể thức hành chính & font 100% Times New Roman</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="preview-modal-download-btn" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold flex items-center gap-1.5 shadow transition">
+            <span>📥</span> Tải file PDF này
+          </button>
+          <button onclick="closePdfPreviewModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-bold transition">
+            ✕ Đóng
+          </button>
+        </div>
+      </div>
+      <!-- Modal Body (Preview Pages) -->
+      <div id="preview-modal-body" class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#2B2D33] flex flex-col items-center gap-6">
+        <!-- Rendered A4 preview pages will be inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER BÁO CÁO NGUỒN TRÍCH DẪN (3 DẠNG) ĐỂ XUẤT/XEM TRƯỚC -->
+  <div id="printable-source-report-container" class="hidden font-times"></div>
+
   <script>
     let globalAuditData = null;
     let currentZoom = 100;
@@ -1016,6 +1117,15 @@
       document.getElementById('m-burst').innerText = data.ai_detection.burstiness;
       document.getElementById('m-ttr').innerText = data.ai_detection.lexical_diversity;
       document.getElementById('m-bino').innerText = data.ai_detection.binoculars_score;
+
+      // Cập nhật thông tin Thẩm định Nguồn (3 Dạng)
+      if (data.sources_verification) {
+        const sv = data.sources_verification;
+        document.getElementById('badge-total-sources').innerText = `${sv.summary.total_sources} nguồn`;
+        document.getElementById('badge-sources-type1').innerText = `${sv.summary.unverified_count} nguồn`;
+        document.getElementById('badge-sources-type2').innerText = `${sv.summary.academic_count} nguồn`;
+        document.getElementById('badge-sources-type3').innerText = `${sv.summary.total_sources} nguồn`;
+      }
 
       // 3. Khởi tạo Biểu đồ Cột & Biểu đồ Miền
       renderCharts(data);
@@ -1605,6 +1715,389 @@
         pdfContainer.classList.add('hidden');
       }
     }
+
+    // ================= HỆ THỐNG TRÍCH DẪN & ĐỐI SOÁT NGUỒN (3 DẠNG) =================
+
+    function getSourceTypeConfig(type) {
+      if (type === 'type1') {
+        return {
+          title: "BIÊN BẢN ĐỐI SOÁT NGUỒN TIN THIẾU KIỂM CHỨNG",
+          subtitle: "CẢNH BÁO NGUỒN MẠNG XÃ HỘI, BÁO LÁ CẢI & BLOG CÁ NHÂN",
+          description: "(Phát hiện các luận điểm định tính, suy diễn, hoặc trích từ mạng xã hội/diễn đàn chưa qua phản biện khoa học)",
+          code: "SYN-2026/BB-NGUON-TKC",
+          filenamePrefix: "Báo cáo Nguồn Thiếu kiểm chứng Văn bản",
+          dataKey: "type1_unverified",
+          colorTheme: "#991B1B"
+        };
+      } else if (type === 'type2') {
+        return {
+          title: "BÁO CÁO THẨM ĐỊNH NGUỒN TRÍCH DẪN KHOA HỌC UY TÍN",
+          subtitle: "ĐỐI SOÁT HỌC THUẬT QUỐC TẾ (SCOPUS, IEEE, GOOGLE SCHOLAR, NATURE)",
+          description: "(Chuẩn hóa danh mục tài liệu tham khảo theo quy chuẩn học thuật quốc tế IEEE/APA)",
+          code: "SYN-2026/BB-NGUON-KHOAHOC",
+          filenamePrefix: "Báo cáo Nguồn Khoa học Học thuật Văn bản",
+          dataKey: "type2_academic",
+          colorTheme: "#065F46"
+        };
+      } else {
+        return {
+          title: "BÁO CÁO MA TRẬN NGUỒN TỔNG HỢP & LIÊM CHÍNH DỮ LIỆU",
+          subtitle: "ĐỐI CHIẾU ĐA TẦNG NGUỒN CHÍNH THỐNG VÀ PHI CHÍNH THỐNG TOÀN VĂN",
+          description: "(Đánh giá toàn diện chỉ số xác thực và phân bổ độ tin cậy thông tin trong tài liệu)",
+          code: "SYN-2026/BB-NGUON-TONGHOP",
+          filenamePrefix: "Báo cáo Ma trận Nguồn Tổng hợp Văn bản",
+          dataKey: "type3_comprehensive",
+          colorTheme: "#312E81"
+        };
+      }
+    }
+
+    function renderSourceTableRow(type, item, idx) {
+      if (type === 'type1') {
+        return `
+          <tr style="page-break-inside: avoid;">
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center; font-weight: bold;">${idx}</td>
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center; font-weight: bold;">Câu #${item.sentence_id}</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify; font-style: italic;">“${item.claim_text}”</td>
+            <td style="border: 1px solid #000; padding: 3px 4px;">
+              <strong>${item.source_title}</strong><br/>
+              <span style="font-size: 7.5pt; color: #444;">Nền tảng: ${item.source_platform} (${item.source_domain})</span>
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center;">
+              <a href="${item.source_url}" target="_blank" style="color: #991B1B; font-weight: bold; text-decoration: underline; font-size: 7.5pt;">[Xem nguồn gốc ↗]</a>
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 4px; font-size: 7.5pt; text-align: justify;">
+              <span style="color: #991B1B; font-weight: bold;">${item.credibility_rating}</span><br/>
+              ${item.risk_analysis}
+            </td>
+          </tr>
+        `;
+      } else if (type === 'type2') {
+        return `
+          <tr style="page-break-inside: avoid;">
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center; font-weight: bold;">${idx}</td>
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center; font-weight: bold;">Câu #${item.sentence_id}</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify; font-style: italic;">“${item.claim_text}”</td>
+            <td style="border: 1px solid #000; padding: 3px 4px;">
+              <strong>${item.paper_title}</strong><br/>
+              <span style="font-size: 7.5pt; color: #444;">Tác giả: ${item.authors} | ${item.journal} (${item.year})</span><br/>
+              <span style="font-size: 7pt; color: #666;">DOI: ${item.doi}</span>
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center;">
+              <a href="${item.doi_url}" target="_blank" style="color: #065F46; font-weight: bold; text-decoration: underline; font-size: 7.5pt;">[DOI Paper ↗]</a><br/>
+              <a href="${item.scholar_url}" target="_blank" style="color: #1E40AF; text-decoration: underline; font-size: 7pt;">[Scholar ↗]</a>
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 4px; font-size: 7.5pt; text-align: justify;">
+              <span style="color: #065F46; font-weight: bold;">${item.credibility_rating}</span><br/>
+              ${item.recommendation}
+            </td>
+          </tr>
+        `;
+      } else {
+        const isAcademic = (item.type === 'ACADEMIC');
+        const color = isAcademic ? '#065F46' : '#991B1B';
+        return `
+          <tr style="page-break-inside: avoid;">
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center; font-weight: bold;">${idx}</td>
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center; font-weight: bold;">Câu #${item.sentence_id}</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify; font-style: italic;">“${item.claim_text}”</td>
+            <td style="border: 1px solid #000; padding: 3px 4px;">
+              <span style="font-size: 7.5pt; font-weight: bold; color: ${color};">[${item.type_name}]</span><br/>
+              <strong>${item.source_name}</strong>
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 2px; text-align: center;">
+              <a href="${item.reference_url}" target="_blank" style="color: ${color}; font-weight: bold; text-decoration: underline; font-size: 7.5pt;">[Xem nguồn ↗]</a>
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 4px; font-size: 7.5pt; text-align: justify;">
+              <span style="color: ${color}; font-weight: bold;">${item.status}</span><br/>
+              ${item.credibility}
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderSourceSignatures() {
+      return `
+        <div style="display: flex; justify-content: space-between; margin-top: 14px; page-break-inside: avoid;">
+          <div style="text-align: center; width: 45%;">
+            <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">ĐƠN VỊ THẨM ĐỊNH ĐỘC LẬP</div>
+            <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký điện tử & Lưu trữ hồ sơ)</div>
+            <div style="height: 48px; margin: 4px auto;"></div>
+            <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">SYNAPES INTEGRITY CENTER</div>
+          </div>
+          <div style="text-align: center; width: 50%;">
+            <div style="font-weight: bold; font-size: 9pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG</div>
+            <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký, ghi rõ họ tên)</div>
+            <div style="height: 48px; margin: 4px auto; display: flex; align-items: center; justify-content: center; font-style: italic; color: #000000; font-weight: bold; font-size: 13pt;">
+              Nguyễn Hoàng Thiện
+            </div>
+            <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">KS NGUYỄN HOÀNG THIỆN</div>
+            <div style="font-weight: bold; font-size: 7.2pt; text-transform: uppercase; color: #000000; margin-top: 1px; letter-spacing: -0.15px; white-space: nowrap;">
+              TRƯỞNG BAN CHUYỂN ĐỔI SỐ VÀ TRÍ TUỆ NHÂN TẠO
+            </div>
+            <div style="font-size: 8pt; color: #000000; margin-top: 1px;">
+              Chuyên gia Pháp y Ngôn ngữ học [SYNAPES EDU]
+            </div>
+            <div style="font-size: 7.5pt; color: #333333; margin-top: 1px;">
+              Email: nguyenhoangthien.hvt.15@gmail.com
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildSourceReportHTML(type) {
+      if (!globalAuditData || !globalAuditData.sources_verification) {
+        throw new Error("Chưa có dữ liệu phân tích. Vui lòng tải tài liệu lên trước!");
+      }
+      const cfg = getSourceTypeConfig(type);
+      const data = globalAuditData;
+      const sv = data.sources_verification;
+      const items = sv[cfg.dataKey] || [];
+      const rawName = (data.filename || "Tai_lieu").replace(/\\.[^/.]+$/, "").trim();
+
+      const ITEMS_PER_PAGE = 4;
+      const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
+      let pagesHtml = '';
+
+      const page1Items = items.slice(0, ITEMS_PER_PAGE);
+      let p1Rows = '';
+      if (items.length === 0) {
+        p1Rows = `<tr><td colspan="6" style="border: 1px solid #000; padding: 16px; text-align: center; font-style: italic;">Không phát hiện nguồn tham chiếu thuộc danh mục này trong tài liệu.</td></tr>`;
+      } else {
+        page1Items.forEach((item, idx) => {
+          p1Rows += renderSourceTableRow(type, item, idx + 1);
+        });
+      }
+
+      pagesHtml += `
+        <div class="pdf-section-page" style="width: 710px; max-width: 710px; box-sizing: border-box; padding: 12px 14px; background: #FFFFFF; font-family: 'Times New Roman', Times, serif; color: #000000; font-size: 9pt; margin: 0 auto 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+          <!-- Header hành chính -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: none;">
+            <tr>
+              <td style="width: 44%; text-align: center; vertical-align: top; border: none; padding: 0;">
+                <div style="font-size: 8.5pt; font-weight: bold; text-transform: uppercase; line-height: 1.25;">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</div>
+                <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; margin-top: 2px; line-height: 1.25;">TRUNG TÂM GIÁM ĐỊNH PHÁP Y SYNAPES AUDIT</div>
+                <div style="font-size: 8pt; margin-top: 2px;">Số: <span>${cfg.code}</span></div>
+              </td>
+              <td style="width: 56%; text-align: center; vertical-align: top; border: none; padding: 0;">
+                <div style="font-size: 9pt; font-weight: bold; text-transform: uppercase; white-space: nowrap !important; letter-spacing: -0.2px; line-height: 1.25;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                <div style="font-size: 9.5pt; font-weight: bold; margin-top: 2px; white-space: nowrap !important;">Độc lập – Tự do – Hạnh phúc</div>
+                <div style="font-size: 8.5pt; font-style: italic; margin-top: 4px; white-space: nowrap !important;">TP. Hồ Chí Minh, ngày 30 tháng 10 năm 2026</div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Tiêu đề văn bản -->
+          <div style="text-align: center; margin: 12px 0 10px 0;">
+            <h1 style="font-size: 12pt; font-weight: bold; text-transform: uppercase; margin: 0; line-height: 1.3; color: #000000;">
+              ${cfg.title}
+            </h1>
+            <div style="font-size: 9pt; font-weight: bold; margin-top: 2px; text-transform: uppercase; color: #000000;">
+              ${cfg.subtitle}
+            </div>
+            <p style="font-size: 8pt; font-style: italic; color: #333333; margin-top: 2px;">
+              ${cfg.description}
+            </p>
+          </div>
+
+          <!-- I. Căn cứ Thẩm tra -->
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; font-size: 9pt;">
+              I. CĂN CỨ THẨM TRA & ĐỐI SOÁT NGUỒN TRÍCH DẪN
+            </div>
+            <p style="margin: 2px 0; text-align: justify; line-height: 1.35; font-size: 8.5pt;">
+              - Căn cứ Tiêu chuẩn Liêm chính Học thuật Quốc gia và Quy chuẩn Trích dẫn Tài liệu Tham khảo Khoa học;<br/>
+              - Căn cứ cơ sở dữ liệu đối sánh xuất bản quốc tế (CrossRef DOI, Google Scholar, Semantic Scholar API);<br/>
+              - Căn cứ bộ máy bóc tách mệnh đề sự kiện và phân tích độ tin cậy nguồn tin tự động SYNAPES SOURCE ENGINE.
+            </p>
+          </div>
+
+          <!-- II. Thông tin Hồ sơ Tài liệu & Chỉ số Nguồn -->
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; font-size: 9pt;">
+              II. THÔNG TIN TÀI LIỆU & CHỈ SỐ XÁC THỰC
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 8.5pt; border: 1px solid #000; margin-bottom: 4px;">
+              <tr style="background-color: #F8FAFC;">
+                <td style="border: 1px solid #000; padding: 3px 5px; font-weight: bold; width: 25%;">Tên tài liệu:</td>
+                <td style="border: 1px solid #000; padding: 3px 5px; width: 75%;">${rawName}</td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid #000; padding: 3px 5px; font-weight: bold;">Quy mô văn bản:</td>
+                <td style="border: 1px solid #000; padding: 3px 5px;">${data.total_words} từ • ${data.total_sentences} câu • ${data.total_characters} ký tự</td>
+              </tr>
+              <tr style="background-color: #F8FAFC;">
+                <td style="border: 1px solid #000; padding: 3px 5px; font-weight: bold;">Chỉ số xác thực nguồn:</td>
+                <td style="border: 1px solid #000; padding: 3px 5px; font-weight: bold;">
+                  Verification Index: ${sv.summary.verification_index}% (${sv.summary.academic_count}/${sv.summary.total_sources} nguồn học thuật uy tín) — ${sv.summary.status}
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- III. Bảng ma trận đối soát (Đợt 1) -->
+          <div style="margin-bottom: 8px;">
+            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 4px; font-size: 9pt; display: flex; justify-content: space-between;">
+              <span>III. BẢNG ĐỐI SOÁT CHI TIẾT TỪNG NGUỒN THAM CHIẾU</span>
+              <span style="font-size: 8pt; font-style: italic; font-weight: normal;">(Trang 1/${totalPages} • ${items.length} nguồn rà soát)</span>
+            </div>
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 8pt; border: 1px solid #000;">
+              <thead>
+                <tr style="background-color: #F1F5F9; font-weight: bold; text-align: center;">
+                  <th style="border: 1px solid #000; padding: 3px 2px; width: 5%;">STT</th>
+                  <th style="border: 1px solid #000; padding: 3px 2px; width: 10%;">Vị trí</th>
+                  <th style="border: 1px solid #000; padding: 3px 4px; width: 30%;">Nội dung trích lục trong bài</th>
+                  <th style="border: 1px solid #000; padding: 3px 4px; width: 25%;">Nguồn gốc / Bài báo tham chiếu</th>
+                  <th style="border: 1px solid #000; padding: 3px 3px; width: 12%;">Liên kết</th>
+                  <th style="border: 1px solid #000; padding: 3px 4px; width: 18%;">Đánh giá & Khuyến nghị</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${p1Rows}
+              </tbody>
+            </table>
+          </div>
+
+          ${totalPages === 1 ? renderSourceSignatures() : ''}
+        </div>
+      `;
+
+      for (let p = 1; p < totalPages; p++) {
+        const chunk = items.slice(p * ITEMS_PER_PAGE, (p + 1) * ITEMS_PER_PAGE);
+        let pRows = '';
+        chunk.forEach((item, idxInChunk) => {
+          const globalIdx = p * ITEMS_PER_PAGE + idxInChunk + 1;
+          pRows += renderSourceTableRow(type, item, globalIdx);
+        });
+
+        const isLastPage = (p === totalPages - 1);
+
+        pagesHtml += `
+          <div class="pdf-section-page" style="width: 710px; max-width: 710px; box-sizing: border-box; padding: 12px 14px; background: #FFFFFF; font-family: 'Times New Roman', Times, serif; color: #000000; font-size: 9pt; margin: 0 auto 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 6px; font-size: 9pt; display: flex; justify-content: space-between;">
+              <span>III. BẢNG ĐỐI SOÁT CHI TIẾT TỪNG NGUỒN THAM CHIẾU (TIẾP THEO)</span>
+              <span style="font-size: 8pt; font-style: italic; font-weight: normal;">(Trang ${p + 1}/${totalPages})</span>
+            </div>
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 8pt; border: 1px solid #000; margin-bottom: 8px;">
+              <thead>
+                <tr style="background-color: #F1F5F9; font-weight: bold; text-align: center;">
+                  <th style="border: 1px solid #000; padding: 3px 2px; width: 5%;">STT</th>
+                  <th style="border: 1px solid #000; padding: 3px 2px; width: 10%;">Vị trí</th>
+                  <th style="border: 1px solid #000; padding: 3px 4px; width: 30%;">Nội dung trích lục trong bài</th>
+                  <th style="border: 1px solid #000; padding: 3px 4px; width: 25%;">Nguồn gốc / Bài báo tham chiếu</th>
+                  <th style="border: 1px solid #000; padding: 3px 3px; width: 12%;">Liên kết</th>
+                  <th style="border: 1px solid #000; padding: 3px 4px; width: 18%;">Đánh giá & Khuyến nghị</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pRows}
+              </tbody>
+            </table>
+
+            ${isLastPage ? renderSourceSignatures() : ''}
+          </div>
+        `;
+      }
+
+      return pagesHtml;
+    }
+
+    window.previewSourceReportPDF = function(type) {
+      if (!globalAuditData || !globalAuditData.sources_verification) {
+        alert("Vui lòng tải tệp văn bản lên trước để hệ thống tiến hành đối soát nguồn!");
+        return;
+      }
+      try {
+        const cfg = getSourceTypeConfig(type);
+        const html = buildSourceReportHTML(type);
+        const modal = document.getElementById('pdf-preview-modal');
+        const modalBody = document.getElementById('preview-modal-body');
+        document.getElementById('preview-modal-title').innerText = `Xem trước: ${cfg.title}`;
+        document.getElementById('preview-modal-subtitle').innerText = `${cfg.subtitle} • 100% Font Times New Roman`;
+        
+        modalBody.innerHTML = html;
+        
+        const dlBtn = document.getElementById('preview-modal-download-btn');
+        dlBtn.onclick = () => downloadSourceReportPDF(type);
+
+        modal.classList.remove('hidden');
+      } catch (e) {
+        alert("Lỗi khi mở bản xem trước: " + e.message);
+      }
+    };
+
+    window.closePdfPreviewModal = function() {
+      document.getElementById('pdf-preview-modal').classList.add('hidden');
+    };
+
+    window.downloadSourceReportPDF = async function(type) {
+      if (!globalAuditData || !globalAuditData.sources_verification) {
+        alert("Vui lòng tải tệp văn bản lên trước để hệ thống xuất báo cáo!");
+        return;
+      }
+
+      const cfg = getSourceTypeConfig(type);
+      const data = globalAuditData;
+      const rawName = (data.filename || "Tai_lieu").replace(/\\.[^/.]+$/, "").trim();
+      const sanitizedName = rawName.replace(/[\\\\/:*?\"<>|]/g, '');
+      const downloadFilename = `${cfg.filenamePrefix} ${sanitizedName} SYNAPES EDU.pdf`;
+
+      const sourceContainer = document.getElementById('printable-source-report-container');
+      sourceContainer.innerHTML = buildSourceReportHTML(type);
+      sourceContainer.classList.remove('hidden');
+
+      try {
+        const pages = sourceContainer.querySelectorAll('.pdf-section-page');
+        let jsPDFConstructor = null;
+        if (window.jspdf && typeof window.jspdf.jsPDF === 'function') {
+          jsPDFConstructor = window.jspdf.jsPDF;
+        } else if (typeof window.jsPDF === 'function') {
+          jsPDFConstructor = window.jsPDF;
+        }
+
+        if (jsPDFConstructor && typeof window.html2canvas === 'function') {
+          const pdf = new jsPDFConstructor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+          for (let i = 0; i < pages.length; i++) {
+            const pageEl = pages[i];
+            const canvas = await window.html2canvas(pageEl, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#FFFFFF',
+              windowWidth: 710
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            const imgWidth = 190;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            if (i > 0) pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+          }
+
+          pdf.save(downloadFilename);
+        } else if (typeof html2pdf !== 'undefined') {
+          const opt = {
+            margin: [10, 10, 10, 10],
+            filename: downloadFilename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, windowWidth: 710 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+          await html2pdf().set(opt).from(sourceContainer).save();
+        } else {
+          throw new Error("Không tìm thấy bộ thư viện render PDF.");
+        }
+      } catch (err) {
+        console.error("Lỗi xuất PDF nguồn:", err);
+        alert("Lỗi khi xuất PDF nguồn: " + err.message);
+      } finally {
+        sourceContainer.classList.add('hidden');
+      }
+    };
 
     // ================= OCEAN WAVE HIGH-GRAPHICS SHADER ANIMATION =================
     let oceanAnimationId = null;
