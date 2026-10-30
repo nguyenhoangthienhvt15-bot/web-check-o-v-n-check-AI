@@ -79,9 +79,9 @@
       pointer-events: none;
       z-index: 0;
       background: 
-        linear-gradient(180deg, rgba(var(--rgb-1), 0.055) 0%, rgba(var(--rgb-2), 0.015) 100%),
-        linear-gradient(270deg, rgba(var(--rgb-2), 0.05) 0%, rgba(var(--rgb-3), 0.01) 100%);
-      transition: background 1s linear;
+        linear-gradient(180deg, rgba(var(--rgb-1), 0.14) 0%, rgba(var(--rgb-2), 0.04) 100%),
+        linear-gradient(270deg, rgba(var(--rgb-2), 0.12) 0%, rgba(var(--rgb-3), 0.02) 100%);
+      transition: background 1s ease-in-out;
     }
 
     /* Dải ruy-băng viền chuyển màu RGB trên đỉnh đầu trang */
@@ -89,7 +89,7 @@
       height: 2.5px;
       width: 100%;
       background: linear-gradient(90deg, rgb(var(--rgb-1)), rgb(var(--rgb-2)), rgb(var(--rgb-3)));
-      transition: background 1s linear;
+      transition: background 1s ease-in-out;
     }
 
     /* Thanh điều hướng Topbar */
@@ -100,10 +100,19 @@
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
     }
 
+    /* Vùng nền phía sau giao diện chính: Đổi màu theo cơ chế RGB từ trên xuống dưới & từ phải sang trái */
+    .main-viewport {
+      background: 
+        linear-gradient(180deg, rgba(var(--rgb-1), 0.16) 0%, rgba(var(--rgb-2), 0.05) 100%),
+        linear-gradient(270deg, rgba(var(--rgb-2), 0.14) 0%, rgba(var(--rgb-3), 0.02) 100%),
+        #F8FAFC !important;
+      transition: background 1s ease-in-out;
+    }
+
     /* Trang giấy hiển thị tài liệu chuẩn A4 */
     .drive-paper-page {
       background: #FFFFFF !important;
-      box-shadow: 0 10px 35px -5px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+      box-shadow: 0 10px 35px -5px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
       color: #0F172A !important;
     }
 
@@ -126,9 +135,6 @@
     }
     .pm-muted-text {
       color: #64748B !important;
-    }
-    .main-viewport {
-      background-color: transparent !important;
     }
 
     /* Highlight văn bản học thuật trên Paper */
@@ -228,26 +234,20 @@
     </div>
 
     <!-- Center: View Mode Switcher (Clean Light Segmented Control) -->
-    <div class="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-medium shadow-2xs">
-      <button id="btn-view-rich" onclick="switchDocumentView('rich')" class="px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80">
+    <div class="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs font-medium shadow-2xs shrink-0">
+      <button id="btn-view-rich" onclick="switchDocumentView('rich')" class="px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80 whitespace-nowrap">
         <span>📄</span> Văn bản gốc
       </button>
-      <button id="btn-view-sentences" onclick="switchDocumentView('sentences')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50">
-        <span>🔬</span> Pháp y từng câu <span id="total-sent-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700">0</span>
+      <button id="btn-view-sentences" onclick="switchDocumentView('sentences')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
+        <span>🔬</span> Pháp y từng câu <span id="total-sent-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold">0</span>
       </button>
-      <button id="btn-view-media" onclick="switchDocumentView('media')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50">
-        <span>🖼️</span> Sơ đồ & Bảng <span id="total-media-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700">0</span>
+      <button id="btn-view-media" onclick="switchDocumentView('media')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
+        <span>🖼️</span> Sơ đồ & Bảng <span id="total-media-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold">0</span>
       </button>
     </div>
 
-    <!-- Right: Dynamic RGB Clock & Action Buttons -->
-    <div class="flex items-center gap-2.5">
-      <!-- Live Dynamic RGB Indicator (86,400s / Day Clock) -->
-      <div class="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-mono-num text-slate-600 shadow-2xs" title="Cơ chế chuyển màu RGB ngẫu nhiên 86.400 giây/ngày (cứ mỗi giây 1 mã màu RGB mới)">
-        <span id="rgb-live-dot" class="w-2.5 h-2.5 rounded-full shadow-2xs transition-colors duration-1000" style="background-color: #3b82f6;"></span>
-        <span id="rgb-live-text">Giây 0/86.400 • RGB(59, 130, 246)</span>
-      </div>
-
+    <!-- Right: Zoom & Action Buttons (Cơ chế RGB chạy ngầm toàn hệ thống) -->
+    <div class="flex items-center gap-2.5 shrink-0">
       <!-- Zoom controls -->
       <div class="hidden lg:flex items-center bg-slate-100 rounded-lg border border-slate-200 p-0.5 text-xs text-slate-700 font-mono-num">
         <button onclick="adjustZoom(-10)" class="px-2 py-0.5 hover:bg-white rounded hover:shadow-2xs transition font-bold text-slate-500 hover:text-slate-900">-</button>
@@ -256,12 +256,12 @@
       </div>
 
       <!-- Tải báo cáo PDF chính (Clean Light Secondary Button) -->
-      <button id="btn-download-pdf" onclick="downloadOfficialTimesNewRomanReportPDF()" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:border-slate-400">
+      <button id="btn-download-pdf" onclick="downloadOfficialTimesNewRomanReportPDF()" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:border-slate-400 whitespace-nowrap">
         <span>📥</span> Tải Báo cáo PDF
       </button>
 
       <!-- Nút tải tệp mới (Dynamic RGB Gradient Primary CTA) -->
-      <button onclick="showUploadModal()" id="btn-upload-cta" class="px-4 py-1.5 rounded-lg text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:opacity-95" style="background: linear-gradient(135deg, rgb(59, 130, 246), rgb(99, 102, 241));">
+      <button onclick="showUploadModal()" id="btn-upload-cta" class="px-4 py-1.5 rounded-lg text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:opacity-95 whitespace-nowrap" style="background: linear-gradient(135deg, rgb(59, 130, 246), rgb(99, 102, 241));">
         <span>⬆</span> Tải tệp mới
       </button>
     </div>
@@ -854,11 +854,11 @@
       const now = new Date();
       const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
       
-      // Chuyển đổi 86.400 giây thành các góc quang phổ ánh sáng hài hòa
-      const baseHue = ((sec * 360) / 86400 * 3) % 360; // Quét phổ êm dịu
-      const hue1 = (baseHue + 215) % 360; // Màu chủ đạo (Top -> Bottom)
-      const hue2 = (hue1 + 45) % 360;    // Màu chuyển tiếp (Phải -> Trái)
-      const hue3 = (hue1 + 130) % 360;   // Màu điểm nhấn (Accent)
+      // Cơ chế 86.400 giây/ngày: Mỗi giây sinh ngẫu nhiên một mã màu RGB theo góc vàng Golden Ratio (137.508 độ)
+      // Chạy ngầm 100% để biến đổi không gian màu toàn bộ trang web
+      const hue1 = (sec * 137.508) % 360; 
+      const hue2 = (hue1 + 55) % 360;    // Màu chuyển tiếp từ Phải sang Trái (270deg)
+      const hue3 = (hue1 + 140) % 360;   // Màu điểm xuyết viền đỉnh trang
 
       const rgb1 = hslToRgb(hue1, 0.72, 0.48);
       const rgb2 = hslToRgb(hue2, 0.68, 0.52);
@@ -869,16 +869,10 @@
       root.style.setProperty('--rgb-2', `${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}`);
       root.style.setProperty('--rgb-3', `${rgb3[0]}, ${rgb3[1]}, ${rgb3[2]}`);
 
-      // Cập nhật chỉ số hiển thị thời gian thực trên thanh Menu
-      const dot = document.getElementById('rgb-live-dot');
-      const text = document.getElementById('rgb-live-text');
+      // Cập nhật dải viền trang trí và nút CTA
       const stripe = document.getElementById('top-rgb-stripe');
       const ctaBtn = document.getElementById('btn-upload-cta');
 
-      if (dot) dot.style.backgroundColor = `rgb(${rgb1[0]}, ${rgb1[1]}, ${rgb1[2]})`;
-      if (text) {
-        text.innerHTML = `<span class="text-slate-400 font-mono">Giây ${sec.toLocaleString('vi-VN')}/86.400:</span> <strong style="color: rgb(${rgb1[0]}, ${rgb1[1]}, ${rgb1[2]})">RGB(${rgb1.join(', ')})</strong>`;
-      }
       if (stripe) {
         stripe.style.background = `linear-gradient(90deg, rgb(${rgb1.join(',')}), rgb(${rgb2.join(',')}), rgb(${rgb3.join(',')}))`;
       }
@@ -917,10 +911,10 @@
       // Reset button styles to clean light inactive
       [btnRich, btnSent, btnMedia].forEach(btn => {
         if (!btn) return;
-        btn.className = "px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50";
+        btn.className = "px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap";
       });
 
-      const activeClass = "px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80";
+      const activeClass = "px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80 whitespace-nowrap";
 
       if (mode === 'rich') {
         btnRich.className = activeClass;
