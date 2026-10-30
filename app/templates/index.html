@@ -7,7 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js cho Biểu đồ Cột và Biểu đồ Miền 5 Trục Pháp y -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Thư viện xuất bản PDF chuẩn học thuật -->
+  <!-- Thư viện xuất bản PDF độc lập từng trang A4 chuẩn học thuật -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- KaTeX hỗ trợ biên dịch công thức toán học học thuật chuẩn xác (GitHub: KaTeX/KaTeX) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -817,7 +819,7 @@
             Nguyễn Hoàng Thiện
           </div>
           <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">KS NGUYỄN HOÀNG THIỆN</div>
-          <div style="font-weight: bold; font-size: 8pt; text-transform: uppercase; color: #000000; margin-top: 1px; white-space: nowrap;">
+          <div style="font-weight: bold; font-size: 7.2pt; text-transform: uppercase; color: #000000; margin-top: 1px; letter-spacing: -0.15px; white-space: nowrap;">
             TRƯỞNG BAN CHUYỂN ĐỔI SỐ VÀ TRÍ TUỆ NHÂN TẠO
           </div>
           <div style="font-size: 8pt; color: #000000; margin-top: 1px;">
@@ -1548,33 +1550,55 @@
         // NÂNG CẤP ĐỘT PHÁ: RENDER ĐỘC LẬP TỪNG TRANG A4 (Page-by-page Discrete Canvas)
         // Loại bỏ 100% lỗi cắt đôi chữ/hàng, lệch đề mục hoặc tràn viền phải do trôi canvas
         const pages = pdfContainer.querySelectorAll('.pdf-section-page');
-        const jsPDFClass = window.jsPDF || (window.jspdf && window.jspdf.jsPDF);
-        const pdf = new jsPDFClass({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-
-        for (let i = 0; i < pages.length; i++) {
-          const pageEl = pages[i];
-          
-          const canvas = await html2canvas(pageEl, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#FFFFFF',
-            windowWidth: 710
-          });
-
-          const imgData = canvas.toDataURL('image/jpeg', 0.98);
-          const imgWidth = 190; // Vừa vặn hoàn hảo trong 210mm A4 (lề trái 10mm, lề phải 10mm)
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-          if (i > 0) {
-            pdf.addPage();
-          }
-
-          // Căn lề chuẩn mực: X = 10mm, Y = 10mm
-          pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+        
+        let jsPDFConstructor = null;
+        if (window.jspdf && typeof window.jspdf.jsPDF === 'function') {
+          jsPDFConstructor = window.jspdf.jsPDF;
+        } else if (typeof window.jsPDF === 'function') {
+          jsPDFConstructor = window.jsPDF;
         }
 
-        pdf.save(downloadFilename);
+        if (jsPDFConstructor && typeof window.html2canvas === 'function') {
+          const pdf = new jsPDFConstructor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+          for (let i = 0; i < pages.length; i++) {
+            const pageEl = pages[i];
+            
+            const canvas = await window.html2canvas(pageEl, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: '#FFFFFF',
+              windowWidth: 710
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            const imgWidth = 190; // Vừa vặn hoàn hảo trong 210mm A4 (lề trái 10mm, lề phải 10mm)
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            if (i > 0) {
+              pdf.addPage();
+            }
+
+            // Căn lề chuẩn mực: X = 10mm, Y = 10mm
+            pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+          }
+
+          pdf.save(downloadFilename);
+        } else if (typeof html2pdf !== 'undefined') {
+          // Fallback dự phòng tự động
+          const opt = {
+            margin: [10, 10, 10, 10],
+            filename: downloadFilename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, windowWidth: 710 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+          };
+          await html2pdf().set(opt).from(pdfContainer).save();
+        } else {
+          throw new Error("Không tìm thấy bộ thư viện render PDF (jsPDF/html2canvas). Vui lòng thử tải lại trang.");
+        }
       } catch (err) {
         console.error("Lỗi xuất PDF độc lập từng trang:", err);
         alert("Lỗi khi xuất PDF: " + err.message);
