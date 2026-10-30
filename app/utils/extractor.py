@@ -1,8 +1,79 @@
 import io
 import re
+import zipfile
+import xml.etree.ElementTree as ET
 from typing import Tuple, Dict, Any, List
 import mammoth
 from pypdf import PdfReader
+from app.utils.omml_latex import omml_to_latex, enhance_plain_text_math
+from app.services.mcp_latex_bridge import mcp_math_bridge
+
+def convert_omml_in_xml(xml_bytes: bytes) -> bytes:
+    """
+    Chuyển đổi toàn bộ các thẻ công thức toán học Word (m:oMath, m:oMathPara)
+    thành các đoạn văn bản chuẩn LaTeX ($...$ hoặc $$...$$) bên trong file XML.
+    """
+    try:
+        root = ET.fromstring(xml_bytes)
+        ns = {
+            'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
+            'm': 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+        }
+        
+        # 1. Chuyển đổi khối công thức độc lập (Display Math: m:oMathPara)
+        for para in root.findall('.//m:oMathPara', ns):
+            math_parts = []
+            for omath in para.findall('.//m:oMath', ns):
+                l = omml_to_latex(omath, display_mode=True)
+                if l:
+                    math_parts.append(l)
+            if math_parts:
+                combined_latex = " ".join(math_parts)
+                t = ET.Element(f'{{{ns["w"]}}}t')
+                t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+                t.text = f" {combined_latex} "
+                para.clear()
+                para.tag = f'{{{ns["w"]}}}r'
+                para.append(t)
+                
+        # 2. Chuyển đổi công thức toán nội dòng (Inline Math: m:oMath)
+        for omath in root.findall('.//m:oMath', ns):
+            l = omml_to_latex(omath, display_mode=False)
+            if l:
+                t = ET.Element(f'{{{ns["w"]}}}t')
+                t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+                t.text = f" {l} "
+                omath.clear()
+                omath.tag = f'{{{ns["w"]}}}r'
+                omath.append(t)
+                
+        return ET.tostring(root, encoding='utf-8')
+    except Exception as e:
+        print(f"Lỗi phân tích XML document: {e}")
+        return xml_bytes
+
+def preprocess_docx_math(file_bytes: bytes) -> bytes:
+    """
+    Tiền xử lý file DOCX trong bộ nhớ:
+    Giải nén, chuyển đổi công thức toán sang chuẩn LaTeX, sau đó đóng gói lại.
+    """
+    try:
+        in_buf = io.BytesIO(file_bytes)
+        if not zipfile.is_zipfile(in_buf):
+            return file_bytes
+            
+        out_buf = io.BytesIO()
+        with zipfile.ZipFile(in_buf, 'r') as zin, zipfile.ZipFile(out_buf, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
+            for item in zin.infolist():
+                data = zin.read(item.filename)
+                if item.filename == 'word/document.xml':
+                    data = convert_omml_in_xml(data)
+                zout.writestr(item, data)
+                
+        return out_buf.getvalue()
+    except Exception as e:
+        print(f"Lỗi tiền xử lý OMML sang LaTeX: {e}")
+        return file_bytes
 
 def audit_media_and_tables(rendered_html: str, raw_text: str) -> Dict[str, Any]:
     """
@@ -78,13 +149,22 @@ def extract_document(filename: str, file_bytes: bytes) -> Tuple[str, str, Dict[s
     ext = filename.lower().split('.')[-1]
     
     if ext in ['docx', 'doc']:
-        # Dùng mammoth để chuyển docx sang HTML bảo toàn 100% hình ảnh (base64) và bảng biểu
-        html_result = mammoth.convert_to_html(io.BytesIO(file_bytes))
+        # 1. Tiền xử lý công thức toán học từ Word OMML sang chuẩn LaTeX học thuật ($...$, $$...$$)
+        processed_bytes = preprocess_docx_math(file_bytes)
+
+        # 2. Dùng mammoth để chuyển docx sang HTML bảo toàn 100% hình ảnh (base64) và bảng biểu
+        html_result = mammoth.convert_to_html(io.BytesIO(processed_bytes))
         rendered_html = html_result.value
         
-        text_result = mammoth.extract_raw_text(io.BytesIO(file_bytes))
+        text_result = mammoth.extract_raw_text(io.BytesIO(processed_bytes))
         raw_text = text_result.value.strip()
+        
+        # 3. Phục hồi biểu thức toán học và tách từ tiếng Việt dính biến
+        rendered_html = enhance_plain_text_math(rendered_html)
+        raw_text = enhance_plain_text_math(raw_text)
+
         structural_audit = audit_media_and_tables(rendered_html, raw_text)
+        structural_audit["math_audit"] = mcp_math_bridge.audit_math_density(raw_text)
         return rendered_html, raw_text, structural_audit
         
     elif ext == 'pdf':
@@ -93,16 +173,21 @@ def extract_document(filename: str, file_bytes: bytes) -> Tuple[str, str, Dict[s
         for idx, page in enumerate(reader.pages):
             t = page.extract_text()
             if t:
+                t = enhance_plain_text_math(t)
                 pages_text.append(f"<div class='pdf-page-marker' data-page='{idx+1}'></div>" + t)
         raw_text = "\n\n".join([page.extract_text() or "" for page in reader.pages]).strip()
+        raw_text = enhance_plain_text_math(raw_text)
         rendered_html = "<div class='pdf-rendered-body'>" + "<hr class='my-8 border-dashed border-zinc-300'>".join(pages_text) + "</div>"
         structural_audit = audit_media_and_tables(rendered_html, raw_text)
+        structural_audit["math_audit"] = mcp_math_bridge.audit_math_density(raw_text)
         return rendered_html, raw_text, structural_audit
         
     elif ext in ['txt', 'md']:
         raw_text = file_bytes.decode('utf-8', errors='ignore').strip()
+        raw_text = enhance_plain_text_math(raw_text)
         rendered_html = f"<div class='whitespace-pre-wrap font-times text-base'>{raw_text}</div>"
         structural_audit = audit_media_and_tables(rendered_html, raw_text)
+        structural_audit["math_audit"] = mcp_math_bridge.audit_math_density(raw_text)
         return rendered_html, raw_text, structural_audit
         
     else:
