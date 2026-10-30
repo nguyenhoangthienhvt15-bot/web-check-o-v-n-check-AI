@@ -72,55 +72,49 @@
       font-family: var(--font-mono);
     }
 
-    /* Lớp phủ chuyển màu RGB từ trên xuống dưới (180deg) và từ phải sang trái (270deg) */
-    #rgb-dynamic-bg {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      background: 
-        linear-gradient(180deg, rgba(var(--rgb-1), 0.14) 0%, rgba(var(--rgb-2), 0.04) 100%),
-        linear-gradient(270deg, rgba(var(--rgb-2), 0.12) 0%, rgba(var(--rgb-3), 0.02) 100%);
-      transition: background 1s ease-in-out;
-    }
-
-    /* Dải ruy-băng viền chuyển màu RGB trên đỉnh đầu trang */
-    #top-rgb-stripe {
-      height: 2.5px;
-      width: 100%;
-      background: linear-gradient(90deg, rgb(var(--rgb-1)), rgb(var(--rgb-2)), rgb(var(--rgb-3)));
-      transition: background 1s ease-in-out;
-    }
-
-    /* Thanh điều hướng Topbar */
+    /* Thanh điều hướng Topbar: Trắng thuần khiết 100%, không dính màu nền */
     header {
-      background-color: rgba(255, 255, 255, 0.96) !important;
+      background-color: #FFFFFF !important;
       border-color: #E2E8F0 !important;
       color: #0F172A !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      position: relative;
+      z-index: 30;
     }
 
-    /* Vùng nền phía sau giao diện chính: Đổi màu theo cơ chế RGB từ trên xuống dưới & từ phải sang trái */
+    /* Vùng làm việc chính: Chứa không gian canvas phía sau tài liệu */
     .main-viewport {
-      background: 
-        linear-gradient(180deg, rgba(var(--rgb-1), 0.16) 0%, rgba(var(--rgb-2), 0.05) 100%),
-        linear-gradient(270deg, rgba(var(--rgb-2), 0.14) 0%, rgba(var(--rgb-3), 0.02) 100%),
-        #F8FAFC !important;
-      transition: background 1s ease-in-out;
+      background-color: #F1F5F9 !important;
+      position: relative;
     }
 
-    /* Trang giấy hiển thị tài liệu chuẩn A4 */
+    /* Lớp nền RGB ĐỘC QUYỀN phía sau tài liệu: Chuyển màu 1 phút/lần, biến mất dần rồi mới hiện màu mới */
+    #canvas-rgb-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Trang giấy hiển thị tài liệu: BẢO VỆ 100% NỀN TRẮNG TINH KHÔI CHUẨN A4 */
     .drive-paper-page {
+      background-color: #FFFFFF !important;
       background: #FFFFFF !important;
-      box-shadow: 0 10px 35px -5px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 10px 40px -5px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
       color: #0F172A !important;
     }
 
-    /* Bảng điều khiển phân tích & Sidebar */
+    /* Bảng điều khiển phân tích & Sidebar: Trắng thuần khiết 100% */
     aside {
       background-color: #FFFFFF !important;
       border-color: #E2E8F0 !important;
       color: #0F172A !important;
+      position: relative;
+      z-index: 20;
     }
     .pm-card {
       background-color: #FFFFFF !important;
@@ -197,13 +191,7 @@
     }
   </style>
 </head>
-<body class="theme-light h-screen flex flex-col overflow-hidden relative">
-
-  <!-- Ambient Dynamic RGB Background (Chuyển màu kép: Trên xuống Dưới & Phải sang Trái) -->
-  <div id="rgb-dynamic-bg"></div>
-
-  <!-- Viền màu RGB Dynamic trên đỉnh trang (86.400 giây/ngày) -->
-  <div id="top-rgb-stripe" class="shrink-0 z-30"></div>
+<body class="theme-light h-screen flex flex-col overflow-hidden relative bg-[#F8FAFC]">
 
   <!-- ================= TOPBAR (PAPERMARK MINIMAL LIGHT HEADER) ================= -->
   <header class="h-[60px] border-b border-slate-200/90 shrink-0 flex items-center justify-between px-4 sm:px-6 z-20 bg-white/95 backdrop-blur-md">
@@ -272,12 +260,15 @@
   <div class="flex-1 flex overflow-hidden">
     
     <!-- LEFT: DOCUMENT VIEWER CANVAS (PAPERMARK STYLE) -->
-    <main class="flex-1 main-viewport overflow-y-auto p-4 sm:p-8 flex justify-center">
+    <main class="flex-1 main-viewport overflow-y-auto p-4 sm:p-8 flex justify-center relative">
       
+      <!-- LỚP NỀN RGB PHÍA SAU GIAO DIỆN CHÍNH (CHUYỂN MÀU 1 PHÚT/LẦN, MÀU CŨ BIẾN MẤT RỒI MỚI ĐẾN MÀU MỚI) -->
+      <div id="canvas-rgb-bg" class="absolute inset-0 pointer-events-none"></div>
+
       <div 
         id="drive-paper-container" 
-        style="width: 820px; transform-origin: top center;"
-        class="drive-paper-page rounded-lg p-12 sm:p-16 min-h-[1100px] transition-transform duration-150"
+        style="width: 820px; transform-origin: top center; background-color: #FFFFFF !important;"
+        class="drive-paper-page rounded-lg p-12 sm:p-16 min-h-[1100px] transition-transform duration-150 relative z-10"
       >
         <!-- Document Header Meta -->
         <div class="border-b border-slate-200 pb-4 mb-8 flex items-center justify-between font-times text-xs text-slate-500">
@@ -850,39 +841,69 @@
       return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
     }
 
-    function updateDynamicRGBPalette() {
-      const now = new Date();
-      const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      
-      // Cơ chế 86.400 giây/ngày: Mỗi giây sinh ngẫu nhiên một mã màu RGB theo góc vàng Golden Ratio (137.508 độ)
-      // Chạy ngầm 100% để biến đổi không gian màu toàn bộ trang web
-      const hue1 = (sec * 137.508) % 360; 
-      const hue2 = (hue1 + 55) % 360;    // Màu chuyển tiếp từ Phải sang Trái (270deg)
-      const hue3 = (hue1 + 140) % 360;   // Màu điểm xuyết viền đỉnh trang
+    // --- THUẬT TOÁN HỆ MÀU RGB DYNAMIC 1 PHÚT/LẦN (1.440 PHÚT/NGÀY) ---
+    // Hiệu ứng: Màu cũ dần biến mất (fade-out 1.5s), sau đó màu mới mới dần xuất hiện (fade-in 1.5s)
+    // Chỉ phủ lên nền phía sau giao diện (.main-viewport), không ảnh hưởng Topbar, Sidebar hay Giấy A4
+    let currentMinuteIndex = -1;
+    let isTransitioningRGB = false;
 
-      const rgb1 = hslToRgb(hue1, 0.72, 0.48);
-      const rgb2 = hslToRgb(hue2, 0.68, 0.52);
-      const rgb3 = hslToRgb(hue3, 0.64, 0.50);
+    function applyNewMinuteRGB(r1, r2, r3) {
+      const bg = document.getElementById('canvas-rgb-bg');
+      if (!bg) return;
 
-      const root = document.documentElement;
-      root.style.setProperty('--rgb-1', `${rgb1[0]}, ${rgb1[1]}, ${rgb1[2]}`);
-      root.style.setProperty('--rgb-2', `${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}`);
-      root.style.setProperty('--rgb-3', `${rgb3[0]}, ${rgb3[1]}, ${rgb3[2]}`);
-
-      // Cập nhật dải viền trang trí và nút CTA
-      const stripe = document.getElementById('top-rgb-stripe');
-      const ctaBtn = document.getElementById('btn-upload-cta');
-
-      if (stripe) {
-        stripe.style.background = `linear-gradient(90deg, rgb(${rgb1.join(',')}), rgb(${rgb2.join(',')}), rgb(${rgb3.join(',')}))`;
+      // Lần đầu tải trang: hiển thị êm ngay lập tức
+      if (!bg.style.background || bg.style.opacity === '0') {
+        bg.style.background = `
+          linear-gradient(180deg, rgba(${r1.join(',')}, 0.16) 0%, rgba(${r2.join(',')}, 0.05) 100%),
+          linear-gradient(270deg, rgba(${r2.join(',')}, 0.14) 0%, rgba(${r3.join(',')}, 0.02) 100%),
+          #F1F5F9
+        `;
+        setTimeout(() => {
+          bg.style.opacity = '1';
+        }, 100);
+        return;
       }
-      if (ctaBtn) {
-        ctaBtn.style.background = `linear-gradient(135deg, rgb(${rgb1.join(',')}), rgb(${rgb2.join(',')}))`;
+
+      // Mỗi khi sang phút mới: Màu cũ dần biến mất (Fade-out 1.5 giây)
+      isTransitioningRGB = true;
+      bg.style.opacity = '0';
+
+      // Sau 1.5s khi màu cũ đã biến mất hoàn toàn: nạp màu mới và hiện dần lên (Fade-in 1.5 giây)
+      setTimeout(() => {
+        bg.style.background = `
+          linear-gradient(180deg, rgba(${r1.join(',')}, 0.16) 0%, rgba(${r2.join(',')}, 0.05) 100%),
+          linear-gradient(270deg, rgba(${r2.join(',')}, 0.14) 0%, rgba(${r3.join(',')}, 0.02) 100%),
+          #F1F5F9
+        `;
+        bg.style.opacity = '1';
+        isTransitioningRGB = false;
+      }, 1500);
+    }
+
+    function checkAndRunMinuteRGBEngine() {
+      const now = new Date();
+      // 1 ngày = 1.440 phút (24h * 60m). Cứ mỗi 1 phút chuyển màu 1 lần
+      const minuteIndex = now.getHours() * 60 + now.getMinutes();
+
+      if (minuteIndex !== currentMinuteIndex && !isTransitioningRGB) {
+        currentMinuteIndex = minuteIndex;
+
+        // Sinh mã màu ngẫu nhiên hài hòa cho phút hiện tại theo Tỷ lệ vàng (137.508 độ)
+        const hue1 = (minuteIndex * 137.508) % 360; 
+        const hue2 = (hue1 + 55) % 360;    // Chuyển tiếp Phải sang Trái (270deg)
+        const hue3 = (hue1 + 140) % 360;
+
+        const rgb1 = hslToRgb(hue1, 0.65, 0.52);
+        const rgb2 = hslToRgb(hue2, 0.60, 0.54);
+        const rgb3 = hslToRgb(hue3, 0.55, 0.50);
+
+        applyNewMinuteRGB(rgb1, rgb2, rgb3);
       }
     }
-    setInterval(updateDynamicRGBPalette, 1000);
-    window.addEventListener('DOMContentLoaded', updateDynamicRGBPalette);
-    updateDynamicRGBPalette();
+    // Định kỳ kiểm tra nhịp thời gian để chuyển màu chính xác từng phút
+    setInterval(checkAndRunMinuteRGBEngine, 2000);
+    window.addEventListener('DOMContentLoaded', checkAndRunMinuteRGBEngine);
+    checkAndRunMinuteRGBEngine();
 
     // --- QUẢN LÝ ZOOM ---
     function adjustZoom(delta) {
