@@ -61,3 +61,4 @@ class MCPLatexMathBridge:
         }
 
 mcp_math_bridge = MCPLatexMathBridge()
+
