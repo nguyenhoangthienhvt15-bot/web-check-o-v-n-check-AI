@@ -2119,10 +2119,40 @@
       renderOfficialQRCode(data);
     }
 
+    function buildVerificationUrl(data) {
+      if (!data) return "/verify";
+      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
+      const docHash = data.doc_hash || (data.verification && data.verification.doc_hash) || "";
+      const shortHash = docHash.substring(0, 16);
+      const fn = data.filename || (data.verification && data.verification.filename) || "Tài liệu học thuật";
+      const orig = data.originality_percentage ?? (data.verification && data.verification.originality_percentage) ?? 100;
+      const ai = (data.ai_detection && data.ai_detection.ai_percentage) ?? (data.verification && data.verification.ai_percentage) ?? 0;
+      const plag = (data.plagiarism && data.plagiarism.max_similarity_percentage) ?? (data.verification && data.verification.plag_percentage) ?? 0;
+      const ppl = (data.ai_detection && data.ai_detection.perplexity) ?? (data.verification && data.verification.perplexity) ?? 100.0;
+      const b = (data.ai_detection && data.ai_detection.burstiness) ?? (data.verification && data.verification.burstiness) ?? 0.70;
+      const dt = data.report_datetime || (data.verification && data.verification.report_datetime) || "";
+      const words = data.total_words || (data.verification && data.verification.total_words) || 0;
+      const sents = data.total_sentences || (data.verification && data.verification.total_sentences) || 0;
+
+      const params = new URLSearchParams();
+      params.set('id', certId);
+      if (shortHash) params.set('hash', shortHash);
+      if (fn) params.set('fn', fn);
+      params.set('orig', orig);
+      params.set('ai', ai);
+      params.set('plag', plag);
+      params.set('ppl', ppl);
+      params.set('b', b);
+      if (dt) params.set('dt', dt);
+      if (words) params.set('w', words);
+      if (sents) params.set('s', sents);
+
+      return `/verify?${params.toString()}`;
+    }
+
     function renderOfficialQRCode(data) {
       if (!data) return;
       const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
-      const docHash = data.doc_hash || "";
       const repCodeEl = document.getElementById('pdf-report-code');
       if (repCodeEl) repCodeEl.innerText = certId;
       const qrCertEl = document.getElementById('pdf-qr-cert-code');
@@ -2130,7 +2160,7 @@
 
       const qrBox = document.getElementById('pdf-qr-code-box');
       if (qrBox) {
-        const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
+        const verifyPath = (data.verification && data.verification.verification_url) ? data.verification.verification_url : buildVerificationUrl(data);
         const verifyFullUrl = `${window.location.origin}${verifyPath}`;
         if (window.renderQRCode) {
           window.renderQRCode(qrBox, verifyFullUrl, 52);
@@ -2808,8 +2838,7 @@
     function renderSourceSignatures() {
       const data = globalAuditData || {};
       const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
-      const docHash = data.doc_hash || "";
-      const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
+      const verifyPath = (data.verification && data.verification.verification_url) ? data.verification.verification_url : buildVerificationUrl(data);
       const verifyFullUrl = `${window.location.origin}${verifyPath}`;
       const qrSvg = (window.generateQRCodeSVG) ? window.generateQRCodeSVG(verifyFullUrl, 50) : '';
 

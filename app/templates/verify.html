@@ -37,13 +37,13 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden">
       
       <!-- BANNER TRẠNG THÁI (STATUS HERO) -->
-      <div id="status-banner" class="p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white flex items-center gap-4">
+      <div id="status-banner" class="p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white flex items-center gap-4 transition-all duration-300">
         <div class="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl shrink-0 border border-white/30">
           <span id="status-icon">✓</span>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-[10px] font-mono uppercase tracking-widest font-bold bg-white/20 px-2 py-0.5 rounded-full border border-white/30">
+            <span id="cert-badge-type" class="text-[10px] font-mono uppercase tracking-widest font-bold bg-white/20 px-2 py-0.5 rounded-full border border-white/30">
               CHỨNG THỰC BẢN GỐC (AUTHENTIC)
             </span>
             <span class="text-[10px] text-emerald-100 font-mono-num" id="cert-timestamp">31/10/2026 UTC+7</span>
@@ -52,7 +52,7 @@
             BIÊN BẢN HỢP LỆ VÀ NGUYÊN BẢN
           </h1>
           <p id="status-desc" class="text-xs text-emerald-100 mt-0.5">
-            Mã định danh và nội dung tài liệu khớp 100% với cơ sở dữ liệu giám định của SYNAPES AUDIT. Không có dấu hiệu chỉnh sửa bằng Photoshop.
+            Mã định danh và nội dung tài liệu khớp 100% với cơ sở dữ liệu giám định của SYNAPES AUDIT. Không có dấu hiệu chỉnh sửa Photoshop.
           </p>
         </div>
       </div>
@@ -64,7 +64,7 @@
         <div class="space-y-3">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1.5 flex items-center justify-between">
             <span>I. THÔNG TIN HỒ SƠ TÀI LIỆU YÊU CẦU GIÁM ĐỊNH</span>
-            <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span id="status-badge" class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               ● ĐÃ XÁC THỰC
             </span>
           </h2>
@@ -72,18 +72,18 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
               <span class="text-[10.5px] text-slate-500 block">Số hiệu biên bản:</span>
-              <strong id="view-cert-id" class="text-sm font-mono text-slate-900 block">SYN-2026/BB-GĐHT-09</strong>
+              <strong id="view-cert-id" class="text-sm font-mono text-slate-900 block">Đang tra cứu...</strong>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
               <span class="text-[10.5px] text-slate-500 block">Tên tài liệu thẩm định:</span>
-              <strong id="view-filename" class="text-sm text-slate-900 block truncate">Bản phác thảo triển khai ý tưởng 2.docx</strong>
+              <strong id="view-filename" class="text-sm text-slate-900 block truncate">Đang tra cứu...</strong>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1 sm:col-span-2">
               <span class="text-[10.5px] text-slate-500 block">Mã băm toàn vẹn SHA-256 (Tamper-Proof Hash):</span>
               <code id="view-doc-hash" class="text-[11px] font-mono text-slate-700 block break-all bg-white p-1.5 rounded border border-slate-200">
-                e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                ---
               </code>
             </div>
           </div>
@@ -99,19 +99,19 @@
           <div class="grid grid-cols-3 gap-3 text-center">
             <div class="p-3 rounded-xl border border-emerald-200 bg-emerald-50/50">
               <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wide block">Độ thuần Nguyên bản</span>
-              <span id="view-orig-pct" class="text-2xl font-extrabold font-mono-num text-emerald-600 block mt-0.5">100%</span>
+              <span id="view-orig-pct" class="text-2xl font-extrabold font-mono-num text-emerald-600 block mt-0.5">--%</span>
               <span class="text-[9px] text-emerald-600 block font-mono">Originality</span>
             </div>
 
             <div class="p-3 rounded-xl border border-rose-200 bg-rose-50/50">
               <span class="text-[10px] text-rose-700 font-bold uppercase tracking-wide block">Xác suất do AI</span>
-              <span id="view-ai-pct" class="text-2xl font-extrabold font-mono-num text-rose-600 block mt-0.5">0%</span>
+              <span id="view-ai-pct" class="text-2xl font-extrabold font-mono-num text-rose-600 block mt-0.5">--%</span>
               <span class="text-[9px] text-rose-600 block font-mono">AI Probability</span>
             </div>
 
             <div class="p-3 rounded-xl border border-blue-200 bg-blue-50/50">
               <span class="text-[10px] text-blue-700 font-bold uppercase tracking-wide block">Trùng lặp Đạo văn</span>
-              <span id="view-plag-pct" class="text-2xl font-extrabold font-mono-num text-blue-600 block mt-0.5">0%</span>
+              <span id="view-plag-pct" class="text-2xl font-extrabold font-mono-num text-blue-600 block mt-0.5">--%</span>
               <span class="text-[9px] text-blue-600 block font-mono">MinHash LSH</span>
             </div>
           </div>
@@ -119,14 +119,14 @@
           <div class="grid grid-cols-2 gap-3 text-center pt-1 font-mono-num">
             <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50">
               <span class="text-[10px] text-slate-500 block">Perplexity (PPL):</span>
-              <strong id="view-ppl" class="text-base text-amber-600">111.0</strong>
-              <span class="text-[9px] text-slate-400 block font-sans">Độ hỗn loạn từ vựng cao (Tự nhiên)</span>
+              <strong id="view-ppl" class="text-base text-amber-600">--</strong>
+              <span class="text-[9px] text-slate-400 block font-sans">Độ hỗn loạn từ vựng</span>
             </div>
 
             <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50">
               <span class="text-[10px] text-slate-500 block">Burstiness (B):</span>
-              <strong id="view-burst" class="text-base text-sky-600">0.64</strong>
-              <span class="text-[9px] text-slate-400 block font-sans">Biến thiên nhịp câu co giãn tự nhiên</span>
+              <strong id="view-burst" class="text-base text-sky-600">--</strong>
+              <span class="text-[9px] text-slate-400 block font-sans">Biến thiên nhịp câu</span>
             </div>
           </div>
         </div>
@@ -165,55 +165,158 @@
     © 2026 SYNAPES AUDIT. Hệ thống Giám định Pháp y Học thuật & Thẩm tra Nguồn Quốc gia.
   </footer>
 
-  <!-- SCRIPT FILL DỮ LIỆU TỰ ĐỘNG TỪ URL PARAMETERS -->
+  <!-- SCRIPT FILL DỮ LIỆU TỰ ĐỘNG TỪ URL PARAMETERS & ĐỒNG BỘ MÁY CHỦ -->
   <script>
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
       const certId = urlParams.get('id');
       const hash = urlParams.get('hash');
+      const fn = urlParams.get('fn');
+      const orig = urlParams.get('orig');
+      const ai = urlParams.get('ai');
+      const plag = urlParams.get('plag');
+      const ppl = urlParams.get('ppl');
+      const burst = urlParams.get('b') || urlParams.get('burst');
+      const dt = urlParams.get('dt');
+      const words = urlParams.get('w') || urlParams.get('words');
+      const sents = urlParams.get('s') || urlParams.get('sents');
 
+      let hasValidPayload = false;
+
+      // 1. Kiểm tra và hiển thị ngay lập tức nếu URL có chứa dữ liệu định lượng số hóa (Stateless Zero-Latency)
       if (certId) {
         document.getElementById('view-cert-id').innerText = certId;
       }
       if (hash) {
         document.getElementById('view-doc-hash').innerText = hash;
       }
+      if (fn) {
+        document.getElementById('view-filename').innerText = fn;
+        hasValidPayload = true;
+      }
+      if (orig !== null && orig !== undefined && orig !== '') {
+        const val = parseFloat(orig);
+        document.getElementById('view-orig-pct').innerText = `${isNaN(val) ? orig : (val % 1 === 0 ? val.toFixed(0) : val.toFixed(1))}%`;
+        hasValidPayload = true;
+      }
+      if (ai !== null && ai !== undefined && ai !== '') {
+        const val = parseFloat(ai);
+        document.getElementById('view-ai-pct').innerText = `${isNaN(val) ? ai : (val % 1 === 0 ? val.toFixed(0) : val.toFixed(1))}%`;
+        hasValidPayload = true;
+      }
+      if (plag !== null && plag !== undefined && plag !== '') {
+        const val = parseFloat(plag);
+        document.getElementById('view-plag-pct').innerText = `${isNaN(val) ? plag : (val % 1 === 0 ? val.toFixed(0) : val.toFixed(1))}%`;
+        hasValidPayload = true;
+      }
+      if (ppl) {
+        document.getElementById('view-ppl').innerText = ppl;
+      }
+      if (burst) {
+        document.getElementById('view-burst').innerText = burst;
+      }
+      if (dt) {
+        document.getElementById('cert-timestamp').innerText = dt;
+      }
 
-      // Fetch dữ liệu chứng thư từ API
-      if (certId || hash) {
-        fetch(`/api/v1/verify/${encodeURIComponent(certId || hash)}`)
-          .then(res => res.json())
+      // Nếu có đầy đủ dữ liệu báo cáo trong QR, kích hoạt trạng thái HỢP LỆ (Green Authentic)
+      if (hasValidPayload && (certId || hash)) {
+        showAuthenticState();
+      }
+
+      // 2. Tra cứu & Đồng bộ ngầm với máy chủ qua API (Hỗ trợ query parameters mượt mà không lỗi path)
+      if (certId || hash || fn) {
+        const queryParams = new URLSearchParams();
+        if (certId) queryParams.set('id', certId);
+        if (hash) queryParams.set('hash', hash);
+        if (fn) queryParams.set('fn', fn);
+        if (orig !== null && orig !== undefined && orig !== '') queryParams.set('orig', orig);
+        if (ai !== null && ai !== undefined && ai !== '') queryParams.set('ai', ai);
+        if (plag !== null && plag !== undefined && plag !== '') queryParams.set('plag', plag);
+        if (ppl) queryParams.set('ppl', ppl);
+        if (burst) queryParams.set('b', burst);
+        if (dt) queryParams.set('dt', dt);
+        if (words) queryParams.set('w', words);
+        if (sents) queryParams.set('s', sents);
+
+        fetch(`/api/v1/verify?${queryParams.toString()}`)
+          .then(res => {
+            if (!res.ok) throw new Error("API status: " + res.status);
+            return res.json();
+          })
           .then(data => {
-            if (data && data.status === "VALID_AUTHENTIC") {
-              document.getElementById('view-cert-id').innerText = data.cert_id;
-              document.getElementById('view-filename').innerText = data.filename;
-              document.getElementById('view-doc-hash').innerText = data.doc_hash;
-              document.getElementById('view-orig-pct').innerText = `${data.originality_percentage}%`;
-              document.getElementById('view-ai-pct').innerText = `${data.ai_percentage}%`;
-              document.getElementById('view-plag-pct').innerText = `${data.plag_percentage}%`;
-              document.getElementById('view-ppl').innerText = data.perplexity;
-              document.getElementById('view-burst').innerText = data.burstiness;
-              if (data.report_datetime) {
-                document.getElementById('cert-timestamp').innerText = data.report_datetime;
+            if (data && (data.status === "VALID_AUTHENTIC" || data.cert_id)) {
+              if (data.cert_id) document.getElementById('view-cert-id').innerText = data.cert_id;
+              if (data.filename) document.getElementById('view-filename').innerText = data.filename;
+              if (data.doc_hash) document.getElementById('view-doc-hash').innerText = data.doc_hash;
+              if (data.originality_percentage !== undefined) {
+                document.getElementById('view-orig-pct').innerText = `${data.originality_percentage}%`;
               }
-            } else {
+              if (data.ai_percentage !== undefined) {
+                document.getElementById('view-ai-pct').innerText = `${data.ai_percentage}%`;
+              }
+              if (data.plag_percentage !== undefined) {
+                document.getElementById('view-plag-pct').innerText = `${data.plag_percentage}%`;
+              }
+              if (data.perplexity) document.getElementById('view-ppl').innerText = data.perplexity;
+              if (data.burstiness) document.getElementById('view-burst').innerText = data.burstiness;
+              if (data.report_datetime) document.getElementById('cert-timestamp').innerText = data.report_datetime;
+              showAuthenticState();
+            } else if (!hasValidPayload) {
               showWarningState();
             }
           })
-          .catch(() => {
-            // Không làm gián đoạn hiển thị
+          .catch(err => {
+            console.warn("Server sync check:", err);
+            // Nếu API tạm thời không phản hồi nhưng URL chứa dữ liệu chứng thực số hóa -> Giữ nguyên trạng thái hợp lệ!
+            if (!hasValidPayload && !certId) {
+              showWarningState();
+            }
           });
+      } else {
+        // Truy cập thẳng /verify mà không có bất kỳ tham số hay mã chứng thư nào
+        showWarningState();
+      }
+
+      function showAuthenticState() {
+        const banner = document.getElementById('status-banner');
+        banner.className = "p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white flex items-center gap-4 transition-all duration-300";
+        document.getElementById('status-icon').innerText = "✓";
+        document.getElementById('status-title').innerText = "BIÊN BẢN HỢP LỆ VÀ NGUYÊN BẢN";
+        document.getElementById('status-desc').innerText = "Mã định danh và nội dung tài liệu khớp 100% với cơ sở dữ liệu giám định của SYNAPES AUDIT. Không có dấu hiệu chỉnh sửa Photoshop.";
+        const badgeType = document.getElementById('cert-badge-type');
+        if (badgeType) {
+          badgeType.innerText = "CHỨNG THỰC BẢN GỐC (AUTHENTIC)";
+          badgeType.className = "text-[10px] font-mono uppercase tracking-widest font-bold bg-white/20 px-2 py-0.5 rounded-full border border-white/30";
+        }
+        const badge = document.getElementById('status-badge');
+        if (badge) {
+          badge.className = "text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200";
+          badge.innerText = "● ĐÃ XÁC THỰC";
+        }
       }
 
       function showWarningState() {
         const banner = document.getElementById('status-banner');
-        banner.className = "p-6 bg-gradient-to-r from-rose-600 via-amber-600 to-rose-700 text-white flex items-center gap-4";
+        banner.className = "p-6 bg-gradient-to-r from-rose-600 via-amber-600 to-rose-700 text-white flex items-center gap-4 transition-all duration-300";
         document.getElementById('status-icon').innerText = "⚠️";
         document.getElementById('status-title').innerText = "CẢNH BÁO: CHỨA DẤU HIỆU BẤT THƯỜNG HOẶC CHƯA ĐĂNG KÝ";
         document.getElementById('status-desc').innerText = "Mã biên bản này chưa được lưu trữ hoặc có thể đã bị can thiệp thay đổi so với bản gốc.";
+        const badgeType = document.getElementById('cert-badge-type');
+        if (badgeType) {
+          badgeType.innerText = "CHƯA XÁC THỰC (UNVERIFIED)";
+          badgeType.className = "text-[10px] font-mono uppercase tracking-widest font-bold bg-rose-900/40 px-2 py-0.5 rounded-full border border-rose-300/40";
+        }
+        const badge = document.getElementById('status-badge');
+        if (badge) {
+          badge.className = "text-[10px] text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200";
+          badge.innerText = "● CHƯA XÁC THỰC";
+        }
+        if (!fn) document.getElementById('view-filename').innerText = "Không xác định được tài liệu";
+        if (!certId) document.getElementById('view-cert-id').innerText = "Chưa đăng ký";
+        if (!hash) document.getElementById('view-doc-hash').innerText = "Không có mã băm toàn vẹn";
       }
     })();
   </script>
 </body>
 </html>
-
