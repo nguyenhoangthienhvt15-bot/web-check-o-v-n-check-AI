@@ -4,24 +4,31 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
+from app.core.security_middleware import SecurityHeadersMiddleware, IPFirewallMiddleware
 from app.api.v1.endpoints import scan
+
+# Kiểm soát chế độ hiển thị tài liệu API (Anti-Reconnaissance):
+# Mặc định ẩn 100% Swagger UI (/docs) và OpenAPI Schema (/openapi.json) trên môi trường công khai
+enable_swagger = os.getenv("ENABLE_SWAGGER", "false").lower() == "true"
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json" if enable_swagger else None,
+    docs_url="/docs" if enable_swagger else None,
+    redoc_url="/redoc" if enable_swagger else None,
     description="Hệ thống phân tích và phát hiện Đạo văn & Văn bản AI (Binoculars + MinHash LSH)",
 )
 
-# Mount static files directory
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+# 1. Kích hoạt Tường lửa An ninh Đa tầng (Multi-Layer Security Gateway)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(IPFirewallMiddleware)
 
+# 2. Cấu hình kiểm soát nguồn gốc chia sẻ tài nguyên (CORS Hardening)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 

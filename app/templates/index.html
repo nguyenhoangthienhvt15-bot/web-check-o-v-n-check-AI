@@ -2483,6 +2483,55 @@
     // Đồng bộ bộ định thời gian chuẩn cho toàn bộ giao diện và biên bản PDF ngay khi nạp trang
     syncSystemDateTime();
     document.addEventListener('DOMContentLoaded', syncSystemDateTime);
+
+    // =========================================================================
+    // HỆ THỐNG PHÒNG VỆ AN NINH GIAO DIỆN & CHỐNG SOI MÃ NGUỒN (ANTI-INSPECTION)
+    // =========================================================================
+    (function initSecurityShield() {
+      try {
+        // 1. Cảnh báo an ninh trong Developer Console
+        console.log(
+          "%c[SYNAPES SHIELD - HỆ THỐNG GIÁM ĐỊNH ĐƯỢC BẢO VỆ]",
+          "color: #dc2626; font-size: 18px; font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 4px;"
+        );
+        console.log(
+          "%cCHÚ Ý: Toàn bộ lưu lượng truy cập và thao tác tải tệp được giám sát và lưu vết IP tự động. Mọi hành vi can thiệp trái phép, đảo ngược mã nguồn hoặc tấn công khai thác đều được ghi nhận để xử lý theo quy định bảo vệ an ninh học thuật.",
+          "color: #475569; font-size: 11px; font-style: italic;"
+        );
+
+        // 2. Vô hiệu hóa menu chuột phải (Disable Context Menu)
+        document.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          return false;
+        });
+
+        // 3. Khóa các phím tắt mở DevTools & Soi Source (F12, Ctrl+U, Ctrl+Shift+I/J/C, Ctrl+S)
+        document.addEventListener('keydown', function(e) {
+          // F12
+          if (e.keyCode === 123) {
+            e.preventDefault();
+            return false;
+          }
+          // Ctrl+Shift+I (Inspect), Ctrl+Shift+J (Console), Ctrl+Shift+C (Element picker)
+          if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+            e.preventDefault();
+            return false;
+          }
+          // Ctrl+U (View Source)
+          if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 117)) {
+            e.preventDefault();
+            return false;
+          }
+          // Ctrl+S (Save Page)
+          if (e.ctrlKey && (e.keyCode === 83 || e.keyCode === 115)) {
+            e.preventDefault();
+            return false;
+          }
+        });
+      } catch (e) {
+        // Silent
+      }
+    })();
   </script>
 </body>
 

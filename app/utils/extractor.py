@@ -8,12 +8,78 @@ from pypdf import PdfReader
 from app.utils.omml_latex import omml_to_latex, enhance_plain_text_math
 from app.services.mcp_latex_bridge import mcp_math_bridge
 
+def validate_and_sanitize_upload(filename: str, file_bytes: bytes) -> str:
+    """
+    KIỂM DUYỆT TỆP KHÔNG TIN CẬY (ZERO-TRUST FILE SANITIZATION):
+    1. Giới hạn kích thước tối đa 20MB.
+    2. Kiểm tra Magic Bytes nhị phân (bảo đảm tệp không bị đổi tên giả mạo thành trojan/shell).
+    3. Chống tấn công bom giải nén Zip Bomb (Decompression Ratio & Size Limit).
+    4. Chống tấn công nhị phân ngụy trang mã độc vào văn bản thô.
+    """
+    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
+    if len(file_bytes) > MAX_FILE_SIZE:
+        raise ValueError(f"Tường lửa an ninh: Tệp tải lên vượt quá dung lượng cho phép (tối đa 20MB).")
+
+    if not filename or '.' not in filename:
+        raise ValueError("Tên tệp không hợp lệ: Thiếu phần mở rộng.")
+
+    ext = filename.lower().split('.')[-1]
+
+    if ext in ['docx', 'doc']:
+        # Kiểm tra Magic Bytes chuẩn của ZIP container (PK\x03\x04)
+        if not file_bytes.startswith(b'PK\x03\x04'):
+            raise ValueError("Cảnh báo an ninh: Chữ ký nhị phân (Magic Bytes) không khớp với tệp Word DOCX chuẩn (thiếu PK header). Tệp có dấu hiệu bị ngụy trang.")
+        
+        # Phòng thủ chống Zip Bomb & Kiểm tra tính toàn vẹn cấu trúc
+        try:
+            with zipfile.ZipFile(io.BytesIO(file_bytes), 'r') as zf:
+                total_uncompressed = 0
+                file_count = 0
+                for info in zf.infolist():
+                    file_count += 1
+                    total_uncompressed += info.file_size
+                    # Giới hạn kích thước tệp con tối đa 25MB
+                    if info.file_size > 25 * 1024 * 1024:
+                        raise ValueError("Cảnh báo an ninh: Tệp con trong tài liệu nén vượt quá ngưỡng an toàn.")
+
+                if total_uncompressed > 35 * 1024 * 1024:
+                    raise ValueError("Cảnh báo an ninh: Kích thước giải nén vượt quá 35MB (Chống tấn công Zip Bomb).")
+
+                if file_count > 300:
+                    raise ValueError("Cảnh báo an ninh: Số lượng thành phần trong tệp vượt quá ngưỡng bình thường.")
+
+                if 'word/document.xml' not in zf.namelist():
+                    raise ValueError("Tệp DOCX không hợp lệ: Thiếu phân đoạn bắt buộc word/document.xml.")
+        except zipfile.BadZipFile:
+            raise ValueError("Tệp DOCX bị lỗi hoặc bị hư hỏng cấu trúc nhị phân.")
+
+    elif ext == 'pdf':
+        # Kiểm tra Magic Bytes chuẩn PDF: %PDF-
+        if b'%PDF-' not in file_bytes[:1024]:
+            raise ValueError("Cảnh báo an ninh: Chữ ký nhị phân không khớp với tệp PDF chuẩn (thiếu header %PDF-).")
+
+    elif ext in ['txt', 'md']:
+        # Tệp văn bản thuần không được phép chứa ký tự null byte (thường thấy ở tệp thực thi ngụy trang)
+        if b'\x00' in file_bytes[:4096]:
+            raise ValueError("Cảnh báo an ninh: Tệp văn bản chứa ký tự nhị phân (Null bytes) nghi vấn là mã nhị phân ngụy trang.")
+
+    else:
+        raise ValueError(f"Định dạng .{ext} không được hỗ trợ. Vui lòng tải file DOCX, PDF hoặc TXT.")
+
+    return ext
+
 def convert_omml_in_xml(xml_bytes: bytes) -> bytes:
     """
     Chuyển đổi toàn bộ các thẻ công thức toán học Word (m:oMath, m:oMathPara)
     thành các đoạn văn bản chuẩn LaTeX ($...$ hoặc $$...$$) bên trong file XML.
+    Bảo vệ chống tấn công XXE (XML External Entity Injection) và Billion Laughs.
     """
     try:
+        # Khử độc XML: Vô hiệu hóa DTD Entity Expansion độc hại
+        if b'<!DOCTYPE' in xml_bytes or b'<!ENTITY' in xml_bytes:
+            xml_bytes = re.sub(b'<!DOCTYPE[^>]*>', b'', xml_bytes)
+            xml_bytes = re.sub(b'<!ENTITY[^>]*>', b'', xml_bytes)
+
         root = ET.fromstring(xml_bytes)
         ns = {
             'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
@@ -146,7 +212,8 @@ def extract_document(filename: str, file_bytes: bytes) -> Tuple[str, str, Dict[s
     2. raw_text: Văn bản sạch phục vụ phân tích thuật toán
     3. structural_audit: Giám định pháp y đối với hình ảnh, sơ đồ, bảng biểu
     """
-    ext = filename.lower().split('.')[-1]
+    # 0. Kiểm duyệt tệp an ninh đa tầng (Magic bytes, Size, Zip Bomb, Null bytes)
+    ext = validate_and_sanitize_upload(filename, file_bytes)
     
     if ext in ['docx', 'doc']:
         # 1. Tiền xử lý công thức toán học từ Word OMML sang chuẩn LaTeX học thuật ($...$, $$...$$)

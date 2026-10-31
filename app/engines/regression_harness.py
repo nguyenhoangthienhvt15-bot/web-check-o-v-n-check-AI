@@ -156,3 +156,4 @@ if __name__ == "__main__":
         print(f" - {d['name']}: {d['status']} {d['error'] or ''}")
     if not res["all_passed"]:
         sys.exit(1)
+

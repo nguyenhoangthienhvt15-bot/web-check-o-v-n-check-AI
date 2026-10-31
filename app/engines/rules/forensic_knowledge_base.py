@@ -152,3 +152,4 @@ LISTICLE_EXPLANATORY_TRIGGERS: List[str] = [
     r"\b(nhằm mục đích|cho phép|được sử dụng để|giúp cho|đóng vai trò)\b",
     r"^(a technique|a method|an approach|a mechanism|refers to|is defined as)\b"
 ]
+
