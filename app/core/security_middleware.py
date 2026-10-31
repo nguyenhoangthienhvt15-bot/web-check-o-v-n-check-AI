@@ -41,14 +41,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         if "X-Powered-By" in response.headers:
             del response.headers["X-Powered-By"]
 
-        # 8. Content Security Policy (CSP): Cho phép các CDN uy tín hoạt động (ChartJS, KaTeX, Tailwind, Google Fonts)
+        # 8. Content Security Policy (CSP): Bảo vệ máy chủ chống Frame-Injection nhưng bảo đảm 100%
+        # các CDN giao diện (Tailwind CDN, Google Fonts, KaTeX, Chart.js, jsPDF, html2canvas) tải thông suốt
         csp_directives = [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com",
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com",
-            "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:",
-            "img-src 'self' data: blob: https:",
-            "connect-src 'self' https://api.openalex.org https://api.crossref.org https://doi.org",
+            "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:",
+            "script-src * 'unsafe-inline' 'unsafe-eval' data: blob: https://cdn.tailwindcss.com",
+            "style-src * 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src * data: https://fonts.gstatic.com",
+            "img-src * data: blob: https:",
+            "connect-src *",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'"
