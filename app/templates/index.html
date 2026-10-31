@@ -2331,6 +2331,70 @@
       });
     }
 
+    // ================= HÀM ÉP BUỘC TẢI TẬP TIN PDF TỰ ĐỘNG VỀ MÁY (FORCE DIRECT DOWNLOAD) =================
+    function executeDirectPdfDownload(pdfInstanceOrBlob, filename) {
+      try {
+        let rawBlob;
+        if (pdfInstanceOrBlob instanceof Blob) {
+          rawBlob = pdfInstanceOrBlob;
+        } else if (pdfInstanceOrBlob && typeof pdfInstanceOrBlob.output === 'function') {
+          rawBlob = pdfInstanceOrBlob.output('blob');
+        } else {
+          throw new Error("Không tìm thấy dữ liệu đối tượng PDF hợp lệ.");
+        }
+
+        // BẢO CHỨNG 100%: Chuyển sang MIME 'application/octet-stream'
+        // Khi gặp application/octet-stream, mọi trình duyệt (Chrome, Edge, Safari, Firefox)
+        // đều bị chặn cơ chế mở PDF Viewer trong tab/cửa sổ web, và BẮT BUỘC kích hoạt
+        // tiến trình ghi file trực tiếp vào thư mục Downloads của hệ điều hành.
+        const octetBlob = new Blob([rawBlob], { type: 'application/octet-stream' });
+        const blobUrl = (window.URL || window.webkitURL).createObjectURL(octetBlob);
+
+        // Tạo thẻ liên kết ẩn và BẮT BUỘC append vào document.body
+        // (Yêu cầu kỹ thuật bắt buộc của Chromium để kích hoạt sự kiện download sau chuỗi async await)
+        const downloadLink = document.createElement('a');
+        downloadLink.style.display = 'none';
+        downloadLink.style.position = 'fixed';
+        downloadLink.style.left = '-9999px';
+        downloadLink.style.top = '-9999px';
+        downloadLink.href = blobUrl;
+        downloadLink.setAttribute('download', filename);
+        downloadLink.download = filename;
+        document.body.appendChild(downloadLink);
+
+        // Kích hoạt lệnh tải trực tiếp
+        if (typeof downloadLink.click === 'function') {
+          downloadLink.click();
+        } else {
+          const clickEvt = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+          });
+          downloadLink.dispatchEvent(clickEvt);
+        }
+
+        // Dọn dẹp DOM và thu hồi bộ nhớ URL Blob sau khi kích hoạt tải
+        setTimeout(() => {
+          try {
+            if (downloadLink.parentNode) {
+              downloadLink.parentNode.removeChild(downloadLink);
+            }
+            (window.URL || window.webkitURL).revokeObjectURL(blobUrl);
+          } catch (e) { }
+        }, 3000);
+
+        return true;
+      } catch (err) {
+        console.warn("Lỗi tải nhị phân trực tiếp, chuyển sang phương thức dự phòng pdf.save():", err);
+        if (pdfInstanceOrBlob && typeof pdfInstanceOrBlob.save === 'function') {
+          pdfInstanceOrBlob.save(filename);
+          return true;
+        }
+        throw err;
+      }
+    }
+
     // ================= XUẤT BẢN BÁO CÁO PDF CHÍNH (TIMES NEW ROMAN) =================
     async function downloadOfficialTimesNewRomanReportPDF() {
       if (!globalAuditData) {
@@ -2575,7 +2639,8 @@
             pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
           }
 
-          pdf.save(downloadFilename);
+          // Kích hoạt cơ chế tải trực tiếp tự động 100%
+          executeDirectPdfDownload(pdf, downloadFilename);
         } else if (typeof html2pdf !== 'undefined') {
           const opt = {
             margin: [10, 10, 10, 10],
@@ -2584,7 +2649,8 @@
             html2canvas: { scale: 2, useCORS: true, windowWidth: 710 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
-          await html2pdf().set(opt).from(pdfContainer).save();
+          const pdfObj = await html2pdf().set(opt).from(pdfContainer).toPdf().get('pdf');
+          executeDirectPdfDownload(pdfObj, downloadFilename);
         } else {
           throw new Error("Không tìm thấy bộ thư viện render PDF.");
         }
@@ -2592,8 +2658,11 @@
         console.error("Lỗi xuất PDF:", err);
         alert("Lỗi khi xuất PDF: " + err.message);
       } finally {
-        downloadBtn.innerHTML = origBtnHtml;
+        downloadBtn.innerHTML = `<span>✅ Đã tải về!</span>`;
         downloadBtn.disabled = false;
+        setTimeout(() => {
+          downloadBtn.innerHTML = origBtnHtml;
+        }, 2500);
         pdfContainer.classList.add('hidden');
       }
     }
@@ -2984,7 +3053,8 @@
             pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
           }
 
-          pdf.save(downloadFilename);
+          // Kích hoạt cơ chế tải trực tiếp tự động 100%
+          executeDirectPdfDownload(pdf, downloadFilename);
         } else if (typeof html2pdf !== 'undefined') {
           const opt = {
             margin: [10, 10, 10, 10],
@@ -2993,7 +3063,8 @@
             html2canvas: { scale: 2, useCORS: true, windowWidth: 710 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
-          await html2pdf().set(opt).from(sourceContainer).save();
+          const pdfObj = await html2pdf().set(opt).from(sourceContainer).toPdf().get('pdf');
+          executeDirectPdfDownload(pdfObj, downloadFilename);
         } else {
           throw new Error("Không tìm thấy bộ thư viện render PDF.");
         }
