@@ -60,3 +60,4 @@ class AsyncTaskManager:
 
 # Singleton instance
 async_task_manager = AsyncTaskManager()
+

@@ -93,3 +93,4 @@ class VerificationService:
 
 # Singleton instance
 verification_service = VerificationService()
+

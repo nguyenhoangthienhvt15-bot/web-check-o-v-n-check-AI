@@ -22,8 +22,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- Thư viện tạo Mã QR xác thực số hóa độc lập (Zero-Dependency) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Thư viện tạo Mã QR xác thực số hóa độc lập nội bộ (Zero-Dependency SVG & Canvas) -->
+  <script src="/static/js/qrcode.min.js?v=3.8.1"></script>
 
   <!-- KaTeX hỗ trợ biên dịch công thức toán học học thuật chuẩn xác -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -254,9 +254,17 @@
     }
 
     @keyframes rgbOceanShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     .ocean-wave-layer {
@@ -290,19 +298,37 @@
     }
 
     @keyframes oceanWaveFlow1 {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
     }
 
     @keyframes oceanWaveFlow2 {
-      0% { transform: translateX(0) scaleY(0.95); }
-      50% { transform: translateX(-25%) scaleY(1.25); }
-      100% { transform: translateX(-50%) scaleY(0.95); }
+      0% {
+        transform: translateX(0) scaleY(0.95);
+      }
+
+      50% {
+        transform: translateX(-25%) scaleY(1.25);
+      }
+
+      100% {
+        transform: translateX(-50%) scaleY(0.95);
+      }
     }
 
     @keyframes oceanShimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
   </style>
 </head>
@@ -549,13 +575,16 @@
         </div>
 
         <!-- ================= CARD: HƯỚNG DẪN ĐỌC CHỈ SỐ BÁO CÁO & BẢNG ĐỐI SÁNH TIÊU CHUẨN ================= -->
-        <div class="pm-card p-3.5 rounded-xl border border-sky-200/90 shadow-xs bg-gradient-to-br from-sky-50/60 via-white to-indigo-50/30 space-y-2.5">
+        <div
+          class="pm-card p-3.5 rounded-xl border border-sky-200/90 shadow-xs bg-gradient-to-br from-sky-50/60 via-white to-indigo-50/30 space-y-2.5">
           <div class="flex items-center justify-between cursor-pointer select-none" onclick="toggleMetricGuide()">
             <div class="flex items-center gap-2">
               <span class="text-base leading-none">📘</span>
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900 block leading-tight">Hướng dẫn đọc chỉ số & Bảng đối sánh</span>
-                <span class="text-[9.5px] text-slate-500 font-sans">Tiêu chuẩn định lượng pháp y học thuật SYNAPES</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900 block leading-tight">Hướng
+                  dẫn đọc chỉ số & Bảng đối sánh</span>
+                <span class="text-[9.5px] text-slate-500 font-sans">Tiêu chuẩn định lượng pháp y học thuật
+                  SYNAPES</span>
               </div>
             </div>
             <button type="button" id="guide-toggle-btn"
@@ -567,14 +596,17 @@
           <!-- Khung nội dung chi tiết -->
           <div id="metric-guide-panel" class="space-y-2.5 text-[10.5px] pt-1">
             <!-- 1. Ý nghĩa các chỉ số khoa học -->
-            <div class="p-2.5 rounded-lg bg-white/95 border border-slate-200/90 space-y-2 text-[10px] leading-relaxed shadow-2xs">
+            <div
+              class="p-2.5 rounded-lg bg-white/95 border border-slate-200/90 space-y-2 text-[10px] leading-relaxed shadow-2xs">
               <div>
                 <div class="font-bold text-slate-900 flex items-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                   <span>Perplexity (PPL - Độ hỗn loạn ngôn ngữ):</span>
                 </div>
                 <p class="text-slate-600 pl-2.5 mt-0.5">
-                  Đo mức độ bất ngờ và phong phú của vốn từ vựng. Người viết tự nhiên có <strong>PPL cao (&gt; 85)</strong> do từ ngữ linh hoạt, bất quy tắc; AI có <strong>PPL thấp (&lt; 50)</strong> do chọn từ theo xác suất dự đoán máy móc.
+                  Đo mức độ bất ngờ và phong phú của vốn từ vựng. Người viết tự nhiên có <strong>PPL cao (&gt;
+                    85)</strong> do từ ngữ linh hoạt, bất quy tắc; AI có <strong>PPL thấp (&lt; 50)</strong> do chọn từ
+                  theo xác suất dự đoán máy móc.
                 </p>
               </div>
               <div class="border-t border-slate-100 pt-1.5">
@@ -583,7 +615,9 @@
                   <span>Burstiness (B - Biến thiên nhịp câu):</span>
                 </div>
                 <p class="text-slate-600 pl-2.5 mt-0.5">
-                  Đo sự co giãn và nhịp điệu giữa các câu liên tiếp. Người viết tự nhiên có <strong>B cao (&ge; 0.60)</strong> nhờ câu dài ngắn đan xen cảm xúc; AI có <strong>B thấp (&lt; 0.40)</strong> do tạo các câu có độ dài đồng đều cơ học.
+                  Đo sự co giãn và nhịp điệu giữa các câu liên tiếp. Người viết tự nhiên có <strong>B cao (&ge;
+                    0.60)</strong> nhờ câu dài ngắn đan xen cảm xúc; AI có <strong>B thấp (&lt; 0.40)</strong> do tạo
+                  các câu có độ dài đồng đều cơ học.
                 </p>
               </div>
               <div class="border-t border-slate-100 pt-1.5">
@@ -592,14 +626,16 @@
                   <span>Xác suất AI & Độ thuần Nguyên bản:</span>
                 </div>
                 <p class="text-slate-600 pl-2.5 mt-0.5">
-                  Xác suất AI là tỷ lệ câu/đoạn mang cấu trúc LLM. Hệ thống bảo đảm tính toàn vẹn tuyệt đối: <em>Độ thuần nguyên bản = 100% - AI% - Đạo văn%</em>.
+                  Xác suất AI là tỷ lệ câu/đoạn mang cấu trúc LLM. Hệ thống bảo đảm tính toàn vẹn tuyệt đối: <em>Độ
+                    thuần nguyên bản = 100% - AI% - Đạo văn%</em>.
                 </p>
               </div>
             </div>
 
             <!-- 2. Bảng đối sánh mức độ chi tiết (Quantitative Benchmark Matrix) -->
             <div class="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs">
-              <div class="bg-slate-100/90 px-2.5 py-1 text-[9.5px] font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 flex items-center justify-between">
+              <div
+                class="bg-slate-100/90 px-2.5 py-1 text-[9.5px] font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 flex items-center justify-between">
                 <span>BẢNG ĐỐI SÁNH PHÂN CẤP TIÊU CHUẨN</span>
                 <span class="text-[8.5px] text-slate-500 font-mono">ICML & Stylometry</span>
               </div>
@@ -615,7 +651,7 @@
                 <tbody class="divide-y divide-slate-100">
                   <tr class="hover:bg-emerald-50/40">
                     <td class="p-1.5 font-bold text-emerald-700 leading-tight">
-                      🟢 An toàn học thuật<br/>
+                      🟢 An toàn học thuật<br />
                       <span class="text-[8px] font-normal text-slate-500">Thuần con người</span>
                     </td>
                     <td class="p-1.5 text-center font-bold font-mono text-emerald-600">&lt; 20%</td>
@@ -624,7 +660,7 @@
                   </tr>
                   <tr class="hover:bg-amber-50/40">
                     <td class="p-1.5 font-bold text-amber-700 leading-tight">
-                      🟡 Văn bản Lai ghép<br/>
+                      🟡 Văn bản Lai ghép<br />
                       <span class="text-[8px] font-normal text-slate-500">AI hỗ trợ dàn bài/dịch</span>
                     </td>
                     <td class="p-1.5 text-center font-bold font-mono text-amber-600">20% – 45%</td>
@@ -633,7 +669,7 @@
                   </tr>
                   <tr class="hover:bg-rose-50/40">
                     <td class="p-1.5 font-bold text-rose-700 leading-tight">
-                      🔴 Nguy cơ can thiệp cao<br/>
+                      🔴 Nguy cơ can thiệp cao<br />
                       <span class="text-[8px] font-normal text-slate-500">Can thiệp AI diện rộng</span>
                     </td>
                     <td class="p-1.5 text-center font-bold font-mono text-rose-600">&gt; 45%</td>
@@ -646,7 +682,9 @@
 
             <!-- Khuyến nghị hành động -->
             <div class="text-[9px] text-slate-600 leading-snug p-2 bg-slate-50/90 rounded-lg border border-slate-200">
-              💡 <strong>Khuyến nghị:</strong> Điểm số đạt chuẩn xuất bản và bảo vệ luận án khi tài liệu có <strong>Xác suất AI &lt; 20%</strong>, PPL &gt; 85 và Burstiness &ge; 0.60. Văn bản thuộc vùng Lai ghép (20% – 45%) cần tác giả tự rà soát và diễn đạt lại theo phong cách cá nhân.
+              💡 <strong>Khuyến nghị:</strong> Điểm số đạt chuẩn xuất bản và bảo vệ luận án khi tài liệu có <strong>Xác
+                suất AI &lt; 20%</strong>, PPL &gt; 85 và Burstiness &ge; 0.60. Văn bản thuộc vùng Lai ghép (20% – 45%)
+              cần tác giả tự rà soát và diễn đạt lại theo phong cách cá nhân.
             </div>
           </div>
         </div>
@@ -846,14 +884,18 @@
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
             </span>
-            <span id="modal-progress-stage-text" class="font-semibold text-slate-700 truncate tracking-tight text-[11.5px]">Đang bóc tách tệp & tiền xử lý công thức...</span>
+            <span id="modal-progress-stage-text"
+              class="font-semibold text-slate-700 truncate tracking-tight text-[11.5px]">Đang bóc tách tệp & tiền xử lý
+              công thức...</span>
           </div>
-          <span id="modal-progress-percent" class="font-mono font-extrabold text-sm bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent shrink-0">0%</span>
+          <span id="modal-progress-percent"
+            class="font-mono font-extrabold text-sm bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent shrink-0">0%</span>
         </div>
 
         <!-- Khung chứa thanh tiến trình sóng biển -->
         <div class="ocean-wave-progress-container relative w-full h-7 rounded-full overflow-hidden p-0.5">
-          <div id="modal-progress-bar" class="ocean-wave-bar h-full rounded-full transition-all duration-300 ease-out" style="width: 5%;">
+          <div id="modal-progress-bar" class="ocean-wave-bar h-full rounded-full transition-all duration-300 ease-out"
+            style="width: 5%;">
             <div class="ocean-wave-layer ocean-wave-layer-1"></div>
             <div class="ocean-wave-layer ocean-wave-layer-2"></div>
             <div class="ocean-wave-shimmer"></div>
@@ -1036,10 +1078,12 @@
 
       <!-- BẢNG ĐỐI SÁNH TIÊU CHUẨN ĐỊNH LƯỢNG VÀ HƯỚNG DẪN ĐỌC BIÊN BẢN (CHUẨN HÀNH CHÍNH) -->
       <div style="margin-bottom: 8px;" class="pdf-no-break">
-        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; font-size: 8.5pt; color: #1e3a8a;">
+        <div
+          style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; font-size: 8.5pt; color: #1e3a8a;">
           * BẢNG ĐỐI SÁNH TIÊU CHUẨN ĐỊNH LƯỢNG VÀ HƯỚNG DẪN ĐỌC BIÊN BẢN:
         </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt; border: 1px solid #000; line-height: 1.25;">
+        <table
+          style="width: 100%; border-collapse: collapse; font-size: 7.5pt; border: 1px solid #000; line-height: 1.25;">
           <tr style="background-color: #F1F5F9; font-weight: bold; text-align: center;">
             <th style="border: 1px solid #000; padding: 3px 4px; width: 22%;">Phân cấp Kết quả</th>
             <th style="border: 1px solid #000; padding: 3px 4px; width: 15%;">Xác suất AI</th>
@@ -1048,8 +1092,10 @@
             <th style="border: 1px solid #000; padding: 3px 4px; width: 33%;">Đặc trưng Hành văn & Khuyến nghị</th>
           </tr>
           <tr>
-            <td style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #15803d; text-align: center;">
-              An toàn Học thuật<br/><span style="font-size: 7pt; font-weight: normal; color: #475569;">(Thuần con người)</span>
+            <td
+              style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #15803d; text-align: center;">
+              An toàn Học thuật<br /><span style="font-size: 7pt; font-weight: normal; color: #475569;">(Thuần con
+                người)</span>
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 20%</td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&gt; 85.0</td>
@@ -1059,19 +1105,26 @@
             </td>
           </tr>
           <tr>
-            <td style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #b45309; text-align: center;">
-              Văn bản Lai ghép<br/><span style="font-size: 7pt; font-weight: normal; color: #475569;">(Hybrid Document)</span>
+            <td
+              style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #b45309; text-align: center;">
+              Văn bản Lai ghép<br /><span style="font-size: 7pt; font-weight: normal; color: #475569;">(Hybrid
+                Document)</span>
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">20% – 45%</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">50.0 – 85.0</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">0.40 – 0.59</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">50.0 – 85.0
+            </td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">0.40 – 0.59
+            </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify;">
-              Có sự can thiệp/hỗ trợ từ AI (gợi ý dàn bài, dịch thuật, hiệu đính ngữ pháp). Cần rà soát và tự biên tập lại.
+              Có sự can thiệp/hỗ trợ từ AI (gợi ý dàn bài, dịch thuật, hiệu đính ngữ pháp). Cần rà soát và tự biên tập
+              lại.
             </td>
           </tr>
           <tr>
-            <td style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #b91c1c; text-align: center;">
-              Nguy cơ Can thiệp Cao<br/><span style="font-size: 7pt; font-weight: normal; color: #475569;">(AI-Generated)</span>
+            <td
+              style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #b91c1c; text-align: center;">
+              Nguy cơ Can thiệp Cao<br /><span
+                style="font-size: 7pt; font-weight: normal; color: #475569;">(AI-Generated)</span>
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&gt; 45%</td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 50.0</td>
@@ -1082,7 +1135,11 @@
           </tr>
         </table>
         <div style="font-size: 7pt; color: #475569; margin-top: 2px; line-height: 1.3; font-style: italic;">
-          <strong>* Hướng dẫn đọc chỉ số:</strong> (1) <strong>PPL (Perplexity - Độ hỗn loạn ngôn ngữ):</strong> Thước đo độ khó đoán và phong phú của vốn từ; giá trị cao khẳng định phong cách con người tự nhiên, giá trị thấp phản ánh văn bản tạo sinh theo khuôn mẫu xác suất của AI. (2) <strong>Burstiness (B - Biến thiên nhịp câu):</strong> Thước đo độ biến thiên chiều dài giữa các câu; giá trị cao biểu thị văn phong tự nhiên (câu ngắn đan xen câu dài linh hoạt), giá trị thấp là đặc trưng cơ học của câu AI.
+          <strong>* Hướng dẫn đọc chỉ số:</strong> (1) <strong>PPL (Perplexity - Độ hỗn loạn ngôn ngữ):</strong> Thước
+          đo độ khó đoán và phong phú của vốn từ; giá trị cao khẳng định phong cách con người tự nhiên, giá trị thấp
+          phản ánh văn bản tạo sinh theo khuôn mẫu xác suất của AI. (2) <strong>Burstiness (B - Biến thiên nhịp
+            câu):</strong> Thước đo độ biến thiên chiều dài giữa các câu; giá trị cao biểu thị văn phong tự nhiên (câu
+          ngắn đan xen câu dài linh hoạt), giá trị thấp là đặc trưng cơ học của câu AI.
         </div>
       </div>
 
@@ -1172,14 +1229,20 @@
 
       <!-- VIII. Xác nhận của Hội đồng Thẩm định & Chữ ký số (Tích hợp Mã QR Xác thực Điện tử) -->
       <div style="display: flex; justify-content: space-between; margin-top: 12px;" class="pdf-no-break">
-        <div style="text-align: center; width: 45%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA & TRUY XUẤT BẢN GỐC</div>
-          <div style="font-size: 7.2pt; font-style: italic; color: #475569;">(Quét mã QR để kiểm tra tính toàn vẹn)</div>
-          <div id="pdf-qr-code-box" style="width: 58px; height: 58px; padding: 2px; border: 1px solid #1e3a8a; background: #ffffff; margin: 3px auto; display: flex; align-items: center; justify-content: center;"></div>
+        <div
+          style="text-align: center; width: 45%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA & TRUY XUẤT BẢN
+            GỐC</div>
+          <div style="font-size: 7.2pt; font-style: italic; color: #475569;">(Quét mã QR để kiểm tra tính toàn vẹn)
+          </div>
+          <div id="pdf-qr-code-box"
+            style="width: 58px; height: 58px; padding: 2px; border: 1px solid #1e3a8a; background: #ffffff; margin: 3px auto; display: flex; align-items: center; justify-content: center;">
+          </div>
           <div style="font-size: 6.5pt; font-family: monospace; color: #1e3a8a; font-weight: bold; margin-top: 1px;">
             MÃ TRA CỨU: <span id="pdf-qr-cert-code">SYN-2026/BB-GĐHT-09</span>
           </div>
-          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-top: 2px;">SYNAPES INTEGRITY CENTER</div>
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-top: 2px;">SYNAPES
+            INTEGRITY CENTER</div>
         </div>
         <div style="text-align: center; width: 50%;">
           <div style="font-weight: bold; font-size: 9pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG</div>
@@ -2050,6 +2113,30 @@
 
       // Tự động phân tích và render công thức LaTeX bằng KaTeX
       renderKaTeXInDocument();
+
+      // Khởi tạo trước Mã QR xác thực số hóa độc lập cho Biên bản PDF
+      renderOfficialQRCode(data);
+    }
+
+    function renderOfficialQRCode(data) {
+      if (!data) return;
+      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
+      const docHash = data.doc_hash || "";
+      const repCodeEl = document.getElementById('pdf-report-code');
+      if (repCodeEl) repCodeEl.innerText = certId;
+      const qrCertEl = document.getElementById('pdf-qr-cert-code');
+      if (qrCertEl) qrCertEl.innerText = certId;
+
+      const qrBox = document.getElementById('pdf-qr-code-box');
+      if (qrBox) {
+        const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
+        const verifyFullUrl = `${window.location.origin}${verifyPath}`;
+        if (window.renderQRCode) {
+          window.renderQRCode(qrBox, verifyFullUrl, 52);
+        } else if (window.generateQRCodeSVG) {
+          qrBox.innerHTML = window.generateQRCodeSVG(verifyFullUrl, 52);
+        }
+      }
     }
 
     function renderMediaFindings(audit) {
@@ -2265,35 +2352,7 @@
       if (pdfDateEl) pdfDateEl.innerText = dateVn;
 
       // Cập nhật Mã biên bản số hóa & Khởi tạo Mã QR xác thực độc lập
-      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
-      const docHash = data.doc_hash || "";
-      const repCodeEl = document.getElementById('pdf-report-code');
-      if (repCodeEl) repCodeEl.innerText = certId;
-      const qrCertEl = document.getElementById('pdf-qr-cert-code');
-      if (qrCertEl) qrCertEl.innerText = certId;
-
-      const qrBox = document.getElementById('pdf-qr-code-box');
-      if (qrBox) {
-        qrBox.innerHTML = '';
-        const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
-        const verifyFullUrl = `${window.location.origin}${verifyPath}`;
-        try {
-          if (window.QRCode) {
-            new QRCode(qrBox, {
-              text: verifyFullUrl,
-              width: 52,
-              height: 52,
-              colorDark: "#000000",
-              colorLight: "#ffffff",
-              correctLevel: QRCode.CorrectLevel.M
-            });
-          } else {
-            qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=52x52&data=${encodeURIComponent(verifyFullUrl)}" style="width:52px;height:52px;" alt="QR Code" />`;
-          }
-        } catch(e) {
-          console.warn("Lỗi render QR Code:", e);
-        }
-      }
+      renderOfficialQRCode(data);
 
       const aiPct = data.ai_detection.ai_percentage;
       const plagPct = data.plagiarism.max_similarity_percentage;
@@ -2469,6 +2528,9 @@
 
       pdfContainer.classList.remove('hidden');
 
+      // Chờ micro-task để browser reflow & paint đầy đủ trước khi chụp canvas (đảm bảo QR Code hiển thị 100%)
+      await new Promise(r => setTimeout(r, 150));
+
       // Tối ưu hóa LaTeX (KaTeX)
       if (window.katex) {
         document.querySelectorAll('#printable-report-container .katex-inline').forEach(el => {
@@ -2642,7 +2704,7 @@
       const docHash = data.doc_hash || "";
       const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
       const verifyFullUrl = `${window.location.origin}${verifyPath}`;
-      const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=52x52&data=${encodeURIComponent(verifyFullUrl)}`;
+      const qrSvg = (window.generateQRCodeSVG) ? window.generateQRCodeSVG(verifyFullUrl, 50) : '';
 
       return `
         <div style="display: flex; justify-content: space-between; margin-top: 14px; page-break-inside: avoid;">
@@ -2650,7 +2712,7 @@
             <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA & TRUY XUẤT BẢN GỐC</div>
             <div style="font-size: 7.2pt; font-style: italic; color: #475569;">(Quét mã QR tra cứu tính toàn vẹn)</div>
             <div style="width: 54px; height: 54px; padding: 2px; border: 1px solid #1e3a8a; background: #fff; margin: 2px auto; display: flex; align-items: center; justify-content: center;">
-              <img src="${qrImgSrc}" style="width:50px;height:50px;" alt="QR Code" />
+              ${qrSvg}
             </div>
             <div style="font-size: 6.5pt; font-family: monospace; color: #1e3a8a; font-weight: bold; margin-top: 1px;">
               MÃ TRA CỨU: ${certId}
@@ -2894,6 +2956,9 @@
       sourceContainer.innerHTML = buildSourceReportHTML(type);
       sourceContainer.classList.remove('hidden');
 
+      // Chờ layout và SVG render hoàn thiện trước khi chụp canvas
+      await new Promise(r => setTimeout(r, 150));
+
       try {
         const pages = sourceContainer.querySelectorAll('.pdf-section-page');
         let jsPDFConstructor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
@@ -2960,13 +3025,13 @@
         );
 
         // 2. Vô hiệu hóa menu chuột phải (Disable Context Menu)
-        document.addEventListener('contextmenu', function(e) {
+        document.addEventListener('contextmenu', function (e) {
           e.preventDefault();
           return false;
         });
 
         // 3. Khóa các phím tắt mở DevTools & Soi Source (F12, Ctrl+U, Ctrl+Shift+I/J/C, Ctrl+S)
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
           // F12
           if (e.keyCode === 123) {
             e.preventDefault();
