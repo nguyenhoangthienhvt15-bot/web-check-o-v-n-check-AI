@@ -225,6 +225,77 @@
     body.theme-light ::-webkit-scrollbar-thumb {
       background: #CBD5E1;
     }
+
+    /* ================= HIỆU ỨNG THANH TIẾN TRÌNH RGB SÓNG BIỂN LƯỢN SÓNG (OCEAN WAVE PROGRESS) ================= */
+    .ocean-wave-progress-container {
+      position: relative;
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .ocean-wave-bar {
+      background: linear-gradient(90deg, #06b6d4, #2563eb, #6366f1, #9333ea, #06b6d4);
+      background-size: 300% 100%;
+      animation: rgbOceanShift 5s ease infinite;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.35);
+      border-radius: 9999px;
+      position: relative;
+      overflow: hidden;
+      min-width: 24px;
+    }
+
+    @keyframes rgbOceanShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .ocean-wave-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      background-repeat: repeat-x;
+      background-size: 50px 100%;
+      pointer-events: none;
+    }
+
+    .ocean-wave-layer-1 {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 28' preserveAspectRatio='none'%3E%3Cpath d='M0,13 C25,3 25,23 50,13 C75,3 75,23 100,13 L100,28 L0,28 Z' fill='rgba(255,255,255,0.35)'/%3E%3C/svg%3E");
+      animation: oceanWaveFlow1 2.8s linear infinite;
+    }
+
+    .ocean-wave-layer-2 {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 28' preserveAspectRatio='none'%3E%3Cpath d='M0,15 C20,25 35,5 50,15 C65,25 80,5 100,15 L100,28 L0,28 Z' fill='rgba(255,255,255,0.22)'/%3E%3C/svg%3E");
+      animation: oceanWaveFlow2 4.2s ease-in-out infinite alternate;
+    }
+
+    .ocean-wave-shimmer {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: oceanShimmer 2s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes oceanWaveFlow1 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes oceanWaveFlow2 {
+      0% { transform: translateX(0) scaleY(0.95); }
+      50% { transform: translateX(-25%) scaleY(1.25); }
+      100% { transform: translateX(-50%) scaleY(0.95); }
+    }
+
+    @keyframes oceanShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
   </style>
 </head>
 
@@ -645,14 +716,43 @@
           biểu & bóc tách 100% câu từ đầu đến cuối.</p>
       </div>
 
-      <div class="flex justify-end gap-2.5 pt-2">
+      <!-- Nút hành động trước khi tải -->
+      <div id="modal-action-buttons" class="flex justify-end gap-2.5 pt-2">
         <button onclick="hideUploadModal()"
-          class="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs text-slate-700 font-semibold transition">Hủy</button>
+          class="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs text-slate-700 font-semibold transition cursor-pointer">Hủy</button>
         <button id="modal-submit-btn" onclick="runModalAnalysis()"
-          class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs">
-          <span id="modal-spinner" class="hidden animate-spin">🔄</span>
+          class="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer">
+          <span id="modal-submit-icon">⚡</span>
           <span id="modal-submit-label">Bắt đầu Thẩm định</span>
         </button>
+      </div>
+
+      <!-- Thanh chạy tiến trình Phần trăm RGB Sóng Biển Lượn Sóng (Ocean Wave RGB Progress Bar) -->
+      <div id="modal-progress-wrapper" class="hidden w-full pt-3 pb-1 space-y-2">
+        <div class="flex items-center justify-between text-xs px-0.5">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="relative flex h-2.5 w-2.5 shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+            </span>
+            <span id="modal-progress-stage-text" class="font-semibold text-slate-700 truncate tracking-tight text-[11.5px]">Đang bóc tách tệp & tiền xử lý công thức...</span>
+          </div>
+          <span id="modal-progress-percent" class="font-mono font-extrabold text-sm bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent shrink-0">0%</span>
+        </div>
+
+        <!-- Khung chứa thanh tiến trình sóng biển -->
+        <div class="ocean-wave-progress-container relative w-full h-7 rounded-full overflow-hidden p-0.5">
+          <div id="modal-progress-bar" class="ocean-wave-bar h-full rounded-full transition-all duration-300 ease-out" style="width: 5%;">
+            <div class="ocean-wave-layer ocean-wave-layer-1"></div>
+            <div class="ocean-wave-layer ocean-wave-layer-2"></div>
+            <div class="ocean-wave-shimmer"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-[10.5px] text-slate-500 px-1 pt-0.5">
+          <span>Chu trình AI & MinHash LSH đa tầng</span>
+          <span class="flex items-center gap-1 font-mono text-cyan-600 font-semibold">🌊 Hiệu ứng sóng biển RGB</span>
+        </div>
       </div>
 
     </div>
@@ -1152,11 +1252,35 @@
       }
     }
 
-    // --- UPLOAD MODAL DIALOG ---
+    // --- UPLOAD MODAL DIALOG & THANH TIẾN TRÌNH RGB SÓNG BIỂN LƯỢN SÓNG ---
+    let modalProgressTimer = null;
+
+    function resetModalProgress() {
+      if (modalProgressTimer) {
+        clearInterval(modalProgressTimer);
+        modalProgressTimer = null;
+      }
+      const buttonsBox = document.getElementById('modal-action-buttons');
+      const progressBox = document.getElementById('modal-progress-wrapper');
+      const bar = document.getElementById('modal-progress-bar');
+      const percentText = document.getElementById('modal-progress-percent');
+      const stageText = document.getElementById('modal-progress-stage-text');
+      const submitBtn = document.getElementById('modal-submit-btn');
+
+      if (buttonsBox) buttonsBox.classList.remove('hidden');
+      if (progressBox) progressBox.classList.add('hidden');
+      if (bar) bar.style.width = '0%';
+      if (percentText) percentText.innerText = '0%';
+      if (stageText) stageText.innerText = 'Đang bóc tách tệp & tiền xử lý công thức...';
+      if (submitBtn) submitBtn.disabled = false;
+    }
+
     function showUploadModal() {
+      resetModalProgress();
       document.getElementById('upload-modal').classList.remove('hidden');
     }
     function hideUploadModal() {
+      resetModalProgress();
       document.getElementById('upload-modal').classList.add('hidden');
       if (document.activeElement && typeof document.activeElement.blur === 'function') {
         document.activeElement.blur();
@@ -1195,13 +1319,43 @@
         return;
       }
 
-      const btn = document.getElementById('modal-submit-btn');
-      const spinner = document.getElementById('modal-spinner');
-      const label = document.getElementById('modal-submit-label');
+      const buttonsBox = document.getElementById('modal-action-buttons');
+      const progressBox = document.getElementById('modal-progress-wrapper');
+      const bar = document.getElementById('modal-progress-bar');
+      const percentText = document.getElementById('modal-progress-percent');
+      const stageText = document.getElementById('modal-progress-stage-text');
 
-      btn.disabled = true;
-      spinner.classList.remove('hidden');
-      label.innerText = "Đang thẩm định 100% tài liệu...";
+      buttonsBox.classList.add('hidden');
+      progressBox.classList.remove('hidden');
+
+      let currentProgress = 5;
+      bar.style.width = `${currentProgress}%`;
+      percentText.innerText = `${currentProgress}%`;
+      stageText.innerText = 'Bắt đầu bóc tách nhị phân & cấu trúc OMML...';
+
+      // Mô phỏng tiến trình êm ả lượn sóng tự nhiên
+      const stages = [
+        { threshold: 18, text: 'Bóc tách 100% nội dung & khử độc XML...' },
+        { threshold: 38, text: 'Phân tích biến thiên nhịp câu (Burstiness) & PPL...' },
+        { threshold: 62, text: 'Thẩm định đa tầng dấu ấn ngôn ngữ AI & nhận diện mẫu câu...' },
+        { threshold: 84, text: 'Thẩm tra nguồn trích dẫn & kiểm chứng liêm chính học thuật...' },
+        { threshold: 92, text: 'Tổng hợp ma trận pháp y & tính toán độ thuần nguyên bản...' }
+      ];
+
+      modalProgressTimer = setInterval(() => {
+        if (currentProgress < 94) {
+          const step = Math.max(1, Math.floor(Math.random() * 3) + 1);
+          currentProgress = Math.min(94, currentProgress + step);
+          bar.style.width = `${currentProgress}%`;
+          percentText.innerText = `${currentProgress}%`;
+
+          for (let s of stages) {
+            if (currentProgress >= s.threshold) {
+              stageText.innerText = s.text;
+            }
+          }
+        }
+      }, 140);
 
       try {
         const formData = new FormData();
@@ -1218,16 +1372,24 @@
         }
 
         const data = await response.json();
+
+        // Hoàn tất 100% với hiệu ứng sóng biển trọn vẹn
+        if (modalProgressTimer) clearInterval(modalProgressTimer);
+        currentProgress = 100;
+        bar.style.width = '100%';
+        percentText.innerText = '100%';
+        stageText.innerText = 'Thẩm định hoàn tất 100%! Đang mở tài liệu...';
+
+        // Đợi 450ms để người dùng cảm nhận trọn vẹn điểm dừng 100% mượt mà
+        await new Promise(r => setTimeout(r, 450));
+
         globalAuditData = data;
         hideUploadModal();
         renderDriveViewer(data);
 
       } catch (err) {
         alert("Lỗi thẩm định: " + err.message);
-      } finally {
-        btn.disabled = false;
-        spinner.classList.add('hidden');
-        label.innerText = "Bắt đầu Thẩm định";
+        resetModalProgress();
       }
     }
 
