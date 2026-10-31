@@ -50,9 +50,9 @@ class DeepForensicAcademicAIDetector:
             # Ký hiệu Toán học LaTeX & Ký hiệu hình thức
             r"(\$|\\\(|\\\[|\\begin\{equation\}).+(\$|\\\)|\\\]|\\end\{equation\})",
             r"[∀∃∈∉⊂⊆∪∩∧∨¬⇒⇔∑∏∫∬∭∮√∛∜≤≥≠≈≡±∓∞∝∇∂]",
-            r"\b[A-Za-z]\s*\[[0-9a-zA-Z\s\.\.\+\-]+\]",         # Chỉ số mảng A[1..j-1]
+            r"\b[A-Za-z]\s*\[[^\]]+\]",                         # Chỉ số mảng A[1..j-1]
             r"\b[A-Z]\([a-z0-9_,\s\+\-]+\)\s*=\s*",            # Biểu thức hàm số F(n) = ...
-            r"\b(O|Theta|Omega|theta|omega)\([n0-9a-zA-Z\s\^\+\-\*\/\log]+\)", # Ký hiệu Big-O
+            r"\b(O|Theta|Omega|theta|omega)\([^\)]+\)",         # Ký hiệu Big-O / Complexity O(n log n)
             
             # Văn bản quy phạm & Tiêu chuẩn quốc gia / quốc tế
             r"(?i)^(căn cứ|điều|khoản|điểm|chương|mục)\s+([0-9a-zA-Z\.]+)?\s*:",

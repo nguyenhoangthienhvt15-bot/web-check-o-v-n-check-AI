@@ -25,7 +25,7 @@ class MCPLatexMathBridge:
             return ""
         
         # 1. Bổ sung khoảng cách trước vi phân dx, dy, dt, dl
-        latex_str = re.sub(r'(\w)\s*d([xytlzr\theta\phi])\b', r'\1 \, d\2', latex_str)
+        latex_str = re.sub(r'(\w)\s*d([xytlzr]|\\theta|\\phi)\b', r'\1 \, d\2', latex_str)
         
         # 2. Chuẩn hóa chỉ số dưới không ngoặc: x_12 -> x_{12}
         latex_str = re.sub(r'_([a-zA-Z0-9]{2,})', r'_{\1}', latex_str)
