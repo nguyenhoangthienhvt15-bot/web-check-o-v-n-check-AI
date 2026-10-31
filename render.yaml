@@ -1,10 +1,12 @@
 services:
   - type: web
-    name: synapes-audit
+    name: synapeseducheck
     env: docker
     dockerfilePath: Dockerfile
     plan: free
     region: singapore
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: PORT
         value: 8000

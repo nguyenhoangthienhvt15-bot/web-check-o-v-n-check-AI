@@ -32,9 +32,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 3. Phục vụ tài nguyên tĩnh (Static Files: logo, images)
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 app.include_router(scan.router, prefix=f"{settings.API_V1_STR}", tags=["Scan"])
 
 @app.get("/", response_class=HTMLResponse)
+@app.head("/")
 def serve_home_ui():
     template_path = os.path.join(os.path.dirname(__file__), "templates", "index.html")
     if os.path.exists(template_path):
@@ -57,9 +63,17 @@ def run_startup_self_test():
         print(f"[SYNAPES AUDIT] Startup regression check error: {e}")
 
 @app.get("/health")
+@app.get("/healthz")
+@app.head("/health")
+@app.head("/healthz")
 def health_check():
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "engine_version": "v3.3-self-verifying-multi-factor"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port)

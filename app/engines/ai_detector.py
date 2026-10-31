@@ -479,6 +479,10 @@ class DeepForensicAcademicAIDetector:
             "sentences": analyzed_sentences
         }
 
+    def compute_score(self, text: str) -> Dict[str, Any]:
+        """Tương thích ngược với interface BinocularsDetector cho Celery tasks"""
+        return self.analyze_full_document(text)
+
 # Alias compatibility
 BinocularsDetector = DeepForensicAcademicAIDetector
 AdvancedAcademicAIDetector = DeepForensicAcademicAIDetector

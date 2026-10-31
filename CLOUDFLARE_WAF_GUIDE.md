@@ -76,3 +76,4 @@ Vào mục **Security** $\rightarrow$ **WAF** $\rightarrow$ **Custom rules** $\r
 | **Lớp 5: Dữ liệu XML** | `convert_omml_in_xml` | Khử độc XML, chống tấn công XXE (XML External Entity) và Billion Laughs. |
 | **Lớp 6: Giao diện** | `initSecurityShield` (JS) | Khóa chuột phải, vô hiệu hóa phím tắt DevTools (F12, Ctrl+U, Ctrl+Shift+I). |
 | **Lớp 7: Hạ tầng** | Docker Non-Root User | Chạy tiến trình dưới quyền `appuser` (UID 10001), cô lập hoàn toàn quyền quản trị máy chủ. |
+
