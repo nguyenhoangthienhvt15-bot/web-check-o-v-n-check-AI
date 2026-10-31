@@ -952,7 +952,7 @@
 
   <!-- ================= BẢN IN PDF CHÍNH (TIMES NEW ROMAN, CHỐNG TRÀN & KHÔNG CẮT ĐÔI CHỮ) ================= -->
   <div id="printable-report-container" class="hidden font-times"
-    style="width: 710px; max-width: 710px; box-sizing: border-box; background: #FFFFFF; color: #000000; line-height: 1.35; margin: 0 auto;">
+    style="position: fixed; left: 0; top: 0; width: 710px; max-width: 710px; box-sizing: border-box; background: #FFFFFF; color: #000000; line-height: 1.35; z-index: -99999; pointer-events: none; margin: 0;">
 
     <!-- TRANG 1: QUỐC HIỆU, TIÊU ĐỀ, HỒ SƠ & BẢNG ĐỊNH LƯỢNG TOÀN VĂN -->
     <div class="pdf-section-page"
@@ -1275,7 +1275,8 @@
   </div>
 
   <!-- CONTAINER BÁO CÁO NGUỒN TRÍCH DẪN (3 DẠNG) ĐỂ XUẤT/XEM TRƯỚC -->
-  <div id="printable-source-report-container" class="hidden font-times"></div>
+  <div id="printable-source-report-container" class="hidden font-times"
+    style="position: fixed; left: 0; top: 0; width: 710px; max-width: 710px; box-sizing: border-box; background: #FFFFFF; color: #000000; line-height: 1.35; z-index: -99999; pointer-events: none; margin: 0;"></div>
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script>
@@ -2332,8 +2333,42 @@
     }
 
     // ================= HÀM ÉP BUỘC TẢI TẬP TIN PDF TỰ ĐỘNG VỀ MÁY (FORCE DIRECT DOWNLOAD) =================
+    function showDownloadToast(blobUrl, filename) {
+      const existing = document.getElementById('pdf-download-toast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.id = 'pdf-download-toast';
+      toast.className = 'fixed bottom-5 right-5 z-[99999] bg-white border border-emerald-300 shadow-2xl rounded-xl p-3.5 flex items-center gap-3 font-sans transition-all';
+      toast.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-base">
+          ✓
+        </div>
+        <div class="pr-2">
+          <div class="text-xs font-bold text-slate-800">Biên bản PDF đã sẵn sàng!</div>
+          <div class="text-[11px] text-slate-500">Tệp đang được tải xuống máy. Nếu trình duyệt chưa tự tải:</div>
+          <a href="${blobUrl}" download="${filename}" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline mt-0.5 inline-block">
+            👉 Bấm vào đây để lưu file PDF ngay
+          </a>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-sm font-bold ml-2">✕</button>
+      `;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        try {
+          if (toast.parentNode) toast.remove();
+        } catch (e) { }
+      }, 15000);
+    }
+
     function executeDirectPdfDownload(pdfInstanceOrBlob, filename) {
       try {
+        const safeFilename = (filename || 'Bao_cao_giam_dinh_SYNAPES.pdf')
+          .replace(/[\\/:*?"<>|\r\n\t]/g, '_')
+          .trim();
+
+        // 1. Trích xuất dữ liệu Blob PDF
         let rawBlob;
         if (pdfInstanceOrBlob instanceof Blob) {
           rawBlob = pdfInstanceOrBlob;
@@ -2343,54 +2378,53 @@
           throw new Error("Không tìm thấy dữ liệu đối tượng PDF hợp lệ.");
         }
 
-        // BẢO CHỨNG 100%: Chuyển sang MIME 'application/octet-stream'
-        // Khi gặp application/octet-stream, mọi trình duyệt (Chrome, Edge, Safari, Firefox)
-        // đều bị chặn cơ chế mở PDF Viewer trong tab/cửa sổ web, và BẮT BUỘC kích hoạt
-        // tiến trình ghi file trực tiếp vào thư mục Downloads của hệ điều hành.
-        const octetBlob = new Blob([rawBlob], { type: 'application/octet-stream' });
-        const blobUrl = (window.URL || window.webkitURL).createObjectURL(octetBlob);
+        const blobUrl = (window.URL || window.webkitURL).createObjectURL(rawBlob);
 
-        // Tạo thẻ liên kết ẩn và BẮT BUỘC append vào document.body
-        // (Yêu cầu kỹ thuật bắt buộc của Chromium để kích hoạt sự kiện download sau chuỗi async await)
+        // 2. Kích hoạt tải tự động qua thẻ <a> kết nối thật vào DOM (KHÔNG dùng display: none vì Chrome sẽ bỏ qua click)
         const downloadLink = document.createElement('a');
-        downloadLink.style.display = 'none';
         downloadLink.style.position = 'fixed';
-        downloadLink.style.left = '-9999px';
-        downloadLink.style.top = '-9999px';
+        downloadLink.style.left = '0';
+        downloadLink.style.top = '0';
+        downloadLink.style.width = '1px';
+        downloadLink.style.height = '1px';
+        downloadLink.style.opacity = '0.01';
+        downloadLink.style.zIndex = '-99999';
+        downloadLink.style.pointerEvents = 'none';
         downloadLink.href = blobUrl;
-        downloadLink.setAttribute('download', filename);
-        downloadLink.download = filename;
+        downloadLink.setAttribute('download', safeFilename);
+        downloadLink.download = safeFilename;
+        downloadLink.rel = 'noopener';
         document.body.appendChild(downloadLink);
 
-        // Kích hoạt lệnh tải trực tiếp
-        if (typeof downloadLink.click === 'function') {
-          downloadLink.click();
-        } else {
-          const clickEvt = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true
-          });
+        try {
+          const clickEvt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
           downloadLink.dispatchEvent(clickEvt);
+        } catch (e) {
+          downloadLink.click();
         }
 
-        // Dọn dẹp DOM và thu hồi bộ nhớ URL Blob sau khi kích hoạt tải
+        // 3. Cơ chế kích hoạt song song từ jsPDF engine (nếu đối tượng là jsPDF)
+        if (pdfInstanceOrBlob && typeof pdfInstanceOrBlob.save === 'function') {
+          try {
+            pdfInstanceOrBlob.save(safeFilename);
+          } catch (saveErr) {
+            console.warn("jsPDF.save() note:", saveErr);
+          }
+        }
+
+        // 4. Hiển thị banner hỗ trợ tải ngay để người dùng luôn có đường dẫn dự phòng 100%
+        showDownloadToast(blobUrl, safeFilename);
+
         setTimeout(() => {
           try {
-            if (downloadLink.parentNode) {
-              downloadLink.parentNode.removeChild(downloadLink);
-            }
-            (window.URL || window.webkitURL).revokeObjectURL(blobUrl);
+            if (downloadLink.parentNode) downloadLink.parentNode.removeChild(downloadLink);
           } catch (e) { }
-        }, 3000);
+        }, 30000);
 
         return true;
       } catch (err) {
-        console.warn("Lỗi tải nhị phân trực tiếp, chuyển sang phương thức dự phòng pdf.save():", err);
-        if (pdfInstanceOrBlob && typeof pdfInstanceOrBlob.save === 'function') {
-          pdfInstanceOrBlob.save(filename);
-          return true;
-        }
+        console.error("Lỗi hoàn tất tải file PDF:", err);
+        alert("Lỗi khi tải file PDF: " + err.message);
         throw err;
       }
     }
@@ -2623,20 +2657,24 @@
 
           for (let i = 0; i < pages.length; i++) {
             const pageEl = pages[i];
-            const canvas = await window.html2canvas(pageEl, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#FFFFFF',
-              windowWidth: 710
-            });
+            try {
+              const canvas = await window.html2canvas(pageEl, {
+                scale: 1.5,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#FFFFFF',
+                windowWidth: 710
+              });
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.98);
-            const imgWidth = 190;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              const imgData = canvas.toDataURL('image/jpeg', 0.95);
+              const imgWidth = 190;
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            if (i > 0) pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+              if (i > 0) pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+            } catch (pageErr) {
+              console.warn(`Lỗi render trang ${i + 1}, tiếp tục trang kế tiếp:`, pageErr);
+            }
           }
 
           // Kích hoạt cơ chế tải trực tiếp tự động 100%
@@ -3037,20 +3075,24 @@
 
           for (let i = 0; i < pages.length; i++) {
             const pageEl = pages[i];
-            const canvas = await window.html2canvas(pageEl, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
-              backgroundColor: '#FFFFFF',
-              windowWidth: 710
-            });
+            try {
+              const canvas = await window.html2canvas(pageEl, {
+                scale: 1.5,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#FFFFFF',
+                windowWidth: 710
+              });
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.98);
-            const imgWidth = 190;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              const imgData = canvas.toDataURL('image/jpeg', 0.95);
+              const imgWidth = 190;
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            if (i > 0) pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+              if (i > 0) pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, Math.min(imgHeight, 277));
+            } catch (pageErr) {
+              console.warn(`Lỗi render trang ${i + 1}, tiếp tục trang kế tiếp:`, pageErr);
+            }
           }
 
           // Kích hoạt cơ chế tải trực tiếp tự động 100%
