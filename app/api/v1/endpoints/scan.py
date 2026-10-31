@@ -122,7 +122,7 @@ def analyze_document_content(
 
     # 6. Khởi tạo mã chứng thư số hóa & Cấp mã QR thẩm tra điện tử (SHA-256 Tamper-Proof)
     doc_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()
-    cert_id = f"SYN-2026/BB-GĐHT-{doc_hash[:4].upper()}"
+    cert_id = f"SYN-2026/BB-GDHT-{doc_hash[:4].upper()}"
     verification_info = verification_service.register_certificate(
         cert_id=cert_id,
         filename=filename or "Tài liệu học thuật",
@@ -323,7 +323,7 @@ def verify_document_certificate(
     # Nếu chứng thư chưa có trong bộ nhớ (ví dụ server vừa deploy/restart hoặc instance mới)
     # nhưng người dùng quét mã QR chứa chữ ký tham số định lượng hợp lệ:
     if not cert and (lookup_id or lookup_hash) and fn:
-        cid = lookup_id or f"SYN-2026/BB-GĐHT-{(lookup_hash or '0000')[:4].upper()}"
+        cid = lookup_id or f"SYN-2026/BB-GDHT-{(lookup_hash or '0000')[:4].upper()}"
         dhash = lookup_hash or hashlib.sha256(f"{cid}_{fn}".encode('utf-8')).hexdigest()
         cert = verification_service.register_certificate(
             cert_id=cid,

@@ -74,9 +74,9 @@ class VerificationService:
     def _seed_default_certificates(self):
         sample_hash = hashlib.sha256("SYNAPES_DEFAULT_SEED_DOCUMENT".encode('utf-8')).hexdigest()
         self.register_certificate(
-            cert_id="SYN-2026/BB-GĐHT-09",
-            filename="Bản phác thảo triển khai ý tưởng 2.docx",
-            text="Bản phác thảo triển khai ý tưởng 2",
+            cert_id="SYN-2026/BB-GDHT-09",
+            filename="Tài liệu kiểm định liêm chính học thuật mẫu.docx",
+            text="Tài liệu kiểm định liêm chính học thuật mẫu",
             ai_percentage=0.0,
             plag_percentage=0.0,
             orig_percentage=100.0,

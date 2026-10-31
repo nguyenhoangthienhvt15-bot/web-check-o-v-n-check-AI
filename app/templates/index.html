@@ -2121,10 +2121,12 @@
 
     function buildVerificationUrl(data) {
       if (!data) return "/verify";
-      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
+      // Chuẩn hóa số hiệu sang ký tự ASCII thuần GDHT
+      let rawCert = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GDHT-09";
+      const certId = rawCert.replace(/Đ/g, 'D').replace(/đ/g, 'd');
       const docHash = data.doc_hash || (data.verification && data.verification.doc_hash) || "";
       const shortHash = docHash.substring(0, 16);
-      const fn = data.filename || (data.verification && data.verification.filename) || "Tài liệu học thuật";
+      const fn = (data.filename || (data.verification && data.verification.filename) || "Tai_lieu_hoc_thuat").trim();
       const orig = data.originality_percentage ?? (data.verification && data.verification.originality_percentage) ?? 100;
       const ai = (data.ai_detection && data.ai_detection.ai_percentage) ?? (data.verification && data.verification.ai_percentage) ?? 0;
       const plag = (data.plagiarism && data.plagiarism.max_similarity_percentage) ?? (data.verification && data.verification.plag_percentage) ?? 0;
@@ -2152,7 +2154,8 @@
 
     function renderOfficialQRCode(data) {
       if (!data) return;
-      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
+      let rawCert = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GDHT-09";
+      const certId = rawCert.replace(/Đ/g, 'D').replace(/đ/g, 'd');
       const repCodeEl = document.getElementById('pdf-report-code');
       if (repCodeEl) repCodeEl.innerText = certId;
       const qrCertEl = document.getElementById('pdf-qr-cert-code');
@@ -2160,7 +2163,8 @@
 
       const qrBox = document.getElementById('pdf-qr-code-box');
       if (qrBox) {
-        const verifyPath = (data.verification && data.verification.verification_url) ? data.verification.verification_url : buildVerificationUrl(data);
+        // LUÔN LUÔN tạo verifyPath chứa đầy đủ thông số định lượng số hóa từ buildVerificationUrl
+        const verifyPath = buildVerificationUrl(data);
         const verifyFullUrl = `${window.location.origin}${verifyPath}`;
         if (window.renderQRCode) {
           window.renderQRCode(qrBox, verifyFullUrl, 52);
@@ -2837,8 +2841,9 @@
 
     function renderSourceSignatures() {
       const data = globalAuditData || {};
-      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
-      const verifyPath = (data.verification && data.verification.verification_url) ? data.verification.verification_url : buildVerificationUrl(data);
+      let rawCert = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GDHT-09";
+      const certId = rawCert.replace(/Đ/g, 'D').replace(/đ/g, 'd');
+      const verifyPath = buildVerificationUrl(data);
       const verifyFullUrl = `${window.location.origin}${verifyPath}`;
       const qrSvg = (window.generateQRCodeSVG) ? window.generateQRCodeSVG(verifyFullUrl, 50) : '';
 
