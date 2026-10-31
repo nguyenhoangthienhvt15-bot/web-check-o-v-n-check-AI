@@ -576,7 +576,7 @@ class AcademicSourceVerificationEngine:
                             if len(authorships) > 3:
                                 authors_str += " et al."
 
-                            loc = item.get("primary_location", {}).get("source", {}) or {}
+                            loc = (item.get("primary_location") or {}).get("source") or {}
                             journal = loc.get("display_name") or "Peer-Reviewed Scientific Journal"
                             publisher = loc.get("host_organization_name") or "Academic Publisher"
                             year = item.get("publication_year") or 2024
@@ -715,6 +715,7 @@ class AcademicSourceVerificationEngine:
 
         domain_usage_academic = {}
         domain_usage_unverified = {}
+        live_queries_done = 0
 
         for s in enriched_sentences:
             s_text = s["text"].strip()
@@ -728,8 +729,11 @@ class AcademicSourceVerificationEngine:
                 domain = self.classify_sentence_domain(s_text)
                 clean_kw = self.extract_meaningful_keywords(s_text, max_words=5)
 
-                # 1. Thử nghiệm Live OpenAlex trước (nếu môi trường có internet)
-                acad_item = self.query_live_openalex(clean_kw, timeout=1.0)
+                # 1. Thử nghiệm Live OpenAlex (giới hạn tối đa 2 truy vấn mạng/tài liệu để phản hồi tức thì < 1s)
+                acad_item = None
+                if live_queries_done < 2:
+                    live_queries_done += 1
+                    acad_item = self.query_live_openalex(clean_kw, timeout=0.6)
 
                 # Nếu offline hoặc OpenAlex không trả về: sử dụng kho 100% DOI thật theo domain
                 if not acad_item:

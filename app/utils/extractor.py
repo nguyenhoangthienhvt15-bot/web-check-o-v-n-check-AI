@@ -227,8 +227,8 @@ def extract_document(filename: str, file_bytes: bytes) -> Tuple[str, str, Dict[s
         raw_text = text_result.value.strip()
         
         # 3. Phục hồi biểu thức toán học và tách từ tiếng Việt dính biến
-        rendered_html = enhance_plain_text_math(rendered_html)
-        raw_text = enhance_plain_text_math(raw_text)
+        rendered_html = enhance_plain_text_math(rendered_html, is_html=True)
+        raw_text = enhance_plain_text_math(raw_text, is_html=False)
 
         structural_audit = audit_media_and_tables(rendered_html, raw_text)
         structural_audit["math_audit"] = mcp_math_bridge.audit_math_density(raw_text)

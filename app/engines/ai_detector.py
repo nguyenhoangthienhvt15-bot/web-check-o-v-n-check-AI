@@ -26,13 +26,19 @@ class DeepForensicAcademicAIDetector:
 
     def __init__(self):
         self.threshold = 0.9015355
-        self.human_typo_patterns = HUMAN_TYPO_PATTERNS
-        self.formal_proof_header_rx = re.compile(FORMAL_PROOF_HEADER_REGEX)
-        self.pure_equation_rxs = [re.compile(p) for p in PURE_EQUATION_PATTERNS]
+        self.human_typo_patterns = [(re.compile(pat, re.IGNORECASE), note) for pat, note in HUMAN_TYPO_PATTERNS]
+        self.formal_proof_header_rx = re.compile(FORMAL_PROOF_HEADER_REGEX, re.IGNORECASE)
+        self.pure_equation_rxs = [re.compile(p, re.IGNORECASE) for p in PURE_EQUATION_PATTERNS]
         self.technical_acronym_rxs = [re.compile(p) for p in TECHNICAL_ACRONYMS]
-        self.genuine_llm_syntactic_patterns = GENUINE_LLM_SYNTACTIC_PATTERNS
+        self.genuine_llm_syntactic_patterns = [
+            (re.compile(pat, re.IGNORECASE), weight, desc)
+            for pat, weight, desc in GENUINE_LLM_SYNTACTIC_PATTERNS
+        ]
         self.listicle_term_rx = re.compile(LISTICLE_TERM_REGEX)
         self.listicle_triggers = [re.compile(t, re.IGNORECASE) for t in LISTICLE_EXPLANATORY_TRIGGERS]
+        self._sent_split_rx = re.compile(
+            r'(?<=[.!?])\s+(?=[A-ZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬĐÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ0-9“"\(\[])'
+        )
 
     def _is_header(self, text: str) -> bool:
         """Nhận diện chính xác tiêu đề / đề mục thực tế của tài liệu"""
@@ -40,7 +46,7 @@ class DeepForensicAcademicAIDetector:
         words = t.split()
         if len(words) == 0:
             return True
-        if len(words) > 14:
+        if len(words) > 16:
             return False
         if t.endswith(('.', '!', '?')) and len(words) > 5:
             return False
@@ -48,9 +54,10 @@ class DeepForensicAcademicAIDetector:
         t_lower = t.lower()
         if (
             t.isupper()
-            or t_lower.startswith(("mục ", "phần ", "chương ", "bước ", "phần i", "phần ii", "phần iii", "phần iv", "phần v"))
-            or re.match(r'^(\d+\.|\b[ivxlcdm]+\b\.)', t_lower)
-            or t_lower.startswith(("các kỹ thuật", "làm rõ", "tổng quan", "cơ chế", "kiến trúc", "kết luận", "tóm tắt", "giới thiệu"))
+            or t_lower.startswith(("mục ", "phần ", "chương ", "bước ", "phần i", "phần ii", "phần iii", "phần iv", "phần v", "lời mở đầu", "tài liệu tham khảo"))
+            or re.match(r'^(\d+(\.\d+)*\.?|\b[ivxlcdm]+\b\.|rq\d+\s*\()', t_lower)
+            or t_lower.startswith(("các kỹ thuật", "làm rõ", "tổng quan", "cơ chế", "kiến trúc", "kết luận", "tóm tắt", "giới thiệu", "mục tiêu nghiên cứu", "câu hỏi nghiên cứu", "tính cấp thiết"))
+            or ('/' in t and len(words) <= 12 and not t.endswith(('.', '!', '?')))
             or (len(words) <= 4 and not t.endswith(('.', '!', '?')))
         ):
             return True
@@ -80,7 +87,7 @@ class DeepForensicAcademicAIDetector:
             if self._is_header(line):
                 sentence_units.append((line, True))
             else:
-                sents = re.split(r'(?<=[.!?])\s+(?=[A-ZÀ-Ỹ0-9“"\(])', line)
+                sents = self._sent_split_rx.split(line)
                 for s in sents:
                     s_clean = s.strip()
                     if len(s_clean) > 3:
@@ -302,8 +309,8 @@ class DeepForensicAcademicAIDetector:
 
             # 2. Kiểm tra DẤU ẤN CON NGƯỜI (Human Typo & Slang Fingerprints)
             has_human_typo = False
-            for pat, note in self.human_typo_patterns:
-                if re.search(pat, s_lower):
+            for pat_rx, note in self.human_typo_patterns:
+                if pat_rx.search(s_lower):
                     has_human_typo = True
                     diagnostics.append(f"Chỉ dấu gõ phím con người: {note}")
 
@@ -315,7 +322,7 @@ class DeepForensicAcademicAIDetector:
             cliche_score = 0.0
             matched_cliches = 0
             for pat_rx, weight, desc in self.genuine_llm_syntactic_patterns:
-                m = re.search(pat_rx, s_text, re.IGNORECASE)
+                m = pat_rx.search(s_text)
                 if m:
                     matched_str = m.group(0).strip()
                     if not is_pure_equation:
@@ -323,6 +330,19 @@ class DeepForensicAcademicAIDetector:
                         matched_cliches += 1
                         diagnostics.append(f"{desc} (phát hiện: '{matched_str[:45]}')")
                         cliche_hits_map[desc] = cliche_hits_map.get(desc, 0) + 1
+
+            # 4b. Phân tích mật độ chú giải thuật ngữ song ngữ trong ngoặc đơn & dấu gạch ngang dài (LLM Stylometric Signature)
+            if not is_pure_equation and not is_formal_proof and w_count >= 16:
+                eng_glosses = re.findall(r'\(\s*[A-Z][A-Za-z0-9\s\-/&,]{3,45}\s*\)', s_text)
+                if len(eng_glosses) >= 2:
+                    cliche_score += 0.34
+                    matched_cliches += 1
+                    gloss_preview = ", ".join(g.strip() for g in eng_glosses[:2])
+                    diagnostics.append(f"Mật độ chú giải thuật ngữ song ngữ đóng ngoặc dày đặc ({len(eng_glosses)} cụm/câu: {gloss_preview}) đặc trưng của văn bản tổng hợp bởi LLM.")
+                if " — " in s_text:
+                    cliche_score += 0.25
+                    matched_cliches += 1
+                    diagnostics.append("Sử dụng dấu gạch ngang dài chuẩn Unicode (' — ') chèn mệnh đề giải thích theo quy tắc định dạng tự động của mô hình ngôn ngữ.")
 
             # 5. Kiểm tra CẤU TRÚC ĐỊNH NGHĨA DANH MỤC LLM (Textbook Listicle: Term: Explanation)
             is_listicle = False

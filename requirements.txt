@@ -1,4 +1,4 @@
-# Web framework & Async
+# Web Framework & ASGI Server
 fastapi>=0.110.0
 uvicorn[standard]>=0.28.0
 pydantic>=2.6.0
@@ -9,27 +9,10 @@ python-multipart>=0.0.9
 celery>=5.3.6
 redis>=5.0.3
 
-# Plagiarism Detection & NLP
+# Plagiarism Detection (MinHash LSH)
 datasketch>=1.6.4
-sentence-transformers>=2.5.1
-nltk>=3.8.1
 
-# AI Detection & Deep Learning
-torch>=2.2.0
-transformers>=4.38.0
-accelerate>=0.27.2
-
-# Document Parsing
+# Document Parsing & Math Extraction
 pypdf>=4.1.0
 python-docx>=1.1.0
-
-# Database & ORM
-sqlalchemy>=2.0.28
-asyncpg>=0.29.0
-psycopg2-binary>=2.9.9
-
-# Code quality
-black>=24.2.0
-flake8>=7.0.0
-
 mammoth>=1.8.0

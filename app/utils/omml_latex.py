@@ -180,49 +180,62 @@ def omml_to_latex(omml_elem: ET.Element, display_mode: bool = False) -> str:
         return f" $${latex_core}$$ "
     return f" ${latex_core}$ "
 
-def enhance_plain_text_math(text: str) -> str:
-    """
-    Phục hồi và làm đẹp các công thức toán học bị dính chữ tiếng Việt hoặc bị suy biến sang plain-text:
-    - Sửa tích phân bị thành chữ Z L, R L
-    - Sửa căn bậc hai bị thành chữ q, r
-    - Tách từ tiếng Việt bị dính vào biến số toán học
-    """
+def _enhance_math_segment(text: str) -> str:
     if not text:
         return text
 
-    # 1. Tách các từ tiếng Việt thông dụng bị dính liền vào biểu thức toán
+    # 1. Tách các từ tiếng Việt thông dụng bị dính liền vào biểu thức toán (chỉ xét khoảng trắng ngang [ \t])
     vn_math_prefixes = r'(?:bởi|với|cho|đặt|tại|khi|thì|tính|xét|giả sử|phương trình)'
-    text = re.sub(rf'\b({vn_math_prefixes})\s*([a-zA-Z])(?=\s*[=≤≥<>:])', r'\1 $\2$ ', text, flags=re.IGNORECASE)
-    text = re.sub(rf'\b({vn_math_prefixes})\s*([a-zA-Z]\s*=\s*[^,;\s\(\)]+)', r'\1 $\2$ ', text, flags=re.IGNORECASE)
-    text = re.sub(rf'\b({vn_math_prefixes})\s*([a-zA-Z0-9_]+\s*[≤≥<>=]\s*[a-zA-Z0-9_]+)', r'\1 $\2$ ', text, flags=re.IGNORECASE)
+    text = re.sub(rf'\b({vn_math_prefixes})[ \t]*([a-zA-Z])(?=[ \t]*[=≤≥<>:])', r'\1 $\2$ ', text, flags=re.IGNORECASE)
+    text = re.sub(rf'\b({vn_math_prefixes})[ \t]*([a-zA-Z][ \t]*=[ \t]*[^,;\s\(\)]+)', r'\1 $\2$ ', text, flags=re.IGNORECASE)
+    text = re.sub(rf'\b({vn_math_prefixes})[ \t]*([a-zA-Z0-9_]+[ \t]*[≤≥<>=][ \t]*[a-zA-Z0-9_]+)', r'\1 $\2$ ', text, flags=re.IGNORECASE)
     
     # Tách từ tiếng Việt phía sau công thức dính liền (VD: y=y(x)vớia≤x≤b -> $y=y(x)$ với $a \le x \le b$)
     vn_math_suffixes = r'(?:với|trong|khi|được|có|là|nối|chạy từ)'
     text = re.sub(rf'([=≤≥\+\-\*/\(\)\]0-9a-zA-Z])({vn_math_suffixes})\b', r'\1 \2 ', text, flags=re.IGNORECASE)
     
     # Tách tọa độ điểm dính liền chữ: điểmA(0,-2) -> điểm $A(0, -2)$
-    text = re.sub(r'\b(điểm|tại)\s*([A-Z])\s*\(([^)]+)\)', r'\1 $\2(\3)$ ', text)
-    text = re.sub(r'\b(đoạn thẳng|đường cong)\s*([A-Z]{1,2})\b', r'\1 $\2$ ', text)
-    text = re.sub(r'\b(đường cong|đoạn)\s*([L|C])\b', r'\1 $\2$ ', text)
+    text = re.sub(r'\b(điểm|tại)[ \t]*([A-Z])[ \t]*\(([^)\n]+)\)', r'\1 $\2(\3)$ ', text)
+    text = re.sub(r'\b(đoạn thẳng|đường cong)[ \t]*([A-Z]{1,2})\b', r'\1 $\2$ ', text)
+    text = re.sub(r'\b(đường cong|đoạn)[ \t]*([LC])\b', r'\1 $\2$ ', text)
 
     # 2. Phục hồi dạng tích phân bị mất biểu tượng (VD: Z L f(x,y)dl -> \int_L f(x,y) dl)
-    text = re.sub(r'\bZ\s+([a-zA-Z0-9_]+)\s+([a-zA-Z0-9_]+)\s+f\(x,\s*y\)\s*dl\b', r' $\\int_{\1}^{\2} f(x,y) \, dl$ ', text)
-    text = re.sub(r'\bZ\s+([a-zA-Z0-9_]+)\s+f\(x,\s*y\)\s*dl\b', r' $\\int_{\1} f(x,y) \, dl$ ', text)
-    text = re.sub(r'\bR\s+L\s+f\(x,\s*y\)\s*dl\b', r' $\\int_L f(x,y) \, dl$ ', text)
-    text = re.sub(r'\bTínhI=\s*R\s+L\b', r'Tính $I = \\int_L$ ', text)
+    text = re.sub(r'\bZ[ \t]+([a-zA-Z0-9_]+)[ \t]+([a-zA-Z0-9_]+)[ \t]+f\(x,[ \t]*y\)[ \t]*dl\b', r' $\\int_{\1}^{\2} f(x,y) \, dl$ ', text)
+    text = re.sub(r'\bZ[ \t]+([a-zA-Z0-9_]+)[ \t]+f\(x,[ \t]*y\)[ \t]*dl\b', r' $\\int_{\1} f(x,y) \, dl$ ', text)
+    text = re.sub(r'\bR[ \t]+L[ \t]+f\(x,[ \t]*y\)[ \t]*dl\b', r' $\\int_L f(x,y) \, dl$ ', text)
+    text = re.sub(r'\bTínhI=[ \t]*R[ \t]+L\b', r'Tính $I = \\int_L$ ', text)
 
     # 3. Phục hồi căn thức bị biến thành q hoặc r (VD: q 1+ [y'(x)]2dx -> \sqrt{1 + [y'(x)]^2} dx)
-    text = re.sub(r'\bq\s*1\+\s*\[y\'\(x\)\]2\s*dx\b', r' $\\sqrt{1 + [y\'(x)]^2} \, dx$ ', text)
-    text = re.sub(r'\bq\s*\[x\'\(t\)\]2\s*\+\s*\[y\'\(t\)\]2\s*dt\b', r' $\\sqrt{[x\'(t)]^2 + [y\'(t)]^2} \, dt$ ', text)
-    text = re.sub(r'dl=\s*q1\+\s*\(y\'\)2dx', r' $dl = \\sqrt{1 + (y\')^2} \, dx$ ', text)
-    text = re.sub(r'=\s*r1\+\s*14dx', r' $= \\sqrt{1 + \\frac{1}{4}} \, dx$ ', text)
+    text = re.sub(r"\bq[ \t]*1\+[ \t]*\[y'\(x\)\]2[ \t]*dx\b", r" $\\sqrt{1 + [y'(x)]^2} \, dx$ ", text)
+    text = re.sub(r"\bq[ \t]*\[x'\(t\)\]2[ \t]*\+[ \t]*\[y'\(t\)\]2[ \t]*dt\b", r" $\\sqrt{[x'(t)]^2 + [y'(t)]^2} \, dt$ ", text)
+    text = re.sub(r"dl=[ \t]*q1\+[ \t]*\(y'\)2dx", r" $dl = \\sqrt{1 + (y')^2} \, dx$ ", text)
+    text = re.sub(r"=[ \t]*r1\+[ \t]*14dx", r" $= \\sqrt{1 + \\frac{1}{4}} \, dx$ ", text)
 
     # 4. Chuẩn hóa các ký hiệu suy diễn toán học
     text = re.sub(r'==>|=>', r' $\\implies$ ', text)
     text = re.sub(r'<==|<=', r' $\\le$ ', text)
     text = re.sub(r'>=', r' $\\ge$ ', text)
 
-    # 5. Dọn dẹp khoảng trắng
-    text = re.sub(r'\s{2,}', ' ', text)
+    # 5. Dọn dẹp khoảng trắng ngang (Horizontal spaces), BẢO TOÀN TUYỆT ĐỐI dấu xuống dòng (\n)
+    text = re.sub(r'[ \t]{2,}', ' ', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
 
-    return text.strip()
+    return text
+
+def enhance_plain_text_math(text: str, is_html: bool = False) -> str:
+    """
+    Phục hồi và làm đẹp các công thức toán học bị dính chữ tiếng Việt hoặc bị suy biến sang plain-text.
+    Nếu is_html=True, chỉ xử lý văn bản bên ngoài thẻ HTML (<...>) để bảo vệ tuyệt đối thuộc tính ảnh Base64 và cấu trúc DOM.
+    """
+    if not text:
+        return text
+
+    if is_html or ('<' in text and '>' in text):
+        parts = re.split(r'(<[^>]+>)', text)
+        processed = [
+            part if part.startswith('<') and part.endswith('>') else _enhance_math_segment(part)
+            for part in parts
+        ]
+        return "".join(processed).strip()
+
+    return _enhance_math_segment(text).strip()

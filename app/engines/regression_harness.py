@@ -17,22 +17,24 @@ class ForensicRegressionHarness:
         self.detector = DeepForensicAcademicAIDetector()
 
     def run_all_benchmarks(self) -> Dict[str, Any]:
-        results = {
-            "all_passed": True,
-            "total_tests": 6,
-            "passed_tests": 0,
-            "failed_tests": 0,
-            "details": []
-        }
-
         tests = [
             ("Test 1: Hybrid Cybersecurity Document (Phát hiện AI nửa sau)", self._test_hybrid_cybersecurity),
             ("Test 2: Algorithm Report with AI content (Báo cáo giải thuật có AI)", self._test_algorithm_report_with_ai),
             ("Test 3: Formal Math Loop Invariants (Bất biến Toán không bị phạt nhầm)", self._test_formal_math_invariants),
             ("Test 4: Pure Human with Telex Typos (Con người tự viết có lỗi phím)", self._test_pure_human_typos),
             ("Test 5: Dynamic Burstiness & Perplexity (B & PPL tính động, không cố định)", self._test_dynamic_stylometrics),
-            ("Test 6: Regex Compilation Safety (100% Regex không có lỗi escape)", self._test_regex_compilation)
+            ("Test 6: Regex Compilation & Python 3.11+ Safety (Không có lỗi inline flag)", self._test_regex_compilation),
+            ("Test 7: Bilingual Biomedical Proposal (Đề cương Y sinh song ngữ có AI)", self._test_biomedical_hybrid_proposal),
+            ("Test 8: Paragraph Break Preservation (Bảo toàn xuống dòng khi xử lý Toán)", self._test_paragraph_preservation)
         ]
+
+        results = {
+            "all_passed": True,
+            "total_tests": len(tests),
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "details": []
+        }
 
         for name, test_fn in tests:
             try:
@@ -138,15 +140,43 @@ Trong quá trình cấu hình sever thử nghiệm, tôi đã phát hiện lỗi
             TECHNICAL_ACRONYMS, GENUINE_LLM_SYNTACTIC_PATTERNS
         )
 
+        # Đảm bảo tuyệt đối không có inline global flag (?i) nằm sai vị trí gây crash Python 3.11+
+        assert "(?i)" not in FORMAL_PROOF_HEADER_REGEX, "FORMAL_PROOF_HEADER_REGEX must not contain inline (?i)"
+        re.compile(FORMAL_PROOF_HEADER_REGEX, re.IGNORECASE)
+
         for pat, _ in HUMAN_TYPO_PATTERNS:
-            re.compile(pat)
-        re.compile(FORMAL_PROOF_HEADER_REGEX)
+            assert "(?i)" not in pat, f"Inline (?i) forbidden in {pat}"
+            re.compile(pat, re.IGNORECASE)
         for eq in PURE_EQUATION_PATTERNS:
-            re.compile(eq)
+            assert "(?i)" not in eq, f"Inline (?i) forbidden in {eq}"
+            re.compile(eq, re.IGNORECASE)
         for tech in TECHNICAL_ACRONYMS:
+            assert "(?i)" not in tech, f"Inline (?i) forbidden in {tech}"
             re.compile(tech)
         for pat, _, _ in GENUINE_LLM_SYNTACTIC_PATTERNS:
-            re.compile(pat)
+            assert "(?i)" not in pat, f"Inline (?i) forbidden in {pat}"
+            re.compile(pat, re.IGNORECASE)
+
+    def _test_biomedical_hybrid_proposal(self):
+        text = """
+LỜI MỞ ĐẦU
+Dưới sự phát triển không ngừng cùng sự tiến bộ của khoa học kĩ thuật hiện hành ở trên thế giới nói chung và nước ta nói riêng - rất nhiều các nghiên cứu mang tính hỗ trợ cộng đồng đã ra đời.
+Chu kỳ kinh nguyệt được coi là “dấu hiệu sinh tồn thứ 5” của cơ thể nữ giới, không chỉ phản ánh khả năng sinh sản mà còn là “tấm gương” phản chiếu rõ nhất về sức khỏe nội tiết.
+The ability to tailor lifestyle practices to the tracked cycle via the biomedical system not only maintains stable circadian and biological rhythms, but also fosters beneficial changes in endocrine and mental health.
+Mô hình ngôn ngữ nhỏ chạy cục bộ (On-device TinyLM 1B–2B) hoàn toàn có khả năng giải quyết bài toán trích xuất thực thể y sinh với điều kiện phải áp dụng kỹ thuật tinh chỉnh tập trung (Task-specific Fine-tuning) kết hợp cùng cơ chế kiểm soát cấu trúc đầu ra (Constrained/Grammar-based Decoding).
+        """.strip()
+
+        res = self.detector.analyze_full_document(text)
+        assert res["ai_percentage"] >= 35.0, f"Expected Biomedical Proposal AI >= 35%, got {res['ai_percentage']}%"
+        assert res["ai_sentence_count"] >= 3, f"Expected >= 3 AI sentences, got {res['ai_sentence_count']}"
+
+    def _test_paragraph_preservation(self):
+        from app.utils.omml_latex import enhance_plain_text_math
+        sample = "PHẦN 1: MỞ ĐẦU\n\nCâu văn thứ nhất của đoạn một.\n\nPHẦN 2: NỘI DUNG\n\nCâu văn thứ hai với x = 5."
+        processed = enhance_plain_text_math(sample)
+        assert "\n" in processed, "enhance_plain_text_math must NOT strip newline characters (\\n)!"
+        lines = [l.strip() for l in processed.split("\n") if l.strip()]
+        assert len(lines) == 4, f"Expected 4 preserved lines, got {len(lines)}"
 
 if __name__ == "__main__":
     harness = ForensicRegressionHarness()
