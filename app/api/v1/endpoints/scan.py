@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import Optional, Any, Dict
+from datetime import datetime, timezone, timedelta
 from app.workers.tasks import run_full_document_scan, celery_app, plagiarism_engine
 from app.engines.ai_detector import DeepForensicAcademicAIDetector
 from app.engines.source_verifier import AcademicSourceVerificationEngine
@@ -9,6 +10,9 @@ from app.utils.extractor import extract_document
 router = APIRouter()
 ai_detector = DeepForensicAcademicAIDetector()
 source_verifier = AcademicSourceVerificationEngine()
+
+# Bộ định thời gian chuẩn múi giờ Việt Nam (Asia/Ho_Chi_Minh - UTC+7)
+VN_TZ = timezone(timedelta(hours=7))
 
 class ScanSubmissionRequest(BaseModel):
     content: str = Field(..., min_length=20, description="Nội dung văn bản cần kiểm tra")
@@ -94,9 +98,20 @@ def analyze_document_content(
     # 4. Thẩm tra và Đối soát Nguồn Trích dẫn Đa tầng (3 Dạng: Thiếu kiểm chứng, Khoa học uy tín, Tổng hợp)
     sources_audit = source_verifier.verify_sources(text, enriched_sentences)
 
+    # 5. Bộ định thời gian giám định chuẩn (UTC+7 / Việt Nam)
+    now_vn = datetime.now(VN_TZ)
+    report_date_vn = f"ngày {now_vn.day:02d} tháng {now_vn.month:02d} năm {now_vn.year}"
+    report_date = now_vn.strftime("%d/%m/%Y")
+    report_time = now_vn.strftime("%H:%M:%S")
+    report_datetime = f"{report_time} {report_date}"
+
     return {
         "status": "COMPLETED",
         "filename": filename or "Tài liệu học thuật",
+        "report_date_vn": report_date_vn,
+        "report_date": report_date,
+        "report_time": report_time,
+        "report_datetime": report_datetime,
         "total_words": len(text.split()),
         "total_characters": len(text),
         "total_sentences": len(enriched_sentences),
