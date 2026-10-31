@@ -35,6 +35,24 @@ def serve_home_ui():
             return f.read()
     return "<h1>Hệ thống Kiểm định Đạo văn & Văn bản AI đang hoạt động.</h1>"
 
+@app.on_event("startup")
+def run_startup_self_test():
+    """Tự động kiểm thử hệ thống giám định (Self-Healing Regression Gate) khi khởi động"""
+    try:
+        from app.engines.regression_harness import ForensicRegressionHarness
+        harness = ForensicRegressionHarness()
+        report = harness.run_all_benchmarks()
+        print(f"[SYNAPES AUDIT] Self-Verifying Regression Gate: {report['passed_tests']}/{report['total_tests']} tests passed.")
+        for d in report["details"]:
+            status_flag = "✓" if d["status"] == "PASSED" else "✗"
+            print(f" {status_flag} {d['name']}: {d['status']} {d['error'] or ''}")
+    except Exception as e:
+        print(f"[SYNAPES AUDIT] Startup regression check error: {e}")
+
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": settings.PROJECT_NAME}
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "engine_version": "v3.3-self-verifying-multi-factor"
+    }

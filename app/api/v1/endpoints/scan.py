@@ -171,3 +171,10 @@ async def submit_file_scan(file: UploadFile = File(...)):
 async def scan_direct_sync(request: ScanSubmissionRequest):
     result = analyze_document_content(request.content)
     return result
+
+@router.get("/self-test")
+def run_regression_self_test():
+    """Chạy bộ kiểm chuẩn pháp y tự động (Automated Forensic Regression Suite)"""
+    from app.engines.regression_harness import ForensicRegressionHarness
+    harness = ForensicRegressionHarness()
+    return harness.run_all_benchmarks()
