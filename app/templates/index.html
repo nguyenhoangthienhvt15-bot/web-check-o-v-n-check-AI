@@ -22,6 +22,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Thư viện tạo Mã QR xác thực số hóa độc lập (Zero-Dependency) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <!-- KaTeX hỗ trợ biên dịch công thức toán học học thuật chuẩn xác -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -182,6 +184,12 @@
     .hl-plag {
       background-color: rgba(59, 130, 246, 0.22);
       border-bottom: 2px solid #3B82F6;
+      cursor: pointer;
+    }
+
+    .hl-semantic {
+      background-color: rgba(168, 85, 247, 0.22);
+      border-bottom: 2px dashed #9333EA;
       cursor: pointer;
     }
 
@@ -482,7 +490,7 @@
             <div class="pm-subcard p-2.5 rounded-lg border border-slate-200 bg-slate-50/80">
               <p class="text-[9.5px] pm-muted-text uppercase tracking-wide">Đạo văn</p>
               <p id="stat-plag-pct" class="text-xl font-bold font-mono-num text-blue-600">0%</p>
-              <p class="text-[8.5px] pm-muted-text font-mono-num mt-0.5">MinHash LSH</p>
+              <p id="stat-plag-sub" class="text-[8.5px] pm-muted-text font-mono-num mt-0.5">MinHash LSH</p>
             </div>
           </div>
 
@@ -1162,13 +1170,16 @@
         </div>
       </div>
 
-      <!-- VIII. Xác nhận của Hội đồng Thẩm định & Chữ ký số (Đã xóa ô con dấu số hóa) -->
+      <!-- VIII. Xác nhận của Hội đồng Thẩm định & Chữ ký số (Tích hợp Mã QR Xác thực Điện tử) -->
       <div style="display: flex; justify-content: space-between; margin-top: 12px;" class="pdf-no-break">
-        <div style="text-align: center; width: 45%;">
-          <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">ĐƠN VỊ THẨM ĐỊNH ĐỘC LẬP</div>
-          <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký điện tử & Lưu trữ hồ sơ)</div>
-          <div style="height: 48px; margin: 4px auto;"></div>
-          <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">SYNAPES INTEGRITY CENTER</div>
+        <div style="text-align: center; width: 45%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA & TRUY XUẤT BẢN GỐC</div>
+          <div style="font-size: 7.2pt; font-style: italic; color: #475569;">(Quét mã QR để kiểm tra tính toàn vẹn)</div>
+          <div id="pdf-qr-code-box" style="width: 58px; height: 58px; padding: 2px; border: 1px solid #1e3a8a; background: #ffffff; margin: 3px auto; display: flex; align-items: center; justify-content: center;"></div>
+          <div style="font-size: 6.5pt; font-family: monospace; color: #1e3a8a; font-weight: bold; margin-top: 1px;">
+            MÃ TRA CỨU: <span id="pdf-qr-cert-code">SYN-2026/BB-GĐHT-09</span>
+          </div>
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-top: 2px;">SYNAPES INTEGRITY CENTER</div>
         </div>
         <div style="text-align: center; width: 50%;">
           <div style="font-weight: bold; font-size: 9pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG</div>
@@ -1530,17 +1541,63 @@
         const formData = new FormData();
         formData.append('file', modalFile);
 
-        const response = await fetch('/api/v1/scan/upload', {
-          method: 'POST',
-          body: formData
-        });
+        let data = null;
 
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.detail || "Không thể phân tích tài liệu.");
+        // Ưu tiên nạp vào Hàng đợi Xử lý Ngầm Bất đồng bộ (Async Background Queue)
+        try {
+          const asyncResp = await fetch('/api/v1/scan/async', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (asyncResp.ok) {
+            const asyncInit = await asyncResp.json();
+            const taskId = asyncInit.task_id;
+
+            // Polling giám sát tiến độ thực tế theo thời gian thực
+            let isDone = false;
+            let pollCounter = 0;
+            while (!isDone && pollCounter < 200) {
+              await new Promise(r => setTimeout(r, 600));
+              pollCounter++;
+
+              const statusResp = await fetch(`/api/v1/scan/status/${taskId}`);
+              if (statusResp.ok) {
+                const taskStatus = await statusResp.json();
+                if (taskStatus.status === "PROCESSING" || taskStatus.status === "QUEUED") {
+                  const p = Math.max(currentProgress, taskStatus.progress_percent || 15);
+                  currentProgress = p;
+                  bar.style.width = `${p}%`;
+                  percentText.innerText = `${p}%`;
+                  if (taskStatus.current_stage) {
+                    stageText.innerText = taskStatus.current_stage;
+                  }
+                } else if (taskStatus.status === "COMPLETED") {
+                  isDone = true;
+                  data = taskStatus.result;
+                } else if (taskStatus.status === "FAILED") {
+                  throw new Error(taskStatus.error || "Quá trình giám định thất bại.");
+                }
+              }
+            }
+          }
+        } catch (queueErr) {
+          console.warn("Async queue fallback to sync:", queueErr);
         }
 
-        const data = await response.json();
+        // Tự động Fallback sang Endpoint đồng bộ trực tiếp nếu cần thiết
+        if (!data) {
+          const response = await fetch('/api/v1/scan/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || "Không thể phân tích tài liệu.");
+          }
+          data = await response.json();
+        }
 
         // Hoàn tất 100% với hiệu ứng sóng biển trọn vẹn
         if (modalProgressTimer) clearInterval(modalProgressTimer);
@@ -1881,6 +1938,16 @@
       document.getElementById('stat-ai-pct').innerText = `${aiPercent}%`;
       document.getElementById('stat-ai-ratio').innerText = `${data.ai_sentence_count}/${data.total_sentences} câu`;
       document.getElementById('stat-plag-pct').innerText = `${plagPercent}%`;
+      const plagSubEl = document.getElementById('stat-plag-sub');
+      if (plagSubEl) {
+        if (data.plagiarism && data.plagiarism.semantic_paraphrase_detected) {
+          plagSubEl.innerText = "Semantic AI Paraphrase";
+          plagSubEl.className = "text-[8.5px] font-bold text-purple-600 font-mono-num mt-0.5";
+        } else {
+          plagSubEl.innerText = "MinHash LSH";
+          plagSubEl.className = "text-[8.5px] pm-muted-text font-mono-num mt-0.5";
+        }
+      }
       document.getElementById('stat-orig-pct').innerText = `${origPercent}%`;
 
       document.getElementById('stat-math-formula').innerText =
@@ -1931,7 +1998,8 @@
           if (s.is_header || !s.text || s.text.length < 5) return;
           const cleanSent = s.text.trim();
           let cls = "";
-          if (s.risk_level === 'plagiarism') cls = "hl-plag";
+          if (s.risk_level === 'semantic_paraphrase') cls = "hl-semantic";
+          else if (s.risk_level === 'plagiarism') cls = "hl-plag";
           else if (s.risk_level === 'high_ai') cls = "hl-high-ai";
           else if (s.risk_level === 'medium_ai') cls = "hl-medium-ai";
           else cls = "hl-human";
@@ -1960,7 +2028,8 @@
           span.innerText = s.text + " ";
           span.className = "font-times ";
 
-          if (s.risk_level === 'plagiarism') span.className += "hl-plag";
+          if (s.risk_level === 'semantic_paraphrase') span.className += "hl-semantic";
+          else if (s.risk_level === 'plagiarism') span.className += "hl-plag";
           else if (s.risk_level === 'high_ai') span.className += "hl-high-ai";
           else if (s.risk_level === 'medium_ai') span.className += "hl-medium-ai";
           else span.className += "hl-human";
@@ -2127,9 +2196,12 @@
       document.getElementById('active-sent-quote').innerText = `“${s.text}”`;
 
       const scoreEl = document.getElementById('active-sent-score');
-      if (s.risk_level === 'plagiarism') {
-        scoreEl.innerText = "Trùng lặp Đạo văn (Plagiarism)";
-        scoreEl.className = "font-bold text-blue-400";
+      if (s.risk_level === 'semantic_paraphrase') {
+        scoreEl.innerText = "Đạo văn Ngữ nghĩa (Semantic AI Paraphrase)";
+        scoreEl.className = "font-bold text-purple-600";
+      } else if (s.risk_level === 'plagiarism') {
+        scoreEl.innerText = "Trùng lặp Đạo văn (Exact Match)";
+        scoreEl.className = "font-bold text-blue-600";
       } else if (s.risk_level === 'high_ai') {
         scoreEl.innerText = `${s.ai_confidence}% (Khả năng rất cao sinh bởi AI)`;
         scoreEl.className = "font-bold text-rose-400";
@@ -2191,6 +2263,37 @@
       const dateVn = data.report_date_vn || getVietnameseOfficialDate();
       const pdfDateEl = document.getElementById('pdf-date');
       if (pdfDateEl) pdfDateEl.innerText = dateVn;
+
+      // Cập nhật Mã biên bản số hóa & Khởi tạo Mã QR xác thực độc lập
+      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
+      const docHash = data.doc_hash || "";
+      const repCodeEl = document.getElementById('pdf-report-code');
+      if (repCodeEl) repCodeEl.innerText = certId;
+      const qrCertEl = document.getElementById('pdf-qr-cert-code');
+      if (qrCertEl) qrCertEl.innerText = certId;
+
+      const qrBox = document.getElementById('pdf-qr-code-box');
+      if (qrBox) {
+        qrBox.innerHTML = '';
+        const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
+        const verifyFullUrl = `${window.location.origin}${verifyPath}`;
+        try {
+          if (window.QRCode) {
+            new QRCode(qrBox, {
+              text: verifyFullUrl,
+              width: 52,
+              height: 52,
+              colorDark: "#000000",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.M
+            });
+          } else {
+            qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=52x52&data=${encodeURIComponent(verifyFullUrl)}" style="width:52px;height:52px;" alt="QR Code" />`;
+          }
+        } catch(e) {
+          console.warn("Lỗi render QR Code:", e);
+        }
+      }
 
       const aiPct = data.ai_detection.ai_percentage;
       const plagPct = data.plagiarism.max_similarity_percentage;
@@ -2311,7 +2414,14 @@
           chunk.forEach((s, idxInChunk) => {
             const globalIdx = c * CHUNK_SIZE + idxInChunk + 1;
             const bgColor = idxInChunk % 2 === 0 ? '#FFFFFF' : '#F9F9F9';
-            const riskText = s.is_plagiarism ? "Trùng lặp Đạo văn" : `${s.ai_confidence}% (${s.ai_confidence >= 70 ? 'Rất cao' : 'Trung bình'})`;
+            let riskText = "";
+            if (s.risk_level === 'semantic_paraphrase') {
+              riskText = "Đạo văn Ngữ nghĩa (AI Paraphrase)";
+            } else if (s.is_plagiarism) {
+              riskText = "Trùng lặp Đạo văn";
+            } else {
+              riskText = `${s.ai_confidence}% (${s.ai_confidence >= 70 ? 'Rất cao' : 'Trung bình'})`;
+            }
 
             rowsHtml += `
               <tr style="background-color: ${bgColor}; page-break-inside: avoid !important;">
@@ -2527,13 +2637,25 @@
     }
 
     function renderSourceSignatures() {
+      const data = globalAuditData || {};
+      const certId = data.cert_id || (data.verification && data.verification.cert_id) || "SYN-2026/BB-GĐHT-09";
+      const docHash = data.doc_hash || "";
+      const verifyPath = (data.verification && data.verification.verification_url) || `/verify?id=${encodeURIComponent(certId)}&hash=${docHash.substring(0, 16)}`;
+      const verifyFullUrl = `${window.location.origin}${verifyPath}`;
+      const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=52x52&data=${encodeURIComponent(verifyFullUrl)}`;
+
       return `
         <div style="display: flex; justify-content: space-between; margin-top: 14px; page-break-inside: avoid;">
-          <div style="text-align: center; width: 45%;">
-            <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">ĐƠN VỊ THẨM ĐỊNH ĐỘC LẬP</div>
-            <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký điện tử & Lưu trữ hồ sơ)</div>
-            <div style="height: 48px; margin: 4px auto;"></div>
-            <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">SYNAPES INTEGRITY CENTER</div>
+          <div style="text-align: center; width: 45%; display: flex; flex-direction: column; align-items: center;">
+            <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA & TRUY XUẤT BẢN GỐC</div>
+            <div style="font-size: 7.2pt; font-style: italic; color: #475569;">(Quét mã QR tra cứu tính toàn vẹn)</div>
+            <div style="width: 54px; height: 54px; padding: 2px; border: 1px solid #1e3a8a; background: #fff; margin: 2px auto; display: flex; align-items: center; justify-content: center;">
+              <img src="${qrImgSrc}" style="width:50px;height:50px;" alt="QR Code" />
+            </div>
+            <div style="font-size: 6.5pt; font-family: monospace; color: #1e3a8a; font-weight: bold; margin-top: 1px;">
+              MÃ TRA CỨU: ${certId}
+            </div>
+            <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-top: 2px;">SYNAPES INTEGRITY CENTER</div>
           </div>
           <div style="text-align: center; width: 50%;">
             <div style="font-weight: bold; font-size: 9pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG</div>

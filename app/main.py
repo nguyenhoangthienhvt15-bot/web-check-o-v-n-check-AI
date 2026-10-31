@@ -48,6 +48,15 @@ def serve_home_ui():
             return f.read()
     return "<h1>Hệ thống Kiểm định Đạo văn & Văn bản AI đang hoạt động.</h1>"
 
+@app.get("/verify", response_class=HTMLResponse)
+@app.head("/verify")
+def serve_verify_ui():
+    template_path = os.path.join(os.path.dirname(__file__), "templates", "verify.html")
+    if os.path.exists(template_path):
+        with open(template_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>Cổng Xác thực Biên bản SYNAPES AUDIT</h1>"
+
 @app.on_event("startup")
 def run_startup_self_test():
     """Tự động kiểm thử hệ thống giám định (Self-Healing Regression Gate) khi khởi động"""

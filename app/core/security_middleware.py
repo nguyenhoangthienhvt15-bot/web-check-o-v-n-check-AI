@@ -134,8 +134,8 @@ class IPFirewallMiddleware(BaseHTTPMiddleware):
         self.request_history[client_ip] = recent_requests
 
         # Kiểm tra ngưỡng tải tệp (Upload Rate Limit)
-        if "/scan/upload" in path:
-            upload_count = sum(1 for entry in recent_requests if "/scan/upload" in entry[1])
+        if "/scan/upload" in path or "/scan/async" in path:
+            upload_count = sum(1 for entry in recent_requests if "/scan/upload" in entry[1] or "/scan/async" in entry[1])
             if upload_count >= self.UPLOAD_LIMIT:
                 return JSONResponse(
                     status_code=429,
@@ -146,8 +146,8 @@ class IPFirewallMiddleware(BaseHTTPMiddleware):
                     headers={"Retry-After": "60"}
                 )
 
-        # Kiểm tra ngưỡng gọi API chung
-        if path.startswith("/api/"):
+        # Kiểm tra ngưỡng gọi API chung (Ngoại trừ endpoint polling trạng thái tiến trình ngầm)
+        if path.startswith("/api/") and "/scan/status/" not in path:
             if len(recent_requests) >= self.API_LIMIT:
                 return JSONResponse(
                     status_code=429,

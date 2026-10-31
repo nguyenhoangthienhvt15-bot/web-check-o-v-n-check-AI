@@ -1,6 +1,7 @@
 import re
 from typing import List, Tuple, Set, Dict, Any
 from datasketch import MinHash, MinHashLSH
+from app.engines.semantic_paraphrase_engine import SemanticParaphraseEngine
 
 class PlagiarismEngine:
     def __init__(self, threshold: float = 0.4, num_perm: int = 128):
@@ -8,6 +9,7 @@ class PlagiarismEngine:
         self.threshold = threshold
         self.lsh = MinHashLSH(threshold=self.threshold, num_perm=self.num_perm)
         self.corpus_storage: Dict[str, str] = {}
+        self.semantic_engine = SemanticParaphraseEngine()
         
         # Nạp dữ liệu mẫu vào cơ sở dữ liệu đối sánh học thuật
         self._seed_reference_corpus()
@@ -62,6 +64,7 @@ class PlagiarismEngine:
 
     def calculate_sentence_overlap(self, query_text: str, candidate_text: str) -> Tuple[float, List[Dict[str, Any]]]:
         query_sentences = [s.strip() for s in re.split(r'[.!?\n]+', query_text) if len(s.strip()) > 10]
+        cand_sentences = [cs.strip() for cs in re.split(r'[.!?\n]+', candidate_text) if len(cs.strip()) > 10]
         cand_words = set(re.findall(r'\b\w+\b', candidate_text.lower()))
         
         matched_sentences = []
@@ -69,14 +72,35 @@ class PlagiarismEngine:
             s_words = set(re.findall(r'\b\w+\b', s.lower()))
             if not s_words:
                 continue
-            # Tính Jaccard overlap giữa câu và văn bản nguồn
+            # 1. So khớp Jaccard từ vựng bề mặt (Lexical Overlap)
             intersection = s_words.intersection(cand_words)
-            overlap_ratio = len(intersection) / len(s_words)
-            if overlap_ratio >= 0.65:
+            lexical_ratio = len(intersection) / len(s_words)
+
+            # 2. So khớp Ngữ nghĩa chuyên sâu (Semantic Synset & Concept Overlap)
+            best_semantic_score = 0.0
+            best_match_info = None
+            for cs in cand_sentences:
+                eval_res = self.semantic_engine.evaluate_sentence_pair(s, cs)
+                if eval_res["is_match"] and eval_res["confidence"] > best_semantic_score:
+                    best_semantic_score = eval_res["confidence"]
+                    best_match_info = eval_res
+                    best_match_info["matched_source"] = cs
+
+            if lexical_ratio >= 0.70:
                 matched_sentences.append({
                     "text": s,
-                    "overlap_ratio": round(overlap_ratio * 100, 1),
-                    "type": "exact" if overlap_ratio >= 0.85 else "paraphrase"
+                    "overlap_ratio": round(lexical_ratio * 100, 1),
+                    "type": "exact",
+                    "diagnostics": "Trùng lặp từ vựng trực tiếp với tài liệu đối sánh trong cơ sở dữ liệu."
+                })
+            elif best_match_info and best_match_info["is_match"]:
+                matched_sentences.append({
+                    "text": s,
+                    "overlap_ratio": best_match_info["confidence"],
+                    "type": "semantic_paraphrase",
+                    "semantic_similarity": best_match_info["semantic_similarity"],
+                    "matched_source_sentence": best_match_info.get("matched_source", ""),
+                    "diagnostics": "Đạo văn ngữ nghĩa (Semantic AI Paraphrasing): Tái cấu trúc cú pháp hoặc thay thế từ đồng nghĩa nhằm né tránh kiểm tra từ vựng."
                 })
                 
         similarity_ratio = len(matched_sentences) / max(len(query_sentences), 1)

@@ -25,7 +25,8 @@ class ForensicRegressionHarness:
             ("Test 5: Dynamic Burstiness & Perplexity (B & PPL tính động, không cố định)", self._test_dynamic_stylometrics),
             ("Test 6: Regex Compilation & Python 3.11+ Safety (Không có lỗi inline flag)", self._test_regex_compilation),
             ("Test 7: Bilingual Biomedical Proposal (Đề cương Y sinh song ngữ có AI)", self._test_biomedical_hybrid_proposal),
-            ("Test 8: Paragraph Break Preservation (Bảo toàn xuống dòng khi xử lý Toán)", self._test_paragraph_preservation)
+            ("Test 8: Paragraph Break Preservation (Bảo toàn xuống dòng khi xử lý Toán)", self._test_paragraph_preservation),
+            ("Test 9: Semantic AI Paraphrase & Legal QR Verification Integrity", self._test_semantic_paraphrase_and_verification)
         ]
 
         results = {
@@ -177,6 +178,34 @@ Mô hình ngôn ngữ nhỏ chạy cục bộ (On-device TinyLM 1B–2B) hoàn t
         assert "\n" in processed, "enhance_plain_text_math must NOT strip newline characters (\\n)!"
         lines = [l.strip() for l in processed.split("\n") if l.strip()]
         assert len(lines) == 4, f"Expected 4 preserved lines, got {len(lines)}"
+
+    def _test_semantic_paraphrase_and_verification(self):
+        from app.engines.semantic_paraphrase_engine import SemanticParaphraseEngine
+        from app.services.verification_service import verification_service
+
+        engine = SemanticParaphraseEngine()
+        s1 = "Trí tuệ nhân tạo và học máy đang làm thay đổi căn bản các phương pháp nghiên cứu khoa học."
+        s2 = "Mô hình học máy và AI đang biến đổi sâu sắc các phương pháp thực nghiệm khoa học."
+        eval_res = engine.evaluate_sentence_pair(s1, s2)
+        assert eval_res["is_match"], "Phải phát hiện được đạo văn ngữ nghĩa khi thay thế từ đồng nghĩa"
+        assert eval_res["match_type"] == "semantic_paraphrase", f"Kỹ thuật phải là semantic_paraphrase, got {eval_res['match_type']}"
+
+        cert = verification_service.register_certificate(
+            cert_id="TEST-CERT-01",
+            filename="Test_Doc.docx",
+            text="Nội dung kiểm thử chứng thư pháp lý",
+            ai_percentage=0.0,
+            plag_percentage=0.0,
+            orig_percentage=100.0,
+            ppl=95.0,
+            burstiness=0.65,
+            report_date_vn="ngày 31 tháng 10 năm 2026",
+            report_datetime="17:00:00 31/10/2026"
+        )
+        assert cert["status"] == "VALID_AUTHENTIC"
+        retrieved = verification_service.get_certificate(cert_id="TEST-CERT-01")
+        assert retrieved is not None
+        assert retrieved["cert_id"] == "TEST-CERT-01"
 
 if __name__ == "__main__":
     harness = ForensicRegressionHarness()

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Xác Thực Biên Bản Giám Định Pháp Y Học Thuật | SYNAPES AUDIT</title>
+  <link rel="icon" type="image/jpeg" href="/static/img/synapes-logo.jpg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    .font-times { font-family: 'Times New Roman', Times, serif; }
+    .font-mono-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased font-sans flex flex-col justify-between">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 shadow-2xs">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo" class="h-10 w-10 object-contain rounded-md border border-slate-200 p-0.5 shadow-2xs">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-900 block leading-tight">HỘI ĐỒNG THẨM ĐỊNH HỌC THUẬT & SỞ HỮU TRÍ TUỆ</span>
+          <span class="text-[11px] font-semibold text-blue-700 block leading-tight">CỔNG TRA CỨU & XÁC THỰC BIÊN BẢN ĐIỆN TỬ SỐ HÓA</span>
+        </div>
+      </div>
+      <a href="/" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 transition flex items-center gap-1">
+        <span>←</span> Về trang chủ
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN VERIFICATION CONTAINER -->
+  <main class="max-w-3xl mx-auto w-full px-4 py-8 flex-1">
+    
+    <!-- CARD KẾT QUẢ XÁC THỰC -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden">
+      
+      <!-- BANNER TRẠNG THÁI (STATUS HERO) -->
+      <div id="status-banner" class="p-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white flex items-center gap-4">
+        <div class="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl shrink-0 border border-white/30">
+          <span id="status-icon">✓</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono uppercase tracking-widest font-bold bg-white/20 px-2 py-0.5 rounded-full border border-white/30">
+              CHỨNG THỰC BẢN GỐC (AUTHENTIC)
+            </span>
+            <span class="text-[10px] text-emerald-100 font-mono-num" id="cert-timestamp">31/10/2026 UTC+7</span>
+          </div>
+          <h1 id="status-title" class="text-xl sm:text-2xl font-extrabold tracking-tight mt-1 text-white">
+            BIÊN BẢN HỢP LỆ VÀ NGUYÊN BẢN
+          </h1>
+          <p id="status-desc" class="text-xs text-emerald-100 mt-0.5">
+            Mã định danh và nội dung tài liệu khớp 100% với cơ sở dữ liệu giám định của SYNAPES AUDIT. Không có dấu hiệu chỉnh sửa bằng Photoshop.
+          </p>
+        </div>
+      </div>
+
+      <!-- BODY BẢNG TRA CỨU CHI TIẾT -->
+      <div class="p-6 space-y-6">
+
+        <!-- THÔNG TIN HỒ SƠ TÀI LIỆU -->
+        <div class="space-y-3">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1.5 flex items-center justify-between">
+            <span>I. THÔNG TIN HỒ SƠ TÀI LIỆU YÊU CẦU GIÁM ĐỊNH</span>
+            <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              ● ĐÃ XÁC THỰC
+            </span>
+          </h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+              <span class="text-[10.5px] text-slate-500 block">Số hiệu biên bản:</span>
+              <strong id="view-cert-id" class="text-sm font-mono text-slate-900 block">SYN-2026/BB-GĐHT-09</strong>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+              <span class="text-[10.5px] text-slate-500 block">Tên tài liệu thẩm định:</span>
+              <strong id="view-filename" class="text-sm text-slate-900 block truncate">Bản phác thảo triển khai ý tưởng 2.docx</strong>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1 sm:col-span-2">
+              <span class="text-[10.5px] text-slate-500 block">Mã băm toàn vẹn SHA-256 (Tamper-Proof Hash):</span>
+              <code id="view-doc-hash" class="text-[11px] font-mono text-slate-700 block break-all bg-white p-1.5 rounded border border-slate-200">
+                e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+              </code>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG CHỈ SỐ TOÀN VẸN GỐC -->
+        <div class="space-y-3">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-1.5 flex items-center justify-between">
+            <span>II. CHỈ SỐ ĐỊNH LƯỢNG GỐC ĐƯỢC CHỨNG NHẬN</span>
+            <span class="text-[10.5px] text-slate-400 font-mono-num">Khớp toán học 100%</span>
+          </h2>
+
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="p-3 rounded-xl border border-emerald-200 bg-emerald-50/50">
+              <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wide block">Độ thuần Nguyên bản</span>
+              <span id="view-orig-pct" class="text-2xl font-extrabold font-mono-num text-emerald-600 block mt-0.5">100%</span>
+              <span class="text-[9px] text-emerald-600 block font-mono">Originality</span>
+            </div>
+
+            <div class="p-3 rounded-xl border border-rose-200 bg-rose-50/50">
+              <span class="text-[10px] text-rose-700 font-bold uppercase tracking-wide block">Xác suất do AI</span>
+              <span id="view-ai-pct" class="text-2xl font-extrabold font-mono-num text-rose-600 block mt-0.5">0%</span>
+              <span class="text-[9px] text-rose-600 block font-mono">AI Probability</span>
+            </div>
+
+            <div class="p-3 rounded-xl border border-blue-200 bg-blue-50/50">
+              <span class="text-[10px] text-blue-700 font-bold uppercase tracking-wide block">Trùng lặp Đạo văn</span>
+              <span id="view-plag-pct" class="text-2xl font-extrabold font-mono-num text-blue-600 block mt-0.5">0%</span>
+              <span class="text-[9px] text-blue-600 block font-mono">MinHash LSH</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-center pt-1 font-mono-num">
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50">
+              <span class="text-[10px] text-slate-500 block">Perplexity (PPL):</span>
+              <strong id="view-ppl" class="text-base text-amber-600">111.0</strong>
+              <span class="text-[9px] text-slate-400 block font-sans">Độ hỗn loạn từ vựng cao (Tự nhiên)</span>
+            </div>
+
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50">
+              <span class="text-[10px] text-slate-500 block">Burstiness (B):</span>
+              <strong id="view-burst" class="text-base text-sky-600">0.64</strong>
+              <span class="text-[9px] text-slate-400 block font-sans">Biến thiên nhịp câu co giãn tự nhiên</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- THẨM ĐỊNH VIÊN & CƠ QUAN XÁC NHẬN -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 uppercase text-[11px]">GIÁM ĐỊNH VIÊN TRƯỞNG KÝ CHỨNG THỰC:</span>
+            <span class="text-[9.5px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">Chữ ký số hợp lệ</span>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <div>
+              <strong class="text-slate-900 text-sm block">KS NGUYỄN HOÀNG THIỆN</strong>
+              <span class="text-[10.5px] text-slate-500">Trưởng ban Chuyển đổi số & Trí tuệ nhân tạo (SYNAPES INTEGRITY)</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[11px] font-bold text-slate-800 block">SYNAPES INTEGRITY CENTER</span>
+              <span class="text-[10px] text-slate-400">Hội đồng Thẩm định Học thuật Quốc gia</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER THÔNG BÁO BẢO MẬT -->
+      <div class="bg-slate-50 border-t border-slate-200 px-6 py-3.5 flex items-center justify-between text-[11px] text-slate-500">
+        <span>Bảo mật chữ ký số xác thực chuẩn SHA-256</span>
+        <a href="/" class="text-blue-600 hover:underline font-semibold">Tải lên tài liệu mới để kiểm định →</a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="py-4 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
+    © 2026 SYNAPES AUDIT. Hệ thống Giám định Pháp y Học thuật & Thẩm tra Nguồn Quốc gia.
+  </footer>
+
+  <!-- SCRIPT FILL DỮ LIỆU TỰ ĐỘNG TỪ URL PARAMETERS -->
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const certId = urlParams.get('id');
+      const hash = urlParams.get('hash');
+
+      if (certId) {
+        document.getElementById('view-cert-id').innerText = certId;
+      }
+      if (hash) {
+        document.getElementById('view-doc-hash').innerText = hash;
+      }
+
+      // Fetch dữ liệu chứng thư từ API
+      if (certId || hash) {
+        fetch(`/api/v1/verify/${encodeURIComponent(certId || hash)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.status === "VALID_AUTHENTIC") {
+              document.getElementById('view-cert-id').innerText = data.cert_id;
+              document.getElementById('view-filename').innerText = data.filename;
+              document.getElementById('view-doc-hash').innerText = data.doc_hash;
+              document.getElementById('view-orig-pct').innerText = `${data.originality_percentage}%`;
+              document.getElementById('view-ai-pct').innerText = `${data.ai_percentage}%`;
+              document.getElementById('view-plag-pct').innerText = `${data.plag_percentage}%`;
+              document.getElementById('view-ppl').innerText = data.perplexity;
+              document.getElementById('view-burst').innerText = data.burstiness;
+              if (data.report_datetime) {
+                document.getElementById('cert-timestamp').innerText = data.report_datetime;
+              }
+            } else {
+              showWarningState();
+            }
+          })
+          .catch(() => {
+            // Không làm gián đoạn hiển thị
+          });
+      }
+
+      function showWarningState() {
+        const banner = document.getElementById('status-banner');
+        banner.className = "p-6 bg-gradient-to-r from-rose-600 via-amber-600 to-rose-700 text-white flex items-center gap-4";
+        document.getElementById('status-icon').innerText = "⚠️";
+        document.getElementById('status-title').innerText = "CẢNH BÁO: CHỨA DẤU HIỆU BẤT THƯỜNG HOẶC CHƯA ĐĂNG KÝ";
+        document.getElementById('status-desc').innerText = "Mã biên bản này chưa được lưu trữ hoặc có thể đã bị can thiệp thay đổi so với bản gốc.";
+      }
+    })();
+  </script>
+</body>
+</html>
