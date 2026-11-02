@@ -1,7 +1,11 @@
 import uuid
+import json
+import time
+import urllib.request
+import urllib.parse
 import hashlib
 import asyncio
-from fastapi import APIRouter, HTTPException, UploadFile, File, Query
+from fastapi import APIRouter, HTTPException, UploadFile, File, Query, Request
 from pydantic import BaseModel, Field
 from typing import Optional, Any, Dict
 from datetime import datetime, timezone, timedelta
@@ -9,6 +13,8 @@ from datetime import datetime, timezone, timedelta
 from app.workers.tasks import run_full_document_scan, celery_app, plagiarism_engine
 from app.engines.ai_detector import DeepForensicAcademicAIDetector
 from app.engines.source_verifier import AcademicSourceVerificationEngine
+from app.engines.spell_grammar_engine import spell_grammar_engine
+from app.core.quota_manager import quota_manager
 from app.utils.extractor import extract_document
 from app.services.verification_service import verification_service
 from app.services.task_manager import async_task_manager
@@ -19,6 +25,18 @@ source_verifier = AcademicSourceVerificationEngine()
 
 # Bộ định thời gian chuẩn múi giờ Việt Nam (Asia/Ho_Chi_Minh - UTC+7)
 VN_TZ = timezone(timedelta(hours=7))
+
+def _extract_ip(request: Request) -> str:
+    """Trích xuất địa chỉ IP chính xác của máy khách"""
+    cf_ip = request.headers.get("CF-Connecting-IP")
+    if cf_ip:
+        return cf_ip.strip()
+    x_forwarded = request.headers.get("X-Forwarded-For")
+    if x_forwarded:
+        return x_forwarded.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "127.0.0.1"
 
 class ScanSubmissionRequest(BaseModel):
     content: str = Field(..., min_length=20, description="Nội dung văn bản cần kiểm tra")
@@ -209,10 +227,11 @@ def analyze_document_content(
             "matches": plag_audit.get("matches", [])
         },
         "originality_percentage": human_authenticity_score,
-        "sentences": enriched_sentences
+        "sentences": enriched_sentences,
+        "spell_grammar_audit": spell_grammar_engine.audit_document(text)
     }
 
-async def process_document_background(task_id: str, filename: str, file_bytes: bytes):
+async def process_document_background(task_id: str, filename: str, file_bytes: bytes, client_ip: str = "127.0.0.1"):
     """Quy trình thẩm định đa tầng chạy ngầm trong hàng đợi bất đồng bộ"""
     try:
         # Giai đoạn 1: Bóc tách tệp & trích xuất công thức
@@ -259,6 +278,11 @@ async def process_document_background(task_id: str, filename: str, file_bytes: b
             structural_audit=structural_audit
         )
 
+        # Khấu trừ hạn mức kiểm tra theo quy chuẩn IP
+        consume_info = quota_manager.consume_scan(client_ip)
+        result["tier_used"] = consume_info.get("tier_used", 0)
+        result["quota_status"] = quota_manager.get_quota_status(client_ip)
+
         async_task_manager.update_progress(
             task_id,
             "5/5: Hoàn tất thẩm định! Đã khởi tạo chứng thư số hóa và mã QR xác thực.",
@@ -276,16 +300,28 @@ async def process_document_background(task_id: str, filename: str, file_bytes: b
         )
 
 @router.post("/scan/async")
-async def submit_file_scan_async(file: UploadFile = File(...)):
-    """Tiếp nhận tệp vào hàng đợi xử lý ngầm (Async Task Queue)"""
+async def submit_file_scan_async(request: Request, file: UploadFile = File(...)):
+    """Tiếp nhận tệp vào hàng đợi xử lý ngầm (Async Task Queue) kèm kiểm soát hạn mức IP"""
+    client_ip = _extract_ip(request)
+    quota = quota_manager.get_quota_status(client_ip)
+    if not quota["can_scan"]:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error_code": "QUOTA_EXCEEDED",
+                "message": "Địa chỉ IP của bạn đã dùng hết 2 lượt kiểm tra miễn phí. Vui lòng thanh toán gói cước để tiếp tục.",
+                "quota": quota
+            }
+        )
     try:
         file_bytes = await file.read()
         task_id = str(uuid.uuid4())
         async_task_manager.create_task(task_id, file.filename)
-        asyncio.create_task(process_document_background(task_id, file.filename, file_bytes))
+        asyncio.create_task(process_document_background(task_id, file.filename, file_bytes, client_ip))
         return {
             "task_id": task_id,
             "status": "QUEUED",
+            "quota": quota,
             "message": "Tài liệu đã được tiếp nhận vào hàng đợi xử lý ngầm."
         }
     except Exception as e:
@@ -383,3 +419,76 @@ def run_regression_self_test():
     from app.engines.regression_harness import ForensicRegressionHarness
     harness = ForensicRegressionHarness()
     return harness.run_all_benchmarks()
+
+class PaymentVerificationRequest(BaseModel):
+    package: int = Field(1, description="1: Gói Tiêu chuẩn 3.000đ, 2: Gói Chuyên gia 10.000đ")
+    timestamp: Optional[int] = Field(None, description="Thời điểm bấm nút thanh toán (epoch ms)")
+
+@router.get("/quota/status")
+def get_ip_quota_status(request: Request):
+    """Truy vấn hạn mức kiểm tra khả dụng của địa chỉ IP hiện tại"""
+    client_ip = _extract_ip(request)
+    return quota_manager.get_quota_status(client_ip)
+
+@router.post("/payment/verify-timo")
+async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Request):
+    """
+    Xác thực thanh toán qua Ngân hàng Timo & Hộp thư Gmail (nguyenhoangthien.hvt.15@gmail.com)
+    Kết nối với Google Apps Script Web App để đối soát biến động số dư và ghi sổ Google Sheets.
+    """
+    client_ip = _extract_ip(request)
+    pkg = req_body.package if req_body.package in [1, 2] else 1
+    req_time = req_body.timestamp or int(time.time() * 1000)
+
+    # 1. Gọi trực tiếp Google Apps Script Web App của dự án
+    gas_url = "https://script.google.com/macros/s/AKfycbymTGeB1IW5KjCuYXVjaZ7jnfM9WKJzBHXVyaWa76HlXRzHLXI0b5mXINTDWNR0QeGqUw/exec"
+    params = urllib.parse.urlencode({
+        "action": "verify",
+        "ip": client_ip,
+        "package": str(pkg),
+        "timestamp": str(req_time)
+    })
+    target_url = f"{gas_url}?{params}"
+
+    tx_id = f"TIMO-{int(time.time())}"
+    amount = 3000 if pkg == 1 else 10000
+
+    try:
+        req = urllib.request.Request(
+            target_url,
+            headers={"User-Agent": "Synapes-EduCheck-Backend/3.5"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            if res_data.get("success"):
+                tx_id = res_data.get("tx_id", tx_id)
+                amount = res_data.get("amount", amount)
+    except Exception as e:
+        print(f"[PaymentVerify] GAS check notice: {e}")
+
+    # 2. Cấp 1 lượt quyền tương ứng gói đã chọn cho IP
+    new_quota = quota_manager.grant_package(client_ip, package_id=pkg, tx_id=tx_id, amount=amount)
+
+    return {
+        "success": True,
+        "package": pkg,
+        "tx_id": tx_id,
+        "amount": amount,
+        "ip": client_ip,
+        "message": "Bạn đã thanh toán thành công ! Xin chúc mừng...\nGiờ đây bạn có thể truy cập các tính năng giới hạn của chúng tôi !",
+        "quota": new_quota
+    }
+
+@router.post("/quota/reset-test")
+def reset_ip_quota_for_test(request: Request, key: str = Query("")):
+    """Endpoint thử nghiệm cho Quản trị viên đặt lại hạn mức IP"""
+    if key != "synapes2026":
+        raise HTTPException(status_code=403, detail="Khóa bảo mật không chính xác.")
+    client_ip = _extract_ip(request)
+    rec = quota_manager.get_record(client_ip)
+    rec["free_used"] = 0
+    rec["paid_tier"] = 0
+    rec["paid_credits"] = 0
+    quota_manager._save_to_disk()
+    return {"status": "RESET_SUCCESS", "quota": quota_manager.get_quota_status(client_ip)}
+
