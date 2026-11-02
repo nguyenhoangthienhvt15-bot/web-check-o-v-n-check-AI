@@ -2,7 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
+ENV PYTHONPATH=/app \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=utf-8 \
     LANG=C.UTF-8 \
@@ -24,7 +25,7 @@ COPY . .
 # Phân lập quyền thực thi an ninh (Non-Root User Least Privilege)
 RUN groupadd -g 10001 appgroup && \
     useradd -u 10001 -g appgroup -s /bin/sh -m appuser && \
-    mkdir -p /app/storage /home/appuser && \
+    mkdir -p /app/storage /app/app/storage /home/appuser && \
     chown -R appuser:appgroup /app /home/appuser
 
 USER appuser

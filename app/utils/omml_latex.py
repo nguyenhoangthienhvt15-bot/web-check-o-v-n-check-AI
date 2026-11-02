@@ -10,8 +10,10 @@ Hỗ trợ chuyển đổi toàn diện từ các công thức cơ bản đến 
 - Tách từ tiếng Việt bị dính liền vào biến số và biểu thức toán học
 """
 
+from __future__ import annotations
 import re
 import xml.etree.ElementTree as ET
+from typing import Tuple, List, Dict, Any, Optional
 
 OMML_NS = {
     'm': 'http://schemas.openxmlformats.org/officeDocument/2006/math',

@@ -5,6 +5,7 @@ Hệ thống lưu trữ và bảo tồn quy tắc giám định pháp y học th
 qua mỗi phiên bản cập nhật. Tuân thủ nghiêm ngặt chuẩn biên dịch Regex của Python 3.11+.
 """
 
+from __future__ import annotations
 from typing import List, Tuple, Dict, Any
 
 # 1. DANH MỤC DẤU ẤN CON NGƯỜI (HUMAN FINGERPRINTS)
