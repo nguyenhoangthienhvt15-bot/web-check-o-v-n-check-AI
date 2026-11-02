@@ -37,6 +37,7 @@ app/storage/
 .docker/
 
 # IDE & OS
+dev_assets/
 .vscode/
 .idea/
 .DS_Store

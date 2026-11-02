@@ -1,4 +1,5 @@
 import os
+import re
 import threading
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -40,22 +41,32 @@ if os.path.exists(static_dir):
 
 app.include_router(scan.router, prefix=f"{settings.API_V1_STR}", tags=["Scan"])
 
+def _get_clean_html(template_filename: str) -> str:
+    path = os.path.join(os.path.dirname(__file__), "templates", template_filename)
+    if not os.path.exists(path):
+        return ""
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+    # Loại bỏ hoàn toàn HTML comments để chống lộ cấu trúc giải thuật và ghi chú nội bộ
+    html = re.sub(r'<!--(?!\s*\[if).*?-->', '', html, flags=re.DOTALL)
+    # Loại bỏ các dòng trống dư thừa
+    html = re.sub(r'\n\s*\n', '\n', html)
+    return html
+
 @app.get("/", response_class=HTMLResponse)
 @app.head("/")
 def serve_home_ui():
-    template_path = os.path.join(os.path.dirname(__file__), "templates", "index.html")
-    if os.path.exists(template_path):
-        with open(template_path, "r", encoding="utf-8") as f:
-            return f.read()
+    html = _get_clean_html("index.html")
+    if html:
+        return html
     return "<h1>Hệ thống Kiểm định Đạo văn & Văn bản AI đang hoạt động.</h1>"
 
 @app.get("/verify", response_class=HTMLResponse)
 @app.head("/verify")
 def serve_verify_ui():
-    template_path = os.path.join(os.path.dirname(__file__), "templates", "verify.html")
-    if os.path.exists(template_path):
-        with open(template_path, "r", encoding="utf-8") as f:
-            return f.read()
+    html = _get_clean_html("verify.html")
+    if html:
+        return html
     return "<h1>Cổng Xác thực Biên bản SYNAPES AUDIT</h1>"
 
 @app.on_event("startup")

@@ -16,6 +16,7 @@ storage
 app/storage
 *.log
 scratch
+dev_assets
 .vscode
 .idea
 CLOUDFLARE_WAF_GUIDE.md
