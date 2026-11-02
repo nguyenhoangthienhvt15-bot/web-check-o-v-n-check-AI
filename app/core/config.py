@@ -1,5 +1,5 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Academic Integrity AI & Plagiarism Checker"
@@ -18,8 +18,7 @@ class Settings(BaseSettings):
     PERFORMER_MODEL: str = os.getenv("PERFORMER_MODEL", "tiiuae/falcon-7b-instruct")
     BINOCULARS_THRESHOLD: float = 0.9015355
 
-    class Config:
-        case_sensitive = True
+    model_config = SettingsConfigDict(case_sensitive=True, extra="ignore")
 
 settings = Settings()
 

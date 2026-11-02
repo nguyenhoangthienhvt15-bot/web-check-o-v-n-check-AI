@@ -1,4 +1,5 @@
 import os
+import threading
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -59,17 +60,20 @@ def serve_verify_ui():
 
 @app.on_event("startup")
 def run_startup_self_test():
-    """Tự động kiểm thử hệ thống giám định (Self-Healing Regression Gate) khi khởi động"""
-    try:
-        from app.engines.regression_harness import ForensicRegressionHarness
-        harness = ForensicRegressionHarness()
-        report = harness.run_all_benchmarks()
-        print(f"[SYNAPES AUDIT] Self-Verifying Regression Gate: {report['passed_tests']}/{report['total_tests']} tests passed.")
-        for d in report["details"]:
-            status_flag = "✓" if d["status"] == "PASSED" else "✗"
-            print(f" {status_flag} {d['name']}: {d['status']} {d['error'] or ''}")
-    except Exception as e:
-        print(f"[SYNAPES AUDIT] Startup regression check error: {e}")
+    """Tự động kiểm thử hệ thống giám định (Self-Healing Regression Gate) chạy trên luồng ngầm không gây nghẽn cổng kết nối"""
+    def _run_in_background():
+        try:
+            from app.engines.regression_harness import ForensicRegressionHarness
+            harness = ForensicRegressionHarness()
+            report = harness.run_all_benchmarks()
+            print(f"[SYNAPES AUDIT] Self-Verifying Regression Gate: {report['passed_tests']}/{report['total_tests']} tests passed.")
+            for d in report.get("details", []):
+                status_flag = "[PASS]" if d["status"] == "PASSED" else "[FAIL]"
+                print(f" {status_flag} {d['name']}: {d['status']} {d['error'] or ''}")
+        except Exception as e:
+            print(f"[SYNAPES AUDIT] Startup regression check error: {e}")
+
+    threading.Thread(target=_run_in_background, daemon=True).start()
 
 @app.get("/health")
 @app.get("/healthz")
