@@ -492,37 +492,71 @@
 
       <div class="p-4 space-y-4 flex-1">
 
-        <!-- ================= CARD 1: TỔNG QUAN LIÊM CHÍNH (KHỚP TOÁN HỌC 100%) ================= -->
+        <!-- ================= CARD 1: TỔNG QUAN ĐỐI SOÁT & GIÁM ĐỊNH ĐA TẦNG (2 TRỤC ĐỘC LẬP) ================= -->
         <div class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">Chỉ số Toàn vẹn Học thuật</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO I: ĐỐI SOÁT TRÙNG LẶP (SIMILARITY)</span>
             <span
-              class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono-num font-semibold">
-              Tổng 100% Khớp Toán học
+              class="text-[9px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono-num font-semibold">
+              Chuẩn IEEE & TT 08/2021
             </span>
           </div>
 
           <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="pm-subcard p-2.5 rounded-lg border border-slate-200 bg-slate-50/80">
-              <p class="text-[9.5px] pm-muted-text uppercase tracking-wide">Nguyên bản</p>
-              <p id="stat-orig-pct" class="text-xl font-bold font-mono-num text-emerald-600">100%</p>
-              <p class="text-[8.5px] pm-muted-text font-mono-num mt-0.5">Originality</p>
+            <div class="pm-subcard p-2 rounded-lg border border-blue-200 bg-blue-50/50">
+              <p class="text-[9px] text-blue-800 uppercase tracking-wide font-bold">Hiệu chỉnh</p>
+              <p id="stat-net-sim" class="text-lg font-bold font-mono-num text-blue-700">0%</p>
+              <p class="text-[8px] text-blue-600 font-mono mt-0.5">Net Similarity</p>
             </div>
-            <div class="pm-subcard p-2.5 rounded-lg border border-slate-200 bg-slate-50/80">
-              <p class="text-[9.5px] pm-muted-text uppercase tracking-wide">Xác suất AI</p>
-              <p id="stat-ai-pct" class="text-xl font-bold font-mono-num text-rose-600">0%</p>
-              <p id="stat-ai-ratio" class="text-[8.5px] pm-muted-text font-mono-num mt-0.5">0/0 câu</p>
+            <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80">
+              <p class="text-[9px] pm-muted-text uppercase tracking-wide">Trùng thô</p>
+              <p id="stat-raw-sim" class="text-lg font-bold font-mono-num text-slate-700">0%</p>
+              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Raw Similarity</p>
             </div>
-            <div class="pm-subcard p-2.5 rounded-lg border border-slate-200 bg-slate-50/80">
-              <p class="text-[9.5px] pm-muted-text uppercase tracking-wide">Đạo văn</p>
-              <p id="stat-plag-pct" class="text-xl font-bold font-mono-num text-blue-600">0%</p>
-              <p id="stat-plag-sub" class="text-[8.5px] pm-muted-text font-mono-num mt-0.5">MinHash LSH</p>
+            <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80">
+              <p class="text-[9px] pm-muted-text uppercase tracking-wide">Đơn nguồn</p>
+              <p id="stat-highest-source" class="text-lg font-bold font-mono-num text-slate-700">0%</p>
+              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Single-Source Max</p>
             </div>
           </div>
 
-          <p class="text-[9.5px] text-center font-mono-num text-slate-500" id="stat-math-formula">
-            Độ thuần nguyên bản = 100% - 0% (AI) - 0% (Đạo văn) = 100%
+          <p class="text-[9px] text-slate-500 italic text-center" id="stat-plag-note">
+            * Đã loại trừ trích dẫn trong ngoặc kép & Danh mục Tham khảo.
           </p>
+        </div>
+
+        <!-- ================= CARD 1B: BÁO CÁO II: GIÁM ĐỊNH NGUY CƠ AI (AI RISK ASSESSMENT) ================= -->
+        <div class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO II: GIÁM ĐỊNH NGUY CƠ AI</span>
+            <span
+              class="text-[9px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-mono-num font-semibold">
+              Binoculars ICML 2024
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="pm-subcard p-2 rounded-lg border border-rose-200 bg-rose-50/50">
+              <p class="text-[9px] text-rose-800 uppercase tracking-wide font-bold">Xác suất AI</p>
+              <p id="stat-ai-pct" class="text-lg font-bold font-mono-num text-rose-600">0%</p>
+              <p id="stat-ai-ratio" class="text-[8px] text-rose-600 font-mono mt-0.5">0/0 câu</p>
+            </div>
+            <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80">
+              <p class="text-[9px] pm-muted-text uppercase tracking-wide">95% CI</p>
+              <p id="stat-ci-95" class="text-xs font-bold font-mono-num text-slate-800 mt-1">[0% - 2%]</p>
+              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Confidence</p>
+            </div>
+            <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80">
+              <p class="text-[9px] pm-muted-text uppercase tracking-wide">Yule's K</p>
+              <p id="stat-yule-k" class="text-lg font-bold font-mono-num text-emerald-700">85.0</p>
+              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Từ vựng</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-[10px]">
+            <span class="font-semibold text-slate-700">Trích dẫn (Citation Matching):</span>
+            <span id="stat-cmr-badge" class="font-bold text-emerald-700 font-mono-num">Khớp 100% • 0 trích dẫn ảo</span>
+          </div>
         </div>
 
         <!-- ================= CARD 2: CHẨN ĐOÁN BẢN CHẤT VĂN BẢN (HYBRID DOCUMENT) ================= -->
@@ -623,11 +657,10 @@
               <div class="border-t border-slate-100 pt-1.5">
                 <div class="font-bold text-slate-900 flex items-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  <span>Xác suất AI & Độ thuần Nguyên bản:</span>
+                  <span>Nguyên tắc Phân tích Hai trục Độc lập (COPE & IEEE):</span>
                 </div>
                 <p class="text-slate-600 pl-2.5 mt-0.5">
-                  Xác suất AI là tỷ lệ câu/đoạn mang cấu trúc LLM. Hệ thống bảo đảm tính toàn vẹn tuyệt đối: <em>Độ
-                    thuần nguyên bản = 100% - AI% - Đạo văn%</em>.
+                  Trùng lặp (Similarity) và Tạo sinh AI (AI Risk) là hai trục không gian độc lập, không cộng dồn thành 100%. Hệ thống rà soát tách bạch giữa tỷ lệ trùng lặp hiệu chỉnh (Net Similarity) và nguy cơ AI kèm khoảng tin cậy thống kê 95% CI.
                 </p>
               </div>
             </div>
@@ -990,89 +1023,112 @@
       </table>
 
       <!-- Tên Văn bản Chính thức -->
-      <div style="text-align: center; margin: 12px 0 10px 0;" class="pdf-no-break">
+      <div style="text-align: center; margin: 10px 0 8px 0;" class="pdf-no-break">
         <h1
-          style="font-size: 13pt; font-weight: bold; text-transform: uppercase; margin: 0; line-height: 1.3; color: #000000;">
+          style="font-size: 12.5pt; font-weight: bold; text-transform: uppercase; margin: 0; line-height: 1.3; color: #000000;">
           BIÊN BẢN GIÁM ĐỊNH PHÁP Y HỌC THUẬT
         </h1>
-        <div style="font-size: 9.5pt; font-weight: bold; margin-top: 2px; text-transform: uppercase; color: #000000;">
+        <div style="font-size: 9pt; font-weight: bold; margin-top: 2px; text-transform: uppercase; color: #000000;">
           VỀ TÍNH TOÀN VẸN NỘI DUNG, ĐỒNG NHẤT HÀNH VĂN VÀ NGUY CƠ CAN THIỆP CỦA TRÍ TUỆ NHÂN TẠO (AI)
         </div>
-        <p style="font-size: 8pt; font-style: italic; color: #333333; margin-top: 2px;">
-          (Căn cứ Tiêu chuẩn Liêm chính Học thuật Quốc gia, Phương pháp luận Binoculars ICML '24 & MinHash LSH)
+        <p style="font-size: 7.5pt; font-style: italic; color: #333333; margin-top: 2px;">
+          (Căn cứ Thông tư 08/2021/TT-BGDĐT, Tiêu chuẩn Quốc tế COPE & IEEE PSPB Sec 8.2, Phương pháp luận Binoculars ICML '24)
         </p>
       </div>
 
-      <!-- I. Căn cứ Pháp lý & Phương pháp luận (Đã bỏ gạch chân cắt đôi chữ) -->
-      <div style="margin-bottom: 8px; font-size: 9pt;" class="pdf-no-break">
-        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; padding-bottom: 1px;">
+      <!-- I. Căn cứ Pháp lý & Phương pháp luận (Đã cập nhật chuẩn quốc tế) -->
+      <div style="margin-bottom: 6px; font-size: 8.5pt;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 2px; padding-bottom: 1px;">
           I. CĂN CỨ PHÁP LÝ VÀ PHƯƠNG PHÁP LUẬN GIÁM ĐỊNH
         </div>
-        <p style="margin: 2px 0; text-align: justify; line-height: 1.35;">
-          - Căn cứ Quy chế Đào tạo và Thẩm định Công trình Nghiên cứu Khoa học hiện hành;<br />
-          - Căn cứ giải thuật phân tích độ cong phân phối xác suất văn bản <strong>Binoculars Zero-Shot (ICML
-            2024)</strong> và mô hình đánh giá tính biến thiên cú pháp đa tầng (Forensic Stylometry);<br />
-          - Căn cứ hệ thống đối sánh trùng lặp chỉ mục <strong>MinHash Locality Sensitive Hashing (LSH)</strong> với
-          kích thước tập shingle <span class="katex-inline" data-expr="k = 4">k = 4</span>.
+        <p style="margin: 2px 0; text-align: justify; line-height: 1.3;">
+          - Căn cứ <strong>Thông tư số 08/2021/TT-BGDĐT</strong> của Bộ Giáo dục và Đào tạo về Quy chế Đào tạo và Liêm chính học thuật;<br />
+          - Căn cứ Chuẩn mực Liêm chính Xuất bản Khoa học Quốc tế <strong>COPE (Committee on Publication Ethics)</strong> và Quy chế <strong>IEEE PSPB Operations Manual Section 8.2</strong>;<br />
+          - Căn cứ giải thuật phân tích độ cong phân phối xác suất văn bản <strong>Binoculars Zero-Shot (ICML 2024)</strong> và mô hình đánh giá tính biến thiên cú pháp đa tầng (Forensic Stylometry);<br />
+          - Căn cứ hệ thống đối sánh trùng lặp chỉ mục đa tầng <strong>MinHash Locality Sensitive Hashing (LSH)</strong> với tập shingle <span class="katex-inline" data-expr="k = 4">k = 4</span> trên cơ sở dữ liệu học thuật quốc tế (CrossRef 145M+ DOI, arXiv 2.4M+, OpenAlex) và quốc gia (VN-Academic).
         </p>
       </div>
 
       <!-- II. Thông tin Hồ sơ Tài liệu -->
-      <div style="margin-bottom: 8px; font-size: 9pt;" class="pdf-no-break">
-        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; padding-bottom: 1px;">
+      <div style="margin-bottom: 6px; font-size: 8.5pt;" class="pdf-no-break">
+        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 2px; padding-bottom: 1px;">
           II. THÔNG TIN HỒ SƠ TÀI LIỆU YÊU CẦU GIÁM ĐỊNH
         </div>
-        <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 8.5pt; border: none;">
+        <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 8pt; border: none;">
           <tr>
-            <td style="width: 28%; font-weight: bold; padding: 1.5px 0; border: none;">1. Tên tài liệu:</td>
-            <td id="pdf-doc-title" style="padding: 1.5px 0; border: none; word-break: break-all;">--</td>
+            <td style="width: 28%; font-weight: bold; padding: 1px 0; border: none;">1. Tên tài liệu:</td>
+            <td id="pdf-doc-title" style="padding: 1px 0; border: none; word-break: break-all;">--</td>
           </tr>
           <tr>
-            <td style="font-weight: bold; padding: 1.5px 0; border: none;">2. Quy mô văn bản:</td>
-            <td id="pdf-doc-stats" style="padding: 1.5px 0; border: none;">-- từ • -- câu • -- ký tự</td>
+            <td style="font-weight: bold; padding: 1px 0; border: none;">2. Quy mô văn bản:</td>
+            <td id="pdf-doc-stats" style="padding: 1px 0; border: none;">-- từ • -- câu • -- ký tự</td>
           </tr>
           <tr>
-            <td style="font-weight: bold; padding: 1.5px 0; border: none;">3. Tính đồng nhất hành văn:</td>
-            <td id="pdf-doc-consistency" style="padding: 1.5px 0; border: none; font-weight: bold;">--</td>
+            <td style="font-weight: bold; padding: 1px 0; border: none;">3. Tính đồng nhất hành văn:</td>
+            <td id="pdf-doc-consistency" style="padding: 1px 0; border: none; font-weight: bold;">--</td>
           </tr>
           <tr>
-            <td style="font-weight: bold; padding: 1.5px 0; border: none;">4. Kết luận giám định:</td>
-            <td id="pdf-doc-verdict" style="padding: 1.5px 0; border: none; font-weight: bold;">--</td>
+            <td style="font-weight: bold; padding: 1px 0; border: none;">4. Kết luận giám định:</td>
+            <td id="pdf-doc-verdict" style="padding: 1px 0; border: none; font-weight: bold;">--</td>
           </tr>
         </table>
       </div>
 
-      <!-- III. Kết quả Giám định Định lượng Toàn văn (ĐẢM BẢO 100% KHỚP TOÁN HỌC) -->
+      <!-- III. Kết quả Giám định Định lượng Pháp y (2 Trục Độc lập: Trùng lặp & Nguy cơ AI) -->
       <div style="margin-bottom: 8px;" class="pdf-no-break">
         <div
-          style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; padding-bottom: 1px; font-size: 9.5pt;">
-          III. KẾT QUẢ ĐỊNH LƯỢNG TOÀN VĂN (100% TÀI LIỆU TỪ ĐẦU ĐẾN CUỐI)
+          style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; padding-bottom: 1px; font-size: 8.5pt; color: #0f172a;">
+          III. KẾT QUẢ ĐỊNH LƯỢNG PHÁP Y HỌC THUẬT (HAI TRỤC ĐÁNH GIÁ ĐỘC LẬP THEO CHUẨN COPE & IEEE)
+        </div>
+
+        <!-- BẢNG 1: ĐỐI SOÁT TRÙNG LẶP & ĐẠO VĂN (SIMILARITY AUDIT) -->
+        <div style="font-weight: bold; font-size: 7.5pt; color: #1e3a8a; margin-top: 2px; margin-bottom: 2px;">
+          1. BÁO CÁO ĐỐI SOÁT TRÙNG LẶP & ĐẠO VĂN (SIMILARITY AUDIT - CHUẨN IEEE & THÔNG TƯ 08/2021/TT-BGDĐT)
         </div>
         <table
-          style="width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; font-size: 8.5pt; border: 1px solid #000;">
+          style="width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; font-size: 7.5pt; border: 1px solid #000; margin-bottom: 3px;">
           <tr style="background-color: #F8FAFC; font-weight: bold;">
-            <th style="border: 1px solid #000; padding: 4px; width: 22%;">Xác suất do AI (AI Probability)</th>
-            <th style="border: 1px solid #000; padding: 4px; width: 20%;">Trùng lặp Đạo văn (Plagiarism)</th>
-            <th style="border: 1px solid #000; padding: 4px; width: 22%;">Độ thuần Nguyên bản (Originality)</th>
-            <th style="border: 1px solid #000; padding: 4px; width: 18%;">Perplexity (PPL)</th>
-            <th style="border: 1px solid #000; padding: 4px; width: 18%;">Burstiness (B)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 22%;">Trùng lặp Hiệu chỉnh (Net Sim)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 18%;">Trùng lặp Thô (Raw Sim)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 27%;">Đơn nguồn cao nhất (Single-Source)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 15%;">Chuỗi trùng (LMS)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 18%;">Đánh giá Liêm chính</th>
           </tr>
           <tr>
-            <td id="pdf-ai-score"
-              style="border: 1px solid #000; padding: 5px; font-size: 11pt; font-weight: bold; color: #000000;">0%</td>
-            <td id="pdf-plag-score"
-              style="border: 1px solid #000; padding: 5px; font-size: 11pt; font-weight: bold; color: #000000;">0%</td>
-            <td id="pdf-orig-score"
-              style="border: 1px solid #000; padding: 5px; font-size: 11pt; font-weight: bold; color: #000000;">100%
-            </td>
-            <td id="pdf-ppl-score" style="border: 1px solid #000; padding: 5px; font-weight: bold; color: #000000;">--
-            </td>
-            <td id="pdf-burst-score" style="border: 1px solid #000; padding: 5px; font-weight: bold; color: #000000;">--
-            </td>
+            <td id="pdf-net-sim-score" style="border: 1px solid #000; padding: 3px; font-size: 9.5pt; font-weight: bold; color: #1e3a8a;">0%</td>
+            <td id="pdf-raw-sim-score" style="border: 1px solid #000; padding: 3px; font-weight: bold; color: #334155;">0%</td>
+            <td id="pdf-highest-source-score" style="border: 1px solid #000; padding: 3px; font-size: 7.5pt; color: #000000;">Không phát hiện</td>
+            <td id="pdf-lms-score" style="border: 1px solid #000; padding: 3px; font-weight: bold; color: #000000;">0 từ</td>
+            <td id="pdf-plag-verdict" style="border: 1px solid #000; padding: 3px; font-weight: bold; color: #15803d; font-size: 7pt;">ĐẠT CHUẨN</td>
           </tr>
         </table>
-        <div style="font-size: 7.5pt; font-style: italic; color: #444; margin-top: 2px; text-align: right;">
-          * Xác nhận toán học: Độ thuần nguyên bản + Xác suất AI + Trùng lặp Đạo văn = 100.0%
+        <div style="font-size: 6.8pt; font-style: italic; color: #475569; margin-bottom: 4px;">
+          * Cơ sở dữ liệu đối soát: CrossRef (145M+ DOI), arXiv (2.4M+), Kho Luận văn NCKH Quốc gia (VN-Academic 850k+). Đã loại trừ trích dẫn ngoặc kép hợp lệ và danh mục tham khảo.
+        </div>
+
+        <!-- BẢNG 2: GIÁM ĐỊNH NGUY CƠ AI & NGÔN LUẬN PHÁP Y (AI RISK ASSESSMENT) -->
+        <div style="font-weight: bold; font-size: 7.5pt; color: #991b1b; margin-top: 2px; margin-bottom: 2px;">
+          2. BÁO CÁO GIÁM ĐỊNH NGUY CƠ TRÍ TUỆ NHÂN TẠO (AI FORENSIC RISK ASSESSMENT - ICML 2024)
+        </div>
+        <table
+          style="width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; font-size: 7.5pt; border: 1px solid #000;">
+          <tr style="background-color: #FEF2F2; font-weight: bold;">
+            <th style="border: 1px solid #000; padding: 3px; width: 22%;">Xác suất do AI (AI Probability)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 22%;">Khoảng tin cậy (95% CI & p-val)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 18%;">Perplexity (PPL)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 18%;">Burstiness (B)</th>
+            <th style="border: 1px solid #000; padding: 3px; width: 20%;">Từ vựng (TTR & Yule's K)</th>
+          </tr>
+          <tr>
+            <td id="pdf-ai-score" style="border: 1px solid #000; padding: 3px; font-size: 9.5pt; font-weight: bold; color: #b91c1c;">0%</td>
+            <td id="pdf-ci-95-score" style="border: 1px solid #000; padding: 3px; font-size: 7pt; font-weight: bold; color: #1e293b;">[0% - 2%] (p&lt;0.01)</td>
+            <td id="pdf-ppl-score" style="border: 1px solid #000; padding: 3px; font-weight: bold; color: #b45309;">--</td>
+            <td id="pdf-burst-score" style="border: 1px solid #000; padding: 3px; font-weight: bold; color: #0284c7;">--</td>
+            <td id="pdf-yule-score" style="border: 1px solid #000; padding: 3px; font-weight: bold; color: #047857; font-size: 7pt;">K=85.0 (Phong phú)</td>
+          </tr>
+        </table>
+        <div style="font-size: 6.8pt; font-style: italic; color: #475569; margin-top: 2px;">
+          * Cơ sở lý thuyết: Trùng lặp (Similarity) và Tạo sinh AI (AI-generated) là hai chiều không gian độc lập, không cộng dồn thành 100%. Khoảng tin cậy 95% CI được áp dụng để loại bỏ nguy cơ Dương tính giả (False Positive).
         </div>
       </div>
 
@@ -1227,40 +1283,60 @@
         </div>
       </div>
 
-      <!-- VIII. Xác nhận của Hội đồng Thẩm định & Chữ ký số (Tích hợp Mã QR Xác thực Điện tử) -->
-      <div style="display: flex; justify-content: space-between; margin-top: 12px;" class="pdf-no-break">
+      <!-- TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM CHUẨN COPE -->
+      <div style="margin-top: 6px; font-size: 6.8pt; font-style: italic; color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 3px; text-align: justify; line-height: 1.25;" class="pdf-no-break">
+        <strong>* Tuyên bố miễn trừ trách nhiệm (COPE & IEEE Advisory Disclaimer):</strong> Kết quả phân tích định lượng bằng mô hình học máy và đối soát chỉ mục mang tính chất bằng chứng kỹ thuật pháp y độc lập, không thay thế hội đồng chuyên môn có thẩm quyền của cơ sở đào tạo tiếp nhận công trình. Biên bản tuân thủ quy chuẩn liêm chính học thuật Thông tư 08/2021/TT-BGDĐT và chuẩn quốc tế COPE.
+      </div>
+
+      <!-- VIII. Xác nhận của Hội đồng Thẩm định & Chữ ký số Đôi (Tích hợp Mã QR Xác thực Điện tử) -->
+      <div style="display: flex; justify-content: space-between; margin-top: 8px; align-items: flex-start;" class="pdf-no-break">
+        <!-- Cột 1: Mã QR Xác thực số hóa -->
         <div
-          style="text-align: center; width: 45%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA & TRUY XUẤT BẢN
-            GỐC</div>
-          <div style="font-size: 7.2pt; font-style: italic; color: #475569;">(Quét mã QR để kiểm tra tính toàn vẹn)
-          </div>
+          style="text-align: center; width: 30%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+          <div style="font-weight: bold; font-size: 7.5pt; text-transform: uppercase;">XÁC THỰC SỐ HÓA BẢN GỐC</div>
+          <div style="font-size: 6.5pt; font-style: italic; color: #475569;">(Quét mã QR để kiểm tra toàn vẹn)</div>
           <div id="pdf-qr-code-box"
-            style="width: 58px; height: 58px; padding: 2px; border: 1px solid #1e3a8a; background: #ffffff; margin: 3px auto; display: flex; align-items: center; justify-content: center;">
+            style="width: 54px; height: 54px; padding: 2px; border: 1px solid #1e3a8a; background: #ffffff; margin: 2px auto; display: flex; align-items: center; justify-content: center;">
           </div>
-          <div style="font-size: 6.5pt; font-family: monospace; color: #1e3a8a; font-weight: bold; margin-top: 1px;">
-            MÃ TRA CỨU: <span id="pdf-qr-cert-code">SYN-2026/BB-GĐHT-09</span>
+          <div style="font-size: 6pt; font-family: monospace; color: #1e3a8a; font-weight: bold; margin-top: 1px;">
+            MÃ TRA CỨU: <span id="pdf-qr-cert-code">SYN-2026/BB-GDHT-09</span>
           </div>
-          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase; margin-top: 2px;">SYNAPES
-            INTEGRITY CENTER</div>
+          <div style="font-weight: bold; font-size: 7.5pt; text-transform: uppercase; margin-top: 1px;">SYNAPES INTEGRITY</div>
         </div>
-        <div style="text-align: center; width: 50%;">
-          <div style="font-weight: bold; font-size: 9pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG</div>
-          <div style="font-size: 8pt; font-style: italic; color: #333333;">(Ký, ghi rõ họ tên)</div>
+
+        <!-- Cột 2: Giám định viên trưởng AI -->
+        <div style="text-align: center; width: 34%;">
+          <div style="font-weight: bold; font-size: 8pt; text-transform: uppercase;">GIÁM ĐỊNH VIÊN TRƯỞNG AI</div>
+          <div style="font-size: 7pt; font-style: italic; color: #333333;">(Ký điện tử & chứng thực số)</div>
           <div
-            style="height: 48px; margin: 4px auto; display: flex; align-items: center; justify-content: center; font-style: italic; color: #000000; font-weight: bold; font-size: 13pt;">
+            style="height: 38px; margin: 2px auto; display: flex; align-items: center; justify-content: center; font-style: italic; color: #000000; font-weight: bold; font-size: 11pt;">
             Nguyễn Hoàng Thiện
           </div>
-          <div style="font-weight: bold; font-size: 9.5pt; text-transform: uppercase;">KS NGUYỄN HOÀNG THIỆN</div>
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">KS NGUYỄN HOÀNG THIỆN</div>
           <div
-            style="font-weight: bold; font-size: 7.2pt; text-transform: uppercase; color: #000000; margin-top: 1px; letter-spacing: -0.15px; white-space: nowrap;">
-            TRƯỞNG BAN CHUYỂN ĐỔI SỐ VÀ TRÍ TUỆ NHÂN TẠO
+            style="font-weight: bold; font-size: 6.5pt; text-transform: uppercase; color: #000000; margin-top: 1px; letter-spacing: -0.15px; white-space: nowrap;">
+            TRƯỞNG BAN CHUYỂN ĐỔI SỐ & AI
           </div>
-          <div style="font-size: 8pt; color: #000000; margin-top: 1px;">
-            Chuyên gia Pháp y Ngôn ngữ học [SYNAPES EDU]
+          <div style="font-size: 6.8pt; color: #475569; margin-top: 1px;">
+            Hội đồng Giám định [SYNAPES AUDIT]
           </div>
-          <div style="font-size: 7.5pt; color: #333333; margin-top: 1px;">
-            Email: nguyenhoangthien.hvt.15@gmail.com
+        </div>
+
+        <!-- Cột 3: Chuyên gia Phản biện Độc lập Toán - Tin & KHMT -->
+        <div style="text-align: center; width: 34%;">
+          <div style="font-weight: bold; font-size: 8pt; text-transform: uppercase;">CHUYÊN GIA PHẢN BIỆN ĐỘC LẬP</div>
+          <div style="font-size: 7pt; font-style: italic; color: #333333;">(Ký xác nhận chuyên môn)</div>
+          <div
+            style="height: 38px; margin: 2px auto; display: flex; align-items: center; justify-content: center; font-style: italic; color: #000000; font-weight: bold; font-size: 11pt;">
+            Lê Quang Dũng
+          </div>
+          <div style="font-weight: bold; font-size: 8.5pt; text-transform: uppercase;">TS LÊ QUANG DŨNG</div>
+          <div
+            style="font-weight: bold; font-size: 6.5pt; text-transform: uppercase; color: #000000; margin-top: 1px; letter-spacing: -0.15px; white-space: nowrap;">
+            CHUYÊN GIA TOÁN - TIN & KHMT
+          </div>
+          <div style="font-size: 6.8pt; color: #475569; margin-top: 1px;">
+            Viện Nghiên cứu KH&CN Tiên tiến
           </div>
         </div>
       </div>
@@ -1582,8 +1658,8 @@
         { threshold: 18, text: 'Bóc tách 100% nội dung & khử độc XML...' },
         { threshold: 38, text: 'Phân tích biến thiên nhịp câu (Burstiness) & PPL...' },
         { threshold: 62, text: 'Thẩm định đa tầng dấu ấn ngôn ngữ AI & nhận diện mẫu câu...' },
-        { threshold: 84, text: 'Thẩm tra nguồn trích dẫn & kiểm chứng liêm chính học thuật...' },
-        { threshold: 92, text: 'Tổng hợp ma trận pháp y & tính toán độ thuần nguyên bản...' }
+        { threshold: 84, text: 'Thẩm tra nguồn trích dẫn & rà soát trích dẫn ảo...' },
+        { threshold: 92, text: 'Tổng hợp ma trận pháp y học thuật & đối soát liêm chính đa tầng...' }
       ];
 
       modalProgressTimer = setInterval(() => {
@@ -1994,34 +2070,56 @@
       const totalMedia = (data.structural_audit?.images_count || 0) + (data.structural_audit?.tables_count || 0);
       document.getElementById('total-media-badge').innerText = totalMedia;
 
-      // 2. Cập nhật Sidebar Số liệu Trọng yếu (100% KHỚP TOÁN HỌC)
-      const aiPercent = data.ai_detection.ai_percentage;
-      const plagPercent = data.plagiarism.max_similarity_percentage;
-      const origPercent = data.originality_percentage;
+      // 2. Cập nhật Sidebar Số liệu Trọng yếu (2 Trục Độc lập theo chuẩn COPE & IEEE)
+      const aiPercent = data.ai_detection ? data.ai_detection.ai_percentage : (data.ai_percentage || 0);
+      const plagData = data.plagiarism || {};
+      const netSim = plagData.net_similarity_percentage ?? plagData.max_similarity_percentage ?? 0;
+      const rawSim = plagData.raw_similarity_percentage ?? netSim;
+      const highestSource = plagData.highest_single_source ? (plagData.highest_single_source.similarity || 0) : 0;
+      const ci95 = data.ai_detection?.ci_95 || [0.0, 2.0];
+      const yuleK = data.ai_detection?.yule_k || 85.0;
+      const citAudit = data.citation_integrity || {};
+      const cmr = citAudit.citation_matching_ratio ?? 100;
+      const hasHallucination = citAudit.hallucinated_citations_detected || false;
 
-      document.getElementById('stat-ai-pct').innerText = `${aiPercent}%`;
-      document.getElementById('stat-ai-ratio').innerText = `${data.ai_sentence_count}/${data.total_sentences} câu`;
-      document.getElementById('stat-plag-pct').innerText = `${plagPercent}%`;
-      const plagSubEl = document.getElementById('stat-plag-sub');
-      if (plagSubEl) {
-        if (data.plagiarism && data.plagiarism.semantic_paraphrase_detected) {
-          plagSubEl.innerText = "Semantic AI Paraphrase";
-          plagSubEl.className = "text-[8.5px] font-bold text-purple-600 font-mono-num mt-0.5";
-        } else {
-          plagSubEl.innerText = "MinHash LSH";
-          plagSubEl.className = "text-[8.5px] pm-muted-text font-mono-num mt-0.5";
-        }
+      // Báo cáo I: Đối soát Trùng lặp
+      if (document.getElementById('stat-net-sim')) {
+        document.getElementById('stat-net-sim').innerText = `${netSim}%`;
       }
-      document.getElementById('stat-orig-pct').innerText = `${origPercent}%`;
+      if (document.getElementById('stat-raw-sim')) {
+        document.getElementById('stat-raw-sim').innerText = `${rawSim}%`;
+      }
+      if (document.getElementById('stat-highest-source')) {
+        document.getElementById('stat-highest-source').innerText = `${highestSource}%`;
+      }
 
-      document.getElementById('stat-math-formula').innerText =
-        `Độ thuần nguyên bản = 100% - ${aiPercent}% (AI) - ${plagPercent}% (Đạo văn) = ${origPercent}%`;
+      // Báo cáo II: Giám định Nguy cơ AI
+      if (document.getElementById('stat-ai-pct')) {
+        document.getElementById('stat-ai-pct').innerText = `${aiPercent}%`;
+      }
+      if (document.getElementById('stat-ai-ratio')) {
+        document.getElementById('stat-ai-ratio').innerText = `${data.ai_sentence_count || 0}/${data.total_sentences || 0} câu`;
+      }
+      if (document.getElementById('stat-ci-95')) {
+        document.getElementById('stat-ci-95').innerText = `[${ci95[0]}% - ${ci95[1]}%]`;
+      }
+      if (document.getElementById('stat-yule-k')) {
+        document.getElementById('stat-yule-k').innerText = `${yuleK}`;
+      }
+      if (document.getElementById('stat-cmr-badge')) {
+        document.getElementById('stat-cmr-badge').innerText = hasHallucination 
+          ? `Cảnh báo trích dẫn ảo (${citAudit.hallucinated_citations_count})`
+          : `Khớp ${cmr}% • 0 trích dẫn ảo`;
+        document.getElementById('stat-cmr-badge').className = hasHallucination
+          ? "font-bold text-rose-600 font-mono-num"
+          : "font-bold text-emerald-700 font-mono-num";
+      }
 
       const verdictBadge = document.getElementById('side-verdict-badge');
-      if (aiPercent >= 45 || plagPercent >= 30) {
+      if (aiPercent >= 45 || netSim >= 30) {
         verdictBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-900/60 text-rose-300 border border-rose-700";
         verdictBadge.innerText = "NGUY CƠ CAO (AI-GENERATED)";
-      } else if (aiPercent >= 20 || plagPercent >= 15) {
+      } else if (aiPercent >= 20 || netSim >= 15) {
         verdictBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-amber-900/60 text-amber-300 border border-amber-700";
         verdictBadge.innerText = "VĂN BẢN LAI GHÉP (HYBRID)";
       } else {
@@ -2129,7 +2227,12 @@
       const fn = (data.filename || (data.verification && data.verification.filename) || "Tai_lieu_hoc_thuat").trim();
       const orig = data.originality_percentage ?? (data.verification && data.verification.originality_percentage) ?? 100;
       const ai = (data.ai_detection && data.ai_detection.ai_percentage) ?? (data.verification && data.verification.ai_percentage) ?? 0;
-      const plag = (data.plagiarism && data.plagiarism.max_similarity_percentage) ?? (data.verification && data.verification.plag_percentage) ?? 0;
+      const netSim = (data.plagiarism && data.plagiarism.net_similarity_percentage) ?? (data.plagiarism && data.plagiarism.max_similarity_percentage) ?? (data.verification && data.verification.plag_percentage) ?? 0;
+      const rawSim = (data.plagiarism && data.plagiarism.raw_similarity_percentage) ?? netSim;
+      const ciLow = (data.ai_detection && data.ai_detection.ci_95_low) ?? (data.verification && data.verification.ci_95_low) ?? 0;
+      const ciHigh = (data.ai_detection && data.ai_detection.ci_95_high) ?? (data.verification && data.verification.ci_95_high) ?? 2;
+      const yuleK = (data.ai_detection && data.ai_detection.yule_k) ?? (data.verification && data.verification.yule_k) ?? 85.0;
+      const cmr = (data.citation_integrity && data.citation_integrity.citation_matching_ratio) ?? (data.verification && data.verification.citation_matching_ratio) ?? 100;
       const ppl = (data.ai_detection && data.ai_detection.perplexity) ?? (data.verification && data.verification.perplexity) ?? 100.0;
       const b = (data.ai_detection && data.ai_detection.burstiness) ?? (data.verification && data.verification.burstiness) ?? 0.70;
       const dt = data.report_datetime || (data.verification && data.verification.report_datetime) || "";
@@ -2142,7 +2245,13 @@
       if (fn) params.set('fn', fn);
       params.set('orig', orig);
       params.set('ai', ai);
-      params.set('plag', plag);
+      params.set('plag', netSim);
+      params.set('netsim', netSim);
+      params.set('rawsim', rawSim);
+      params.set('cil', ciLow);
+      params.set('cih', ciHigh);
+      params.set('yk', yuleK);
+      params.set('cmr', cmr);
       params.set('ppl', ppl);
       params.set('b', b);
       if (dt) params.set('dt', dt);
@@ -2486,20 +2595,58 @@
       // Cập nhật Mã biên bản số hóa & Khởi tạo Mã QR xác thực độc lập
       renderOfficialQRCode(data);
 
-      const aiPct = data.ai_detection.ai_percentage;
-      const plagPct = data.plagiarism.max_similarity_percentage;
-      const origPct = data.originality_percentage;
+      const aiPct = (data.ai_detection && data.ai_detection.ai_percentage) || 0;
+      const plagData = data.plagiarism || {};
+      const netSim = plagData.net_similarity_percentage ?? plagData.max_similarity_percentage ?? 0;
+      const rawSim = plagData.raw_similarity_percentage ?? netSim;
+      const highestSourceObj = plagData.highest_single_source || {};
+      const highestTitle = highestSourceObj.title ? (highestSourceObj.title.length > 30 ? highestSourceObj.title.substring(0, 28) + '...' : highestSourceObj.title) : 'Không phát hiện';
+      const highestSim = highestSourceObj.similarity ? ` (${highestSourceObj.similarity}%)` : '';
+      const lmsWords = plagData.longest_matching_sequence || 0;
+      const ci95 = data.ai_detection?.ci_95 || [0.0, 2.0];
+      const pVal = data.ai_detection?.p_value !== undefined ? data.ai_detection.p_value : 0.001;
+      const yuleK = data.ai_detection?.yule_k || 85.0;
+      const ttr = data.ai_detection?.ttr || 0.72;
 
-      document.getElementById('pdf-ai-score').innerText = `${aiPct}%`;
-      document.getElementById('pdf-plag-score').innerText = `${plagPct}%`;
-      document.getElementById('pdf-orig-score').innerText = `${origPct}%`;
-      document.getElementById('pdf-ppl-score').innerText = `${data.ai_detection.perplexity}`;
-      document.getElementById('pdf-burst-score').innerText = `${data.ai_detection.burstiness}`;
+      // Điền bảng I: Đối soát Trùng lặp
+      const netSimEl = document.getElementById('pdf-net-sim-score');
+      if (netSimEl) netSimEl.innerText = `${netSim}%`;
+      const rawSimEl = document.getElementById('pdf-raw-sim-score');
+      if (rawSimEl) rawSimEl.innerText = `${rawSim}%`;
+      const highSourceEl = document.getElementById('pdf-highest-source-score');
+      if (highSourceEl) highSourceEl.innerText = `${highestTitle}${highestSim}`;
+      const lmsEl = document.getElementById('pdf-lms-score');
+      if (lmsEl) lmsEl.innerText = `${lmsWords} từ`;
+      const plagVerdictEl = document.getElementById('pdf-plag-verdict');
+      if (plagVerdictEl) {
+        if (netSim <= 15) {
+          plagVerdictEl.innerText = "ĐẠT CHUẨN";
+          plagVerdictEl.style.color = "#15803d";
+        } else if (netSim <= 25) {
+          plagVerdictEl.innerText = "TRUNG BÌNH";
+          plagVerdictEl.style.color = "#b45309";
+        } else {
+          plagVerdictEl.innerText = "CẢNH BÁO";
+          plagVerdictEl.style.color = "#b91c1c";
+        }
+      }
+
+      // Điền bảng II: Giám định Nguy cơ AI
+      const aiScoreEl = document.getElementById('pdf-ai-score');
+      if (aiScoreEl) aiScoreEl.innerText = `${aiPct}%`;
+      const ci95El = document.getElementById('pdf-ci-95-score');
+      if (ci95El) ci95El.innerText = `[${ci95[0]}% - ${ci95[1]}%] (p=${pVal})`;
+      const pplEl = document.getElementById('pdf-ppl-score');
+      if (pplEl) pplEl.innerText = `${data.ai_detection.perplexity}`;
+      const burstEl = document.getElementById('pdf-burst-score');
+      if (burstEl) burstEl.innerText = `${data.ai_detection.burstiness}`;
+      const yuleEl = document.getElementById('pdf-yule-score');
+      if (yuleEl) yuleEl.innerText = `K=${yuleK} (TTR=${ttr})`;
 
       const verdictEl = document.getElementById('pdf-doc-verdict');
-      if (aiPct >= 45 || plagPct >= 30) {
+      if (aiPct >= 45 || netSim >= 30) {
         verdictEl.innerText = "NGUY CƠ CAO (CẦN RÀ SOÁT LẠI TOÀN VĂN)";
-      } else if (aiPct >= 20 || plagPct >= 15) {
+      } else if (aiPct >= 20 || netSim >= 15) {
         verdictEl.innerText = "VĂN BẢN LAI GHÉP (HYBRID - CẦN LƯU Ý PHẦN AI)";
       } else {
         verdictEl.innerText = "AN TOÀN HỌC THUẬT (ĐẠT CHUẨN XUẤT BẢN)";

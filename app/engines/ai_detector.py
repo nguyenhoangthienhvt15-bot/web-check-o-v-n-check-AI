@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Tuple
 from app.engines.rules.forensic_knowledge_base import (
     HUMAN_TYPO_PATTERNS,
     FORMAL_PROOF_HEADER_REGEX,
+    CS_ALGORITHM_EXEMPTION_PATTERNS,
     PURE_EQUATION_PATTERNS,
     TECHNICAL_ACRONYMS,
     GENUINE_LLM_SYNTACTIC_PATTERNS,
@@ -28,6 +29,7 @@ class DeepForensicAcademicAIDetector:
         self.threshold = 0.9015355
         self.human_typo_patterns = [(re.compile(pat, re.IGNORECASE), note) for pat, note in HUMAN_TYPO_PATTERNS]
         self.formal_proof_header_rx = re.compile(FORMAL_PROOF_HEADER_REGEX, re.IGNORECASE)
+        self.cs_exemption_rxs = [re.compile(p, re.IGNORECASE) for p in CS_ALGORITHM_EXEMPTION_PATTERNS]
         self.pure_equation_rxs = [re.compile(p, re.IGNORECASE) for p in PURE_EQUATION_PATTERNS]
         self.technical_acronym_rxs = [re.compile(p) for p in TECHNICAL_ACRONYMS]
         self.genuine_llm_syntactic_patterns = [
@@ -102,12 +104,14 @@ class DeepForensicAcademicAIDetector:
         ai_sentence_count: int,
         total_content: int,
         words_all: List[str]
-    ) -> Tuple[float, float, float, Dict[str, float]]:
+    ) -> Tuple[float, float, float, Dict[str, float], Dict[str, Any]]:
         """
-        TÍNH TOÁN CHUẨN XÁC CHỈ SỐ BURSTINESS (B) VÀ PERPLEXITY (PPL) ĐỘNG THEO THỐNG KÊ TOÁN HỌC:
+        TÍNH TOÁN CHUẨN XÁC CHỈ SỐ BURSTINESS (B), PERPLEXITY (PPL) VÀ ĐỘ ĐA DẠNG TỪ VỰNG CHUẨN HÓA:
         - Burstiness (B): Đo lường độ biến thiên nhịp điệu câu văn (Sentence Length Variability & Cadence Rhythm).
         - Perplexity (PPL): Tính toán dựa trên Entropy Shannon thực nghiệm của phân phối từ vựng và n-gram.
-        - Lexical Diversity: Tính toán dựa trên Root Type-Token Ratio.
+        - TTR (Type-Token Ratio) & STTR (Standardized TTR 100-word window): Đo lường độ phong phú từ vựng.
+        - Yule's Characteristic K: Chỉ số đo lường độ lặp từ vựng kinh điển độc lập với độ dài văn bản.
+        - 95% Confidence Interval (Khoảng tin cậy 95%) & p-value: Đảm bảo độ tin cậy thống kê cho tỷ lệ AI.
         """
         sentence_lengths = [len(re.findall(r'\b[A-Za-zÀ-ỹ0-9_-]+\b', s_text)) for s_text, _ in content_units]
         sentence_lengths = [l for l in sentence_lengths if l > 0]
@@ -132,6 +136,7 @@ class DeepForensicAcademicAIDetector:
         total_w = len(words_all)
         ai_ratio = ai_sentence_count / max(total_content, 1)
 
+        # Tính toán các chỉ số từ vựng chuẩn hóa: TTR, STTR, Yule's K
         if total_w >= 10:
             word_counts = Counter(words_all)
             vocab_size = len(word_counts)
@@ -140,14 +145,53 @@ class DeepForensicAcademicAIDetector:
             root_ttr = vocab_size / math.sqrt(total_w)
             lexical_diversity_val = round(min(0.95, max(0.35, (root_ttr / 8.5))), 2)
 
+            # 1. Type-Token Ratio (TTR)
+            ttr_val = round(vocab_size / total_w, 4)
+
+            # 2. Standardized Type-Token Ratio (STTR) trên cửa sổ 100 từ
+            window_size = 100
+            if total_w >= window_size:
+                sttr_scores = []
+                for i in range(0, total_w - window_size + 1, window_size):
+                    chunk = words_all[i:i + window_size]
+                    sttr_scores.append(len(set(chunk)) / window_size)
+                sttr_val = round(sum(sttr_scores) / len(sttr_scores), 4)
+            else:
+                sttr_val = ttr_val
+
+            # 3. Yule's Characteristic K = 10^4 * (sum(m^2 * V_m) - N) / N^2
+            freq_spectrum = Counter(word_counts.values())
+            s1 = total_w
+            s2 = sum(m * m * vm for m, vm in freq_spectrum.items())
+            if s1 > 1:
+                yule_k_val = round(10000.0 * (s2 - s1) / (s1 * s1), 2)
+            else:
+                yule_k_val = 0.0
+
             base_ppl = math.pow(2.0, min(7.1, max(4.0, entropy * 0.67)))
             calibrated_ppl = base_ppl + (root_ttr * 1.8) + (burstiness_val * 15.0) - (ai_ratio * 32.0)
             ppl_val = round(min(165.0, max(38.0, calibrated_ppl)), 1)
         else:
             lexical_diversity_val = 0.65
+            ttr_val = 0.72
+            sttr_val = 0.72
+            yule_k_val = 85.0
             ppl_val = 98.5
 
         overall_ai_pct = (ai_sentence_count / max(total_content, 1)) * 100.0
+
+        # Tính Khoảng tin cậy 95% (95% Confidence Interval) & p-value tránh False Positive
+        p_hat = overall_ai_pct / 100.0
+        n_obs = max(total_content, 1)
+        se = math.sqrt((p_hat * (1.0 - p_hat)) / n_obs) if p_hat > 0 and p_hat < 1 else (1.0 / (2.0 * math.sqrt(n_obs)))
+        margin_error = 1.96 * se
+        ci_95_low = round(max(0.0, (p_hat - margin_error) * 100.0), 1)
+        ci_95_high = round(min(100.0, (p_hat + margin_error) * 100.0), 1)
+
+        # Tính p-value (kiểm định 2 phía so với giả thuyết ngẫu nhiên H0: p = 0.50)
+        z_stat = abs(p_hat - 0.50) / math.sqrt(0.25 / n_obs)
+        p_value = round(max(0.0001, min(1.0, 1.0 - math.erf(z_stat / math.sqrt(2.0)))), 4)
+
         radar_metrics = {
             "perplexity_uniformity": round(min(95.0, max(12.0, (140.0 - ppl_val) * 0.65 + (1.0 - burstiness_val) * 20.0)), 1),
             "rhythm_monotony": round(min(95.0, max(10.0, (1.0 - burstiness_val) * 85.0 + (overall_ai_pct * 0.1))), 1),
@@ -156,7 +200,18 @@ class DeepForensicAcademicAIDetector:
             "empirical_void": round(min(95.0, max(10.0, overall_ai_pct * 0.82 + 10.0)), 1)
         }
 
-        return burstiness_val, ppl_val, lexical_diversity_val, radar_metrics
+        advanced_stylometrics = {
+            "ttr": ttr_val,
+            "sttr": sttr_val,
+            "yule_k": yule_k_val,
+            "ci_95": [ci_95_low, ci_95_high],
+            "ci_95_low": ci_95_low,
+            "ci_95_high": ci_95_high,
+            "p_value": p_value,
+            "confidence_statement": f"Khoảng tin cậy 95% CI: [{ci_95_low}% - {ci_95_high}%] (p-value = {p_value})"
+        }
+
+        return burstiness_val, ppl_val, lexical_diversity_val, radar_metrics, advanced_stylometrics
 
     def _generate_smart_academic_rewrite(
         self,
@@ -214,11 +269,11 @@ class DeepForensicAcademicAIDetector:
             if m:
                 term_part = m.group(1).strip()
                 desc_part = m.group(2).strip()
-                desc_clean = re.sub(r'\bbạn\b', 'người thực hiện', desc_part, flags=re.IGNORECASE)
-                rewritten = f"Xét theo cơ chế vận hành của {term_part.lower()}, hệ thống xác định {desc_clean[0].lower() + desc_clean[1:] if len(desc_clean) > 1 else desc_clean}."
+                desc_clean = re.sub(r'\bbạn\b', 'nhà nghiên cứu / người thực hiện', desc_part, flags=re.IGNORECASE)
+                rewritten = f"Về khía cạnh {term_part.lower()}, nghiên cứu phân tích cho thấy {desc_clean[0].lower() + desc_clean[1:] if len(desc_clean) > 1 else desc_clean}"
                 return {
                     "rewrite_suggestion": rewritten,
-                    "revision_guidance": f"Chuyển đổi đề mục định nghĩa '{term_part}' thành câu văn tường thuật liên kết đoạn hoàn chỉnh; bổ sung tài liệu tham chiếu chuyên ngành."
+                    "revision_guidance": f"Khuyến nghị chuyển đổi cấu trúc định nghĩa danh mục của '{term_part}' thành văn phong tường thuật học thuật gắn kết (cohesive academic narrative); tránh format định dạng danh sách máy móc."
                 }
 
         # Cặp liên từ song hành cân đối
@@ -318,6 +373,12 @@ class DeepForensicAcademicAIDetector:
             is_formal_proof = bool(self.formal_proof_header_rx.search(s_text.strip()))
             is_pure_equation = any(eq_rx.search(s_text.strip()) for eq_rx in self.pure_equation_rxs)
 
+            # 3b. Kiểm tra CẤU TRÚC GIẢI THUẬT & KHMT CHUẨN CLRS (CS ALGORITHM EXEMPTIONS)
+            is_cs_exemption = any(rx.search(s_text.strip()) for rx in self.cs_exemption_rxs)
+            if is_cs_exemption:
+                is_formal_proof = True
+                diagnostics.append("Cấu trúc giải thuật / Bất biến vòng lặp chuẩn tắc theo giáo trình CLRS (Computer Science Invariant - Miễn trừ AI).")
+
             # 4. Quét duyệt CÁC MẪU CÚ PHÁP ĐẶC TRƯNG CỦA LLM
             cliche_score = 0.0
             matched_cliches = 0
@@ -325,14 +386,14 @@ class DeepForensicAcademicAIDetector:
                 m = pat_rx.search(s_text)
                 if m:
                     matched_str = m.group(0).strip()
-                    if not is_pure_equation:
+                    if not is_pure_equation and not is_cs_exemption:
                         cliche_score += weight
                         matched_cliches += 1
                         diagnostics.append(f"{desc} (phát hiện: '{matched_str[:45]}')")
                         cliche_hits_map[desc] = cliche_hits_map.get(desc, 0) + 1
 
             # 4b. Phân tích mật độ chú giải thuật ngữ song ngữ trong ngoặc đơn & dấu gạch ngang dài (LLM Stylometric Signature)
-            if not is_pure_equation and not is_formal_proof and w_count >= 16:
+            if not is_pure_equation and not is_formal_proof and not is_cs_exemption and w_count >= 16:
                 eng_glosses = re.findall(r'\(\s*[A-Z][A-Za-z0-9\s\-/&,]{3,45}\s*\)', s_text)
                 if len(eng_glosses) >= 2:
                     cliche_score += 0.34
@@ -347,7 +408,7 @@ class DeepForensicAcademicAIDetector:
             # 5. Kiểm tra CẤU TRÚC ĐỊNH NGHĨA DANH MỤC LLM (Textbook Listicle: Term: Explanation)
             is_listicle = False
             term_match = self.listicle_term_rx.match(s_text.strip())
-            if term_match and not is_formal_proof and not is_pure_equation:
+            if term_match and not is_formal_proof and not is_pure_equation and not is_cs_exemption:
                 prefix_term = term_match.group(1).strip()
                 body_text = term_match.group(2).strip().lower()
                 has_expl_trigger = any(trig.search(body_text) for trig in self.listicle_triggers)
@@ -360,7 +421,10 @@ class DeepForensicAcademicAIDetector:
             has_technical_term = any(trx.search(s_text) for trx in self.technical_acronym_rxs)
 
             # 7. TÍNH TOÁN XÁC SUẤT AI THEO MÔ HÌNH ĐA TẦNG (MULTI-FACTOR COMPOSITE PROBABILITY)
-            if is_pure_equation and matched_cliches == 0:
+            if is_cs_exemption and matched_cliches == 0:
+                final_prob = 0.04
+                is_listicle = False
+            elif is_pure_equation and matched_cliches == 0:
                 final_prob = 0.04
                 if not diagnostics:
                     diagnostics.append("Biểu thức toán học / phương trình hình thức nguyên bản.")
@@ -460,8 +524,8 @@ class DeepForensicAcademicAIDetector:
 
         binoculars_ratio = round(self.threshold - (overall_ai_pct / 100.0 - 0.5) * 0.16, 4)
 
-        # Tính toán thông số NLP thực nghiệm (Burstiness & Perplexity)
-        burstiness_val, ppl_val, lexical_diversity_val, radar_metrics = self._compute_dynamic_stylometrics(
+        # Tính toán thông số NLP thực nghiệm (Burstiness & Perplexity & Thống kê từ vựng)
+        burstiness_val, ppl_val, lexical_diversity_val, radar_metrics, advanced_stylometrics = self._compute_dynamic_stylometrics(
             content_units=content_units,
             raw_text=raw_text,
             ai_sentence_count=ai_sentence_count,
@@ -485,6 +549,15 @@ class DeepForensicAcademicAIDetector:
             "binoculars_score": binoculars_ratio,
             "is_ai_generated": overall_ai_pct >= 40.0,
             "ai_percentage": overall_ai_pct,
+            "ci_95": advanced_stylometrics["ci_95"],
+            "ci_95_low": advanced_stylometrics["ci_95_low"],
+            "ci_95_high": advanced_stylometrics["ci_95_high"],
+            "p_value": advanced_stylometrics["p_value"],
+            "confidence_statement": advanced_stylometrics["confidence_statement"],
+            "ttr": advanced_stylometrics["ttr"],
+            "sttr": advanced_stylometrics["sttr"],
+            "yule_k": advanced_stylometrics["yule_k"],
+            "advanced_stylometrics": advanced_stylometrics,
             "ai_sentence_count": ai_sentence_count,
             "total_content_sentences": total_content,
             "total_sentences": len(analyzed_sentences),

@@ -29,36 +29,27 @@ def analyze_document_content(
     rendered_html: Optional[str] = None,
     structural_audit: Optional[Dict[str, Any]] = None
 ):
-    # 1. Chạy giám định pháp y học thuật trên 100% tài liệu từ đầu đến cuối
+    # 1. Chạy giám định pháp y học thuật trên 100% tài liệu từ đầu đến cuối (AI Forensics)
     ai_result = ai_detector.analyze_full_document(text)
-    
-    # 2. So khớp Đạo văn & Đạo văn Ngữ nghĩa (MinHash LSH & Semantic AI Paraphrasing)
-    candidate_doc_ids = plagiarism_engine.query_similar(text)
-    matches = []
-    top_similarity = 0.0
-    plag_matches_map = {}
-    
-    for cand_id, cand_text in plagiarism_engine.corpus_storage.items():
-        sim, matched_sents = plagiarism_engine.calculate_sentence_overlap(text, cand_text)
-        if sim > 0:
-            matches.append({
-                "doc_id": cand_id,
-                "similarity_score": round(sim * 100, 1),
-                "overlap_sentences": matched_sents
-            })
-            if sim > top_similarity:
-                top_similarity = sim
-            for s_match in matched_sents:
-                clean_k = s_match["text"].strip().lower()
-                plag_matches_map[clean_k] = s_match
-
-    plag_percentage = round(top_similarity * 100, 1)
-    
-    # 3. Tính chỉ số Độ thuần Nguyên bản: Đảm bảo tính nhất quán toán học 100% (Originality = 100% - AI% - Plag%)
     ai_percentage = ai_result["ai_percentage"]
-    originality_score = max(0.0, round(100.0 - ai_percentage - plag_percentage, 1))
+    
+    # 2. Rà soát Đạo văn đa tầng theo chuẩn quốc tế (Multi-Tier Plagiarism Audit)
+    # Tách bạch Raw Similarity và Net Similarity, loại trừ trích dẫn ngoặc kép & tài liệu tham khảo
+    plag_audit = plagiarism_engine.analyze_multi_tier_plagiarism(text)
+    raw_similarity = plag_audit["raw_similarity_percentage"]
+    net_similarity = plag_audit["net_similarity_percentage"]
+    
+    # Tạo bản đồ câu trùng lặp để gán nhãn chi tiết
+    plag_matches_map = {}
+    for m in plag_audit.get("matches", []):
+        for s_match in m.get("overlap_sentences", []):
+            clean_k = s_match["text"].strip().lower()
+            plag_matches_map[clean_k] = s_match
 
-    # Gán nhãn đạo văn & đạo văn ngữ nghĩa vào từng câu
+    # 3. Rà soát Liêm chính trích dẫn & Phát hiện trích dẫn ảo (Citation Integrity & Hallucination Check)
+    citation_audit = source_verifier.audit_citation_integrity(text)
+
+    # 4. Gán nhãn từng câu trong tài liệu
     enriched_sentences = []
     plag_sentence_count = 0
     semantic_paraphrase_count = 0
@@ -110,32 +101,43 @@ def analyze_document_content(
         "tables_findings": []
     }
 
-    # 4. Thẩm tra và Đối soát Nguồn Trích dẫn Đa tầng (3 Dạng: Thiếu kiểm chứng, Khoa học uy tín, Tổng hợp)
+    # 5. Thẩm tra và Đối soát Nguồn Trích dẫn Đa tầng (3 Dạng: Thiếu kiểm chứng, Khoa học uy tín, Tổng hợp)
     sources_audit = source_verifier.verify_sources(text, enriched_sentences)
 
-    # 5. Bộ định thời gian giám định chuẩn (UTC+7 / Việt Nam)
+    # 6. Bộ định thời gian giám định chuẩn (UTC+7 / Việt Nam)
     now_vn = datetime.now(VN_TZ)
     report_date_vn = f"ngày {now_vn.day:02d} tháng {now_vn.month:02d} năm {now_vn.year}"
     report_date = now_vn.strftime("%d/%m/%Y")
     report_time = now_vn.strftime("%H:%M:%S")
     report_datetime = f"{report_time} {report_date}"
 
-    # 6. Khởi tạo mã chứng thư số hóa & Cấp mã QR thẩm tra điện tử (SHA-256 Tamper-Proof)
+    # 7. Khởi tạo mã chứng thư số hóa & Cấp mã QR thẩm tra điện tử (SHA-256 Tamper-Proof)
     doc_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()
     cert_id = f"SYN-2026/BB-GDHT-{doc_hash[:4].upper()}"
+
+    # Độc lập hoàn toàn giữa Trục AI và Trục Trùng lặp (Không dùng công thức cộng dồn 100%)
+    human_authenticity_score = round(max(0.0, 100.0 - ai_percentage), 1)
+
     verification_info = verification_service.register_certificate(
         cert_id=cert_id,
         filename=filename or "Tài liệu học thuật",
         text=text,
         ai_percentage=ai_percentage,
-        plag_percentage=plag_percentage,
-        orig_percentage=originality_score,
+        plag_percentage=net_similarity,
+        orig_percentage=human_authenticity_score,
         ppl=ai_result["perplexity"],
         burstiness=ai_result["burstiness"],
         report_date_vn=report_date_vn,
         report_datetime=report_datetime,
         total_words=len(text.split()),
-        total_sentences=len(enriched_sentences)
+        total_sentences=len(enriched_sentences),
+        net_similarity=net_similarity,
+        raw_similarity=raw_similarity,
+        highest_single_source_pct=plag_audit["highest_single_source"].get("similarity", 0.0),
+        ci_95_low=ai_result.get("ci_95_low", 0.0),
+        ci_95_high=ai_result.get("ci_95_high", 0.0),
+        yule_k=ai_result.get("yule_k", 85.0),
+        citation_matching_ratio=citation_audit["citation_matching_ratio"]
     )
 
     return {
@@ -158,10 +160,20 @@ def analyze_document_content(
         "rendered_html": rendered_html or "", # Bảo toàn 100% hình ảnh (base64) và bảng biểu
         "structural_audit": struct,           # Thẩm định pháp y hình ảnh, sơ đồ và bảng biểu
         "sources_verification": sources_audit, # Hệ thống trích dẫn & kiểm chứng nguồn 3 dạng
+        "citation_integrity": citation_audit,  # Rà soát trích dẫn & Cảnh báo trích dẫn ảo
         "ai_detection": {
             "binoculars_score": ai_result["binoculars_score"],
             "is_ai_generated": ai_result["is_ai_generated"],
             "ai_percentage": ai_percentage,
+            "ci_95": ai_result.get("ci_95", [0.0, 0.0]),
+            "ci_95_low": ai_result.get("ci_95_low", 0.0),
+            "ci_95_high": ai_result.get("ci_95_high", 0.0),
+            "p_value": ai_result.get("p_value", 0.001),
+            "confidence_statement": ai_result.get("confidence_statement", ""),
+            "ttr": ai_result.get("ttr", 0.72),
+            "sttr": ai_result.get("sttr", 0.72),
+            "yule_k": ai_result.get("yule_k", 85.0),
+            "advanced_stylometrics": ai_result.get("advanced_stylometrics", {}),
             "perplexity": ai_result["perplexity"],
             "burstiness": ai_result["burstiness"],
             "lexical_diversity": ai_result["lexical_diversity"],
@@ -172,13 +184,23 @@ def analyze_document_content(
             "cliche_count": ai_result["cliche_count"]
         },
         "plagiarism": {
-            "candidates_found": len(matches),
-            "max_similarity_percentage": plag_percentage,
+            "raw_similarity_percentage": raw_similarity,
+            "net_similarity_percentage": net_similarity,
+            "highest_single_source": plag_audit["highest_single_source"],
+            "longest_matching_sequence": plag_audit["longest_matching_sequence"],
+            "quotes_excluded_count": plag_audit["quotes_excluded_count"],
+            "references_excluded": plag_audit["references_excluded"],
+            "verdict": plag_audit["verdict"],
+            "risk_tier": plag_audit["risk_tier"],
+            "corpus_scope": plag_audit["corpus_scope"],
+            "attribution_list": plag_audit["attribution_list"],
+            "candidates_found": len(plag_audit.get("matches", [])),
+            "max_similarity_percentage": net_similarity,
             "semantic_paraphrase_detected": semantic_paraphrase_count > 0,
             "semantic_paraphrase_count": semantic_paraphrase_count,
-            "matches": matches
+            "matches": plag_audit.get("matches", [])
         },
-        "originality_percentage": originality_score,
+        "originality_percentage": human_authenticity_score,
         "sentences": enriched_sentences
     }
 

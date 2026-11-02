@@ -27,6 +27,24 @@ HUMAN_TYPO_PATTERNS: List[Tuple[str, str]] = [
 # truyền cờ re.IGNORECASE khi gọi re.compile().
 FORMAL_PROOF_HEADER_REGEX: str = r"^(phát biểu\s+bất biến(\s+vòng lặp)?(\s+trong)?\s+(pin|pout|inv|bound)\s*\([^\)]*\)|(khởi tạo|duy trì|kết thúc|bảo toàn(\s+phần tử)?|hoán vị|đã sắp xếp|giá trị chặn|hàm giảm|bước lặp|điều kiện dừng|điều kiện lặp)|(định lý|định lí|bổ đề|hệ quả|mệnh đề|tiên đề|định nghĩa|quy tắc|công thức|phương trình)(\s+[0-9A-Z\.]+)?|(chứng minh|lời giải|giải pháp|chứng minh quy nạp|chứng minh phản chứng|bước cơ sở|bước quy nạp|giả thiết quy nạp)|(trường hợp|bước)\s+\d+|(điều kiện cần|điều kiện đủ|điều kiện cần và đủ)|(đầu vào|đầu ra|input|output|precondition|postcondition|tiền điều kiện|hậu điều kiện))\s*:"
 
+# 2b. DANH MỤC MIỄN TRỪ CẤU TRÚC KHOA HỌC MÁY TÍNH & GIẢI THUẬT (CLRS ALGORITHM & CS EXEMPTIONS)
+# Khắc phục triệt để lỗi False Positive gắn cờ nhầm các cấu trúc phân tích thuật toán, mã giả chuẩn mực
+# (như "Ghi chú:", "Phép toán đổi chỗ:", "Điều kiện xảy ra Best Case:", "Khởi tạo (Initialization):", v.v.)
+CS_ALGORITHM_EXEMPTION_PATTERNS: List[str] = [
+    r"^(ghi chú|lưu ý|chú ý|note)\s*:",
+    r"^(phép toán|phép toán đổi chỗ|phép gán|phép so sánh|thao tác đổi chỗ|thao tác gán)\s*:",
+    r"^(điều kiện|điều kiện dừng|điều kiện lặp|điều kiện xảy ra|điều kiện biên)\s*([a-zA-Z0-9_\s\(\)]+)?\s*:",
+    r"^(khởi tạo|initialization|duy trì|maintenance|kết thúc|termination|bảo toàn|invariance)\s*(\([^\)]*\))?\s*:",
+    r"^(trường hợp tốt nhất|best\s*case|trường hợp xấu nhất|worst\s*case|trường hợp trung bình|average\s*case)\s*(\([^\)]*\))?\s*:",
+    r"^(độ phức tạp|độ phức tạp thời gian|độ phức tạp không gian|time complexity|space complexity)\s*(\([^\)]*\))?\s*:",
+    r"^(bất biến vòng lặp|loop invariant|bất biến giải thuật)\s*(\([^\)]*\))?\s*:",
+    r"^(mã giả|pseudocode|thuật toán|algorithm|giải thuật|phương pháp thực thi)\s*(\([^\)]*\))?\s*:",
+    r"^(bước cơ sở|base case|bước quy nạp|inductive step|giả thiết quy nạp|inductive hypothesis)\s*(\([^\)]*\))?\s*:",
+    r"^(đầu vào|đầu ra|input|output|precondition|postcondition)\s*(\([^\)]*\))?\s*:",
+    r"^(bước lặp|vòng lặp|vòng lặp ngoài|vòng lặp trong|iteration|pass)\s*([0-9a-zA-Z\s_]+)?\s*:",
+    r"^(mảng|danh sách|ngăn xếp|hàng đợi|cây nhị phân|đồ thị|array|list|stack|queue|tree|graph)\s*([0-9a-zA-Z\s_\[\]]+)?\s*:"
+]
+
 # Biểu thức Toán học / Phương trình thuần túy (Pure Equations)
 # Ví dụ: a_n = 1 nếu n = 0, a_n = 6a_{n-1} - 9a_{n-2}, F(n) = O(n log n)
 PURE_EQUATION_PATTERNS: List[str] = [
