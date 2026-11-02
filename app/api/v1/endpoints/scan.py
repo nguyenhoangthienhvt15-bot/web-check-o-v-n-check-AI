@@ -245,7 +245,7 @@ async def process_document_background(task_id: str, filename: str, file_bytes: b
             15
         )
         await asyncio.sleep(0.3)
-        extracted_text, structural_audit, rendered_html = extract_document(filename, file_bytes)
+        rendered_html, extracted_text, structural_audit = extract_document(filename, file_bytes)
 
         # Giai đoạn 2: Giám định pháp y AI đa nhân tố
         async_task_manager.update_progress(
@@ -486,11 +486,11 @@ async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Req
                     else:
                         gas_message = res_data.get("message", "Chưa tìm thấy email thông báo ngân hàng khớp với giao dịch.")
                 else:
-                    gas_message = "Google Apps Script cần được chủ tài khoản phê duyệt quyền truy cập (Review permissions) trên script.google.com."
+                    gas_message = "Hệ thống đang chờ đồng bộ hóa đơn thanh toán từ ngân hàng."
                     print(f"[PaymentVerify] GAS returned non-JSON HTML (Permission required).")
         except Exception as e:
             print(f"[PaymentVerify] GAS check error: {e}")
-            gas_message = f"Không thể kết nối đến hệ thống đối soát Gmail: {str(e)}"
+            gas_message = f"Không thể kết nối đến hệ thống đối soát hóa đơn thanh toán: {str(e)}"
 
     # NẾU CHƯA HOẶC KHÔNG THỂ XÁC THỰC -> TUYỆT ĐỐI TỪ CHỐI CẤP QUYỀN
     if not payment_verified:
@@ -498,7 +498,7 @@ async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Req
             "success": False,
             "package": pkg,
             "ip": client_ip,
-            "message": gas_message or f"Hệ thống chưa tìm thấy thông báo biến động số dư từ Ngân hàng Timo trong hộp thư Gmail của nguyenhoangthien.hvt.15@gmail.com với nội dung 'BUY CHECK SYNAPESEDU {pkg}'. Vui lòng kiểm tra lại hoặc chờ 30 giây để ngân hàng gửi thư rồi thử lại.",
+            "message": gas_message or f"Hệ thống chưa tìm thấy hóa đơn thanh toán với nội dung 'BUY CHECK SYNAPESEDU {pkg}'. Vui lòng kiểm tra lại thông tin chuyển khoản hoặc chờ trong giây lát rồi thử lại.",
             "error_code": "PAYMENT_NOT_FOUND",
             "quota": quota_manager.get_quota_status(client_ip)
         }
