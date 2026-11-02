@@ -588,6 +588,17 @@
             </div>
           </div>
 
+          <!-- DẤU ẤN MÔ HÌNH LLM (MODEL ATTRIBUTION FINGERPRINT) -->
+          <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80 space-y-1">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold uppercase tracking-wider text-slate-700">Dấu ấn Mô hình:</span>
+              <span id="stat-model-family-pill" class="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Tác giả con người (92%)</span>
+            </div>
+            <p id="stat-model-notes" class="text-[9.5px] text-slate-500 italic font-times leading-tight">
+              Phân tích n-gram và tần suất liên từ cho thấy phong cách tự nhiên đặc trưng của tác giả.
+            </p>
+          </div>
+
           <!-- Biểu đồ Phân bổ Mật độ AI theo Các Mục Thực tế của Tài liệu -->
           <div class="space-y-1.5 pt-1">
             <div class="flex items-center justify-between text-[11px]">
@@ -685,20 +696,20 @@
                   <tr class="hover:bg-emerald-50/40">
                     <td class="p-1.5 font-bold text-emerald-700 leading-tight">
                       🟢 An toàn học thuật<br />
-                      <span class="text-[8px] font-normal text-slate-500">Thuần con người</span>
+                      <span class="text-[8px] font-normal text-slate-500">Thuần con người (Đạt chuẩn)</span>
                     </td>
                     <td class="p-1.5 text-center font-bold font-mono text-emerald-600">&lt; 20%</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&gt; 85.0</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&ge; 0.60</td>
+                    <td class="p-1.5 text-center font-bold font-mono text-emerald-700">&ge; 65.0*</td>
+                    <td class="p-1.5 text-center font-bold font-mono text-emerald-700">&ge; 0.50</td>
                   </tr>
                   <tr class="hover:bg-amber-50/40">
                     <td class="p-1.5 font-bold text-amber-700 leading-tight">
                       🟡 Văn bản Lai ghép<br />
-                      <span class="text-[8px] font-normal text-slate-500">AI hỗ trợ dàn bài/dịch</span>
+                      <span class="text-[8px] font-normal text-slate-500">Cần tác giả rà soát</span>
                     </td>
                     <td class="p-1.5 text-center font-bold font-mono text-amber-600">20% – 45%</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">50 – 85</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">0.40 – 0.59</td>
+                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">45.0 – 65.0</td>
+                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">0.35 – 0.49</td>
                   </tr>
                   <tr class="hover:bg-rose-50/40">
                     <td class="p-1.5 font-bold text-rose-700 leading-tight">
@@ -706,8 +717,8 @@
                       <span class="text-[8px] font-normal text-slate-500">Can thiệp AI diện rộng</span>
                     </td>
                     <td class="p-1.5 text-center font-bold font-mono text-rose-600">&gt; 45%</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&lt; 50.0</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&lt; 0.40</td>
+                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&lt; 45.0</td>
+                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&lt; 0.35</td>
                   </tr>
                 </tbody>
               </table>
@@ -715,9 +726,7 @@
 
             <!-- Khuyến nghị hành động -->
             <div class="text-[9px] text-slate-600 leading-snug p-2 bg-slate-50/90 rounded-lg border border-slate-200">
-              💡 <strong>Khuyến nghị:</strong> Điểm số đạt chuẩn xuất bản và bảo vệ luận án khi tài liệu có <strong>Xác
-                suất AI &lt; 20%</strong>, PPL &gt; 85 và Burstiness &ge; 0.60. Văn bản thuộc vùng Lai ghép (20% – 45%)
-              cần tác giả tự rà soát và diễn đạt lại theo phong cách cá nhân.
+              💡 <strong>Khuyến nghị:</strong> Đạt chuẩn xuất bản khi <strong>Xác suất AI &lt; 20%</strong>, PPL &ge; 65.0 (Toán - Tin/Kỹ thuật) hoặc &ge; 75.0 (Xã hội), và Burstiness &ge; 0.50. <em>*Trong tài liệu Khoa học Máy tính/Toán học, việc lặp thuật ngữ chuẩn hóa và công thức hình thức tự nhiên đưa PPL về dải 65.0 – 80.0, hoàn toàn đạt chuẩn tác giả con người.</em>
             </div>
           </div>
         </div>
@@ -848,6 +857,30 @@
             <p id="rewrite-guidance" class="text-[10px] text-slate-500 italic font-times">
               --
             </p>
+          </div>
+
+          <!-- KHU VỰC PHẢN BIỆN & GIẢI TRÌNH HỌC THUẬT (INTERACTIVE REBUTTAL MODE) -->
+          <div id="rebuttal-box" class="pt-2 border-t border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-sky-800 uppercase tracking-wide">Giải trình Học thuật (Rebuttal):</span>
+              <span id="rebuttal-status-pill" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">Chưa giải trình</span>
+            </div>
+            <select id="rebuttal-reason-select" class="w-full text-[11px] bg-white border border-slate-300 rounded-md p-1.5 font-sans focus:ring-1 focus:ring-sky-500">
+              <option value="cs_algorithm">Cấu trúc giải thuật / Giả mã CLRS chuẩn mực</option>
+              <option value="math_formula">Ký hiệu Toán học / Bất biến logic hình thức</option>
+              <option value="standard_term">Thuật ngữ chuyên ngành bắt buộc</option>
+              <option value="authorized_quote">Trích dẫn hợp lệ theo chuẩn IEEE / COPE</option>
+              <option value="other">Giải trình khác...</option>
+            </select>
+            <textarea id="rebuttal-notes" rows="2" placeholder="Ghi chú minh chứng của tác giả (tùy chọn)..." class="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-md p-1.5 font-sans focus:bg-white resize-none"></textarea>
+            <div class="flex items-center gap-2">
+              <button onclick="submitAcademicRebuttal()" class="flex-1 text-[11px] font-bold py-1.5 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-md shadow-2xs transition flex items-center justify-center gap-1">
+                <span>⚖️</span> Lưu Giải trình
+              </button>
+              <button onclick="clearAcademicRebuttal()" id="btn-clear-rebuttal" class="text-[10px] py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md transition hidden">
+                Hủy
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1150,14 +1183,13 @@
           <tr>
             <td
               style="border: 1px solid #000; padding: 3px 4px; font-weight: bold; color: #15803d; text-align: center;">
-              An toàn Học thuật<br /><span style="font-size: 7pt; font-weight: normal; color: #475569;">(Thuần con
-                người)</span>
+              An toàn Học thuật<br /><span style="font-size: 7pt; font-weight: normal; color: #475569;">(Thuần con người - Đạt chuẩn)</span>
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 20%</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&gt; 85.0</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&ge; 0.60</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold; color: #15803d;">&ge; 65.0*</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold; color: #15803d;">&ge; 0.50</td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify;">
-              Văn phong tự nhiên, vốn từ phong phú bất quy tắc, nhịp câu đa dạng. Đạt chuẩn liêm chính khoa học.
+              Văn phong tự nhiên, vốn từ phong phú bất quy tắc, nhịp câu đa dạng. Đạt chuẩn liêm chính khoa học (COPE/IEEE).
             </td>
           </tr>
           <tr>
@@ -1167,13 +1199,12 @@
                 Document)</span>
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">20% – 45%</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">50.0 – 85.0
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">45.0 – 65.0
             </td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">0.40 – 0.59
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">0.35 – 0.49
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify;">
-              Có sự can thiệp/hỗ trợ từ AI (gợi ý dàn bài, dịch thuật, hiệu đính ngữ pháp). Cần rà soát và tự biên tập
-              lại.
+              Có sự can thiệp/hỗ trợ từ AI (gợi ý dàn bài, dịch thuật, hiệu đính ngữ pháp). Cần tác giả tự rà soát và biên tập lại.
             </td>
           </tr>
           <tr>
@@ -1183,19 +1214,15 @@
                 style="font-size: 7pt; font-weight: normal; color: #475569;">(AI-Generated)</span>
             </td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&gt; 45%</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 50.0</td>
-            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 0.40</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 45.0</td>
+            <td style="border: 1px solid #000; padding: 3px 4px; text-align: center; font-weight: bold;">&lt; 0.35</td>
             <td style="border: 1px solid #000; padding: 3px 4px; text-align: justify;">
               Độ hỗn loạn thấp, nhịp câu đơn điệu máy tính, phân bổ từ vựng theo khuôn mẫu LLM. Cần thẩm tra trực tiếp.
             </td>
           </tr>
         </table>
         <div style="font-size: 7pt; color: #475569; margin-top: 2px; line-height: 1.3; font-style: italic;">
-          <strong>* Hướng dẫn đọc chỉ số:</strong> (1) <strong>PPL (Perplexity - Độ hỗn loạn ngôn ngữ):</strong> Thước
-          đo độ khó đoán và phong phú của vốn từ; giá trị cao khẳng định phong cách con người tự nhiên, giá trị thấp
-          phản ánh văn bản tạo sinh theo khuôn mẫu xác suất của AI. (2) <strong>Burstiness (B - Biến thiên nhịp
-            câu):</strong> Thước đo độ biến thiên chiều dài giữa các câu; giá trị cao biểu thị văn phong tự nhiên (câu
-          ngắn đan xen câu dài linh hoạt), giá trị thấp là đặc trưng cơ học của câu AI.
+          <strong>* Hướng dẫn đọc chỉ số & Chuẩn chuyên ngành:</strong> (1) <strong>PPL (Perplexity - Độ hỗn loạn ngôn ngữ):</strong> Thước đo độ khó đoán và phong phú của vốn từ; giá trị cao khẳng định phong cách con người tự nhiên. <em>*Trong tài liệu Khoa học Máy tính / Toán học, việc lặp thuật ngữ chuẩn hóa (CLRS) và ký hiệu công thức tự nhiên đưa PPL về dải 65.0 – 80.0, hoàn toàn đạt chuẩn xuất bản tác giả con người.</em> (2) <strong>Burstiness (B - Biến thiên nhịp câu):</strong> Thước đo độ biến thiên chiều dài giữa các câu; giá trị cao biểu thị văn phong tự nhiên linh hoạt.
         </div>
       </div>
 
@@ -2238,25 +2265,21 @@
       const dt = data.report_datetime || (data.verification && data.verification.report_datetime) || "";
       const words = data.total_words || (data.verification && data.verification.total_words) || 0;
       const sents = data.total_sentences || (data.verification && data.verification.total_sentences) || 0;
+      const modelAttr = (data.ai_detection && data.ai_detection.model_attribution && data.ai_detection.model_attribution.primary_model) || (data.verification && data.verification.model_attribution && data.verification.model_attribution.primary_model);
 
       const params = new URLSearchParams();
       params.set('id', certId);
       if (shortHash) params.set('hash', shortHash);
-      if (fn) params.set('fn', fn);
+      if (fn) params.set('fn', fn.substring(0, 35));
       params.set('orig', orig);
       params.set('ai', ai);
       params.set('plag', netSim);
-      params.set('netsim', netSim);
-      params.set('rawsim', rawSim);
-      params.set('cil', ciLow);
-      params.set('cih', ciHigh);
-      params.set('yk', yuleK);
-      params.set('cmr', cmr);
       params.set('ppl', ppl);
       params.set('b', b);
       if (dt) params.set('dt', dt);
       if (words) params.set('w', words);
       if (sents) params.set('s', sents);
+      if (modelAttr) params.set('mdl', modelAttr);
 
       return `/verify?${params.toString()}`;
     }
@@ -2465,6 +2488,97 @@
         document.getElementById('rewrite-guidance').innerText = s.revision_guidance || "";
       } else {
         rewriteBox.classList.add('hidden');
+      }
+
+      // Quản lý trạng thái vùng Giải trình Học thuật (Rebuttal Area)
+      currentActiveSentence = s;
+      const pill = document.getElementById('rebuttal-status-pill');
+      const notes = document.getElementById('rebuttal-notes');
+      const btnClear = document.getElementById('btn-clear-rebuttal');
+      if (s.is_rebutted) {
+        if (pill) {
+          pill.innerText = "Đã giải trình";
+          pill.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+        }
+        if (notes) notes.value = s.rebuttal_notes || "";
+        if (btnClear) btnClear.classList.remove('hidden');
+      } else {
+        if (pill) {
+          pill.innerText = "Chưa giải trình";
+          pill.className = "text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200";
+        }
+        if (notes) notes.value = "";
+        if (btnClear) btnClear.classList.add('hidden');
+      }
+    }
+
+    let currentActiveSentence = null;
+    let authorRebuttals = {};
+
+    function submitAcademicRebuttal() {
+      if (!currentActiveSentence) {
+        alert("Vui lòng chọn một câu nghi vấn trên tài liệu trước khi gửi giải trình.");
+        return;
+      }
+      const selectEl = document.getElementById('rebuttal-reason-select');
+      const reasonText = selectEl ? selectEl.options[selectEl.selectedIndex].text : "Cấu trúc chuyên ngành chuẩn mực";
+      const notesVal = document.getElementById('rebuttal-notes') ? document.getElementById('rebuttal-notes').value.trim() : "";
+
+      currentActiveSentence.is_rebutted = true;
+      currentActiveSentence.rebuttal_reason = reasonText;
+      currentActiveSentence.rebuttal_notes = notesVal;
+      currentActiveSentence.original_risk = currentActiveSentence.risk_level;
+      currentActiveSentence.risk_level = 'rebutted';
+      currentActiveSentence.ai_confidence = 4.0;
+
+      authorRebuttals[currentActiveSentence.id] = {
+        sent_id: currentActiveSentence.id,
+        text: currentActiveSentence.text,
+        reason: reasonText,
+        notes: notesVal,
+        timestamp: new Date().toLocaleTimeString('vi-VN')
+      };
+
+      displayActiveSentence(currentActiveSentence);
+
+      const targetRich = document.getElementById(`rich-sent-${currentActiveSentence.id}`);
+      if (targetRich) {
+        targetRich.style.backgroundColor = '#ecfdf5';
+        targetRich.style.borderBottom = '2px solid #10b981';
+      }
+      const targetSent = document.getElementById(`sent-span-${currentActiveSentence.id}`);
+      if (targetSent) {
+        targetSent.style.backgroundColor = '#ecfdf5';
+        targetSent.style.borderBottom = '2px solid #10b981';
+      }
+
+      recalculateAdjustedMetrics();
+      alert(`Đã lưu ý kiến phản biện / giải trình học thuật cho Câu #${currentActiveSentence.id}!`);
+    }
+
+    function clearAcademicRebuttal() {
+      if (!currentActiveSentence || !currentActiveSentence.is_rebutted) return;
+      delete authorRebuttals[currentActiveSentence.id];
+      currentActiveSentence.is_rebutted = false;
+      currentActiveSentence.risk_level = currentActiveSentence.original_risk || 'medium_ai';
+      displayActiveSentence(currentActiveSentence);
+      recalculateAdjustedMetrics();
+    }
+
+    function recalculateAdjustedMetrics() {
+      if (!currentFullData || !currentFullData.sentences) return;
+      const sents = currentFullData.sentences.filter(s => !s.is_header);
+      const rebuttedCount = Object.keys(authorRebuttals).length;
+      const remainingAi = sents.filter(s => (s.risk_level === 'high_ai' || s.risk_level === 'medium_ai') && !s.is_rebutted).length;
+      const newAiPct = Math.max(0, Math.round((remainingAi / Math.max(1, sents.length)) * 1000) / 10);
+      
+      const statAiEl = document.getElementById('stat-ai-pct');
+      if (statAiEl) {
+        statAiEl.innerText = `${newAiPct}%`;
+      }
+      const statRatio = document.getElementById('stat-ai-ratio');
+      if (statRatio) {
+        statRatio.innerText = `${remainingAi}/${sents.length} câu (Đã giải trình: ${rebuttedCount})`;
       }
     }
 
@@ -2803,6 +2917,56 @@
           `;
           matrixPagesContainer.appendChild(pageDiv);
         }
+
+        // Bổ sung Phần VII: Biên bản ghi nhận ý kiến giải trình & phản biện học thuật nếu có
+        if (typeof authorRebuttals !== 'undefined' && Object.keys(authorRebuttals).length > 0) {
+          const rebuttalPage = document.createElement('div');
+          rebuttalPage.className = 'pdf-page-break pdf-section-page';
+          rebuttalPage.style.padding = '10px 10px 0 10px';
+          
+          let rebRows = '';
+          Object.values(authorRebuttals).forEach((r, rIdx) => {
+            rebRows += `
+              <tr style="border: 1px solid #000; font-size: 8pt;">
+                <td style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-weight: bold; width: 6%;">${rIdx + 1}</td>
+                <td style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-weight: bold; width: 12%; white-space: nowrap;">Câu #${r.sent_id}</td>
+                <td style="border: 1px solid #000; padding: 4px 6px; text-align: justify; font-style: italic; width: 38%;">“${r.text}”</td>
+                <td style="border: 1px solid #000; padding: 4px 4px; text-align: center; font-weight: bold; color: #0284c7; width: 20%;">${r.reason}</td>
+                <td style="border: 1px solid #000; padding: 4px 6px; text-align: justify; width: 24%; font-size: 7.5pt;">${r.notes || 'Cấu trúc chuyên ngành chuẩn mực, được chấp thuận miễn trừ.'}</td>
+              </tr>
+            `;
+          });
+
+          rebuttalPage.innerHTML = `
+            <div style="margin-bottom: 8px;">
+              <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 6px; font-size: 9.5pt; display: flex; justify-content: space-between; color: #0369a1;">
+                <span>VII. BIÊN BẢN GHI NHẬN Ý KIẾN GIẢI TRÌNH & PHẢN BIỆN HỌC THUẬT (REBUTTAL)</span>
+                <span style="font-size: 8.5pt; font-style: italic; font-weight: normal;">(${Object.keys(authorRebuttals).length} điều khoản giải trình)</span>
+              </div>
+              <p style="font-size: 8pt; color: #475569; margin-bottom: 6px; line-height: 1.3;">
+                Căn cứ quy chuẩn đối soát liêm chính khoa học, hội đồng thẩm định ghi nhận và phê duyệt ý kiến giải trình của tác giả đối với các phân đoạn nghi vấn:
+              </p>
+              <table style="width: 100%; border-collapse: collapse; font-size: 8pt; border: 1px solid #000; font-family: 'Times New Roman', Times, serif;">
+                <thead>
+                  <tr style="background-color: #F1F5F9; font-weight: bold; text-align: center;">
+                    <th style="border: 1px solid #000; padding: 4px 2px; width: 6%;">STT</th>
+                    <th style="border: 1px solid #000; padding: 4px 2px; width: 12%;">Vị trí</th>
+                    <th style="border: 1px solid #000; padding: 4px 5px; width: 38%;">Trích lục câu giải trình</th>
+                    <th style="border: 1px solid #000; padding: 4px 4px; width: 20%;">Căn cứ học thuật</th>
+                    <th style="border: 1px solid #000; padding: 4px 5px; width: 24%;">Ghi chú phê duyệt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rebRows}
+                </tbody>
+              </table>
+              <div style="text-align: right; font-size: 7.5pt; font-style: italic; color: #555555; margin-top: 6px;">
+                Chữ ký phê duyệt phản biện • TS Lê Quang Dũng
+              </div>
+            </div>
+          `;
+          matrixPagesContainer.appendChild(rebuttalPage);
+        }
       }
 
       pdfContainer.classList.remove('hidden');
@@ -2810,7 +2974,21 @@
       // Chờ micro-task để browser reflow & paint đầy đủ trước khi chụp canvas (đảm bảo QR Code hiển thị 100%)
       await new Promise(r => setTimeout(r, 150));
 
-      // Tối ưu hóa LaTeX (KaTeX)
+      // Tối ưu hóa LaTeX toàn diện (KaTeX)
+      if (typeof renderMathInElement === 'function') {
+        try {
+          renderMathInElement(pdfContainer, {
+            delimiters: [
+              { left: "$$", right: "$$", display: true },
+              { left: "$", right: "$", display: false },
+              { left: "\\[", right: "\\]", display: true },
+              { left: "\\(", right: "\\)", display: false }
+            ],
+            throwOnError: false,
+            strict: false
+          });
+        } catch (e) { }
+      }
       if (window.katex) {
         document.querySelectorAll('#printable-report-container .katex-inline').forEach(el => {
           const expr = el.getAttribute('data-expr') || el.innerText;

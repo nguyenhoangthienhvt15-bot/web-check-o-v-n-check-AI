@@ -36,7 +36,10 @@ def clean_math_text(text: str) -> str:
     if not text:
         return ""
     for char, latex in GREEK_SYMBOLS.items():
-        text = text.replace(char, latex)
+        if char in text:
+            # Đảm bảo lệnh LaTeX được ngăn cách bởi khoảng trắng nếu theo sau bởi ký tự chữ cái
+            repl = latex if latex.endswith(' ') else (latex + ' ')
+            text = text.replace(char, repl)
     return text
 
 def omml_node_to_latex(elem: ET.Element) -> str:
@@ -138,7 +141,9 @@ def omml_node_to_latex(elem: ET.Element) -> str:
         base_elem = elem.find('m:e', OMML_NS)
         name_latex = omml_children_to_latex(name_elem) if name_elem is not None else ''
         base_latex = omml_children_to_latex(base_elem) if base_elem is not None else ''
-        return f"{name_latex} {base_latex}"
+        if name_latex.startswith('\\') and not name_latex.endswith(' '):
+            name_latex += ' '
+        return f"{name_latex} {base_latex}".strip()
     
     # 10. Dấu mũ, vector, gạch đầu (Accent: m:acc)
     elif tag == 'acc':
@@ -180,9 +185,31 @@ def omml_to_latex(omml_elem: ET.Element, display_mode: bool = False) -> str:
         return f" $${latex_core}$$ "
     return f" ${latex_core}$ "
 
+def _shield_math_blocks(text: str) -> Tuple[str, List[str]]:
+    """Bảo vệ tuyệt đối các khối công thức toán đã có sẵn ($...$ và $$...$$) khỏi bị regex văn bản phá hoại"""
+    placeholders: List[str] = []
+    def save_block(m):
+        placeholders.append(m.group(0))
+        return f"__MATH_SHIELD_{len(placeholders)-1}__"
+
+    # 1. Shield display math $$...$$
+    text = re.sub(r'\$\$[^\$]+?\$\$', save_block, text)
+    # 2. Shield inline math $...$
+    text = re.sub(r'\$[^\$\n]+?\$', save_block, text)
+    return text, placeholders
+
+def _unshield_math_blocks(text: str, placeholders: List[str]) -> str:
+    """Khôi phục nguyên vẹn 100% công thức toán học sau khi xử lý văn bản tiếng Việt"""
+    for i, block in enumerate(placeholders):
+        text = text.replace(f"__MATH_SHIELD_{i}__", block)
+    return text
+
 def _enhance_math_segment(text: str) -> str:
     if not text:
         return text
+
+    # 0. BẢO VỆ TUYỆT ĐỐI CÔNG THỨC TOÁN ĐÃ TỒN TẠI TRƯỚC KHI CHẠY BẤT KỲ REGEX VĂN BẢN NÀO
+    text, placeholders = _shield_math_blocks(text)
 
     # 1. Tách các từ tiếng Việt thông dụng bị dính liền vào biểu thức toán (chỉ xét khoảng trắng ngang [ \t])
     vn_math_prefixes = r'(?:bởi|với|cho|đặt|tại|khi|thì|tính|xét|giả sử|phương trình)'
@@ -219,6 +246,16 @@ def _enhance_math_segment(text: str) -> str:
     # 5. Dọn dẹp khoảng trắng ngang (Horizontal spaces), BẢO TOÀN TUYỆT ĐỐI dấu xuống dòng (\n)
     text = re.sub(r'[ \t]{2,}', ' ', text)
     text = re.sub(r'\n{3,}', '\n\n', text)
+
+    # 6. KHÔI PHỤC CÔNG THỨC TOÁN ĐÃ ĐƯỢC BẢO VỆ
+    text = _unshield_math_blocks(text, placeholders)
+
+    # 7. Khắc phục triệt để lỗi rác ký tự dính tiền tố $S (như $SA[j]$, $Sn$, $S2^{k}=nS$)
+    text = re.sub(r'\$S([a-zA-Z0-9_\^\[\]\{\}\+\-=]+)\$', r'$\1$', text)
+    text = re.sub(r'\$S([a-zA-Z0-9_\^\[\]\{\}\+\-=]+=[a-zA-Z0-9_\^\[\]\{\}\+\-=]+)\$', r'$\1$', text)
+    text = re.sub(r'\$S\s+', r'$', text)
+    text = re.sub(r'\\Thetan\s*\(2\)', r'\\Theta(n^2)', text)
+    text = re.sub(r'\\Thetan\s*\(', r'\\Theta(n', text)
 
     return text
 

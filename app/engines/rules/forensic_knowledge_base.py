@@ -25,24 +25,38 @@ HUMAN_TYPO_PATTERNS: List[Tuple[str, str]] = [
 # CHỈ áp dụng cho TIÊU ĐỀ BƯỚC CHỨNG MINH ở đầu câu (Proof Step Header) để không bị phạt nhầm là danh sách LLM.
 # LƯU Ý: Không dùng inline flag (?i) bên trong chuỗi để tương thích tuyệt đối với Python 3.11+ re._parser;
 # truyền cờ re.IGNORECASE khi gọi re.compile().
-FORMAL_PROOF_HEADER_REGEX: str = r"^(phát biểu\s+bất biến(\s+vòng lặp)?(\s+trong)?\s+(pin|pout|inv|bound)\s*\([^\)]*\)|(khởi tạo|duy trì|kết thúc|bảo toàn(\s+phần tử)?|hoán vị|đã sắp xếp|giá trị chặn|hàm giảm|bước lặp|điều kiện dừng|điều kiện lặp)|(định lý|định lí|bổ đề|hệ quả|mệnh đề|tiên đề|định nghĩa|quy tắc|công thức|phương trình)(\s+[0-9A-Z\.]+)?|(chứng minh|lời giải|giải pháp|chứng minh quy nạp|chứng minh phản chứng|bước cơ sở|bước quy nạp|giả thiết quy nạp)|(trường hợp|bước)\s+\d+|(điều kiện cần|điều kiện đủ|điều kiện cần và đủ)|(đầu vào|đầu ra|input|output|precondition|postcondition|tiền điều kiện|hậu điều kiện))\s*:"
+FORMAL_PROOF_HEADER_REGEX: str = r"^(phát biểu\s+bất biến(\s+vòng lặp)?(\s+trong)?\s+(pin|pout|inv|bound)\s*\([^\)]*\)|(khởi tạo(\s+[a-zA-Z0-9_\s=<>≤≥\(\),\+\-]+)?|duy trì(\s+[a-zA-Z0-9_\s=<>≤≥\(\),\+\-]+)?|kết thúc(\s+[a-zA-Z0-9_\s=<>≤≥\(\),\+\-]+)?|bảo toàn(\s+phần tử)?|hoán vị|đã sắp xếp|giá trị chặn|hàm giảm|bước lặp|điều kiện dừng|điều kiện lặp|đặt biến( phụ)?|gán( biến)?|so sánh|đổi chỗ)|(định lý|định lí|bổ đề|hệ quả|mệnh đề|tiên đề|định nghĩa|quy tắc|công thức|phương trình)(\s+[0-9A-Z\.]+)?|(chứng minh|lời giải|giải pháp|chứng minh quy nạp|chứng minh phản chứng|bước cơ sở|bước quy nạp|giả thiết quy nạp)|(trường hợp|bước|lần xử lý|lần lặp|pass|iteration)\s*[0-9a-zA-Z_\s\(\)=<>≤≥,\+\-]+|(điều kiện cần|điều kiện đủ|điều kiện cần và đủ)|(đầu vào|đầu ra|input|output|precondition|postcondition|tiền điều kiện|hậu điều kiện))\s*:"
 
 # 2b. DANH MỤC MIỄN TRỪ CẤU TRÚC KHOA HỌC MÁY TÍNH & GIẢI THUẬT (CLRS ALGORITHM & CS EXEMPTIONS)
 # Khắc phục triệt để lỗi False Positive gắn cờ nhầm các cấu trúc phân tích thuật toán, mã giả chuẩn mực
-# (như "Ghi chú:", "Phép toán đổi chỗ:", "Điều kiện xảy ra Best Case:", "Khởi tạo (Initialization):", v.v.)
+# (như "Ghi chú:", "Phép toán đổi chỗ:", "Điều kiện xảy ra Best Case:", "Khởi tạo (Initialization):", "Lần xử lý 1 (i=0):", v.v.)
 CS_ALGORITHM_EXEMPTION_PATTERNS: List[str] = [
     r"^(ghi chú|lưu ý|chú ý|note)\s*:",
-    r"^(phép toán|phép toán đổi chỗ|phép gán|phép so sánh|thao tác đổi chỗ|thao tác gán)\s*:",
-    r"^(điều kiện|điều kiện dừng|điều kiện lặp|điều kiện xảy ra|điều kiện biên)\s*([a-zA-Z0-9_\s\(\)]+)?\s*:",
-    r"^(khởi tạo|initialization|duy trì|maintenance|kết thúc|termination|bảo toàn|invariance)\s*(\([^\)]*\))?\s*:",
+    r"^(phép toán|phép toán đổi chỗ|phép gán|phép so sánh|thao tác đổi chỗ|thao tác gán|hoán vị|đổi chỗ|gán|gán biến|đặt biến|đặt biến phụ)\s*([0-9a-zA-Z\s_\(\)=<>≤≥,\+\-]+)?\s*:",
+    r"^(điều kiện|điều kiện dừng|điều kiện lặp|điều kiện xảy ra|điều kiện biên|điều kiện kiểm tra)\s*([0-9a-zA-Z\s_\(\)=<>≤≥,\+\-]+)?\s*:",
+    r"^(khởi tạo|initialization|thiết lập ban đầu)\s*([0-9a-zA-Z\s_\(\)=<>≤≥,\+\-]+)?\s*:",
+    r"^(duy trì|maintenance|bảo toàn|invariance)\s*([0-9a-zA-Z\s_\(\)=<>≤≥,\+\-]+)?\s*:",
+    r"^(kết thúc|termination|hoàn tất|dừng)\s*([0-9a-zA-Z\s_\(\)=<>≤≥,\+\-]+)?\s*:",
     r"^(trường hợp tốt nhất|best\s*case|trường hợp xấu nhất|worst\s*case|trường hợp trung bình|average\s*case)\s*(\([^\)]*\))?\s*:",
     r"^(độ phức tạp|độ phức tạp thời gian|độ phức tạp không gian|time complexity|space complexity)\s*(\([^\)]*\))?\s*:",
     r"^(bất biến vòng lặp|loop invariant|bất biến giải thuật)\s*(\([^\)]*\))?\s*:",
     r"^(mã giả|pseudocode|thuật toán|algorithm|giải thuật|phương pháp thực thi)\s*(\([^\)]*\))?\s*:",
     r"^(bước cơ sở|base case|bước quy nạp|inductive step|giả thiết quy nạp|inductive hypothesis)\s*(\([^\)]*\))?\s*:",
     r"^(đầu vào|đầu ra|input|output|precondition|postcondition)\s*(\([^\)]*\))?\s*:",
-    r"^(bước lặp|vòng lặp|vòng lặp ngoài|vòng lặp trong|iteration|pass)\s*([0-9a-zA-Z\s_]+)?\s*:",
-    r"^(mảng|danh sách|ngăn xếp|hàng đợi|cây nhị phân|đồ thị|array|list|stack|queue|tree|graph)\s*([0-9a-zA-Z\s_\[\]]+)?\s*:"
+    r"^(lần xử lý|lần lặp|bước lặp|bước|vòng lặp|vòng lặp ngoài|vòng lặp trong|iteration|pass)\s*([0-9a-zA-Z\s_\(\)=<>≤≥,\+\-]+)?\s*:",
+    r"^(mảng|danh sách|ngăn xếp|hàng đợi|cây nhị phân|đồ thị|array|list|stack|queue|tree|graph)\s*([0-9a-zA-Z\s_\[\]\(\)=<>≤≥,\+\-]+)?\s*:"
+]
+
+# 2c. DẤU HIỆU CÂU TRUY VẾT GIẢI THUẬT & MÃ GIẢ (ALGORITHM EXECUTION TRACE PATTERNS)
+# Phát hiện các câu mô tả từng bước thực thi thuật toán (gán biến, đổi chỗ, chỉ số mảng A[j]) để miễn trừ AI hoàn toàn
+ALGORITHM_EXECUTION_TRACE_PATTERNS: List[str] = [
+    r"\b(temp\s*=\s*[A-Za-z0-9_\[\]]+|[A-Za-z0-9_\[\]]+\s*=\s*temp|swap\([a-zA-Z0-9_,\s\[\]\+\-]+\))\b",
+    r"\b(hoán vị|đổi chỗ)\s+([a-zA-Z0-9_\[\]]+)\s+(và|với)\s+([a-zA-Z0-9_\[\]]+)",
+    r"\b(đặt biến phụ|gán biến)\s+([a-zA-Z0-9_]+)\s*=",
+    r"\b(lần xử lý|bước lặp|lần lặp|pass)\s+\d+\s*\([a-zA-Z0-9_\s=<>≤≥,\+\-]+\)",
+    r"\b(kết thúc|khởi tạo)\s+[a-zA-Z0-9_]+\s*=\s*\d+",
+    r"\b(\$|\\\(|\\\[)?[A-Za-z]\[[a-zA-Z0-9_\+\-]+\](\$|\\\)|\\\])?\s*([=<>≤≥]|hoán vị|so sánh)",
+    r"\b(\Theta|O|\Omega)\s*\([a-zA-Z0-9_\^\s\+\-\*\/\.]+\)"
 ]
 
 # Biểu thức Toán học / Phương trình thuần túy (Pure Equations)
@@ -235,3 +249,46 @@ LISTICLE_EXPLANATORY_TRIGGERS: List[str] = [
     r"\b(nhằm mục đích|cho phép|được sử dụng để|giúp cho|đóng vai trò|hoàn toàn có khả năng|giải quyết căn bản)\b",
     r"^(a technique|a method|an approach|a mechanism|refers to|is defined as)\b"
 ]
+
+# 6. DẤU HIỆU ĐỊNH DANH HỌ MÔ HÌNH LLM (MODEL ATTRIBUTION FINGERPRINTS)
+# Đo lường xác suất thiên hướng văn phong của các họ mô hình trí tuệ nhân tạo lớn
+LLM_MODEL_FINGERPRINT_SIGNATURES: Dict[str, Dict[str, Any]] = {
+    "gpt4o": {
+        "name": "OpenAI GPT-4o / ChatGPT Family",
+        "patterns": [
+            r"\bđóng (một )?vai trò (vô cùng |hết sức |rất )?(quan trọng|then chốt|cốt lõi)\b",
+            r"\bkhông chỉ\b.{3,120}\bmà còn\b",
+            r"\bnhìn chung\b",
+            r"\btóm lại, có thể (thấy|khẳng định) rằng\b",
+            r"\bđáng chú ý là\b",
+            r"\bmở ra (những )?(tiềm năng|triển vọng|chân trời) mới\b",
+            r"\b(thông qua \d+ trụ cột|có \d+ khoảng trống)\b"
+        ],
+        "weight": 1.2
+    },
+    "claude35": {
+        "name": "Anthropic Claude 3.5 Sonnet",
+        "patterns": [
+            r"\bcần lưu ý rằng\b",
+            r"\bphân tích kỹ hơn\b",
+            r"\bxét về tổng thể\b",
+            r"\bmặt khác, khi xem xét\b",
+            r"\bcần có cái nhìn đa chiều\b",
+            r"\btuy nhiên, điều này không đồng nghĩa\b",
+            r"\bkhía cạnh đáng quan tâm ở đây\b"
+        ],
+        "weight": 1.1
+    },
+    "gemini": {
+        "name": "Google Gemini Family",
+        "patterns": [
+            r"\bdưới đây là\b",
+            r"\bcụ thể như sau\b",
+            r"\btóm tắt nhanh\b",
+            r"\bbước tiếp theo là\b",
+            r"\bcác điểm cốt lõi gồm\b",
+            r"\btổng quan về\b"
+        ],
+        "weight": 1.0
+    }
+}

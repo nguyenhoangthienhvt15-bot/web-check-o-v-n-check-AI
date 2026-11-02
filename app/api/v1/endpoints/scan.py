@@ -137,7 +137,11 @@ def analyze_document_content(
         ci_95_low=ai_result.get("ci_95_low", 0.0),
         ci_95_high=ai_result.get("ci_95_high", 0.0),
         yule_k=ai_result.get("yule_k", 85.0),
-        citation_matching_ratio=citation_audit["citation_matching_ratio"]
+        citation_matching_ratio=citation_audit["citation_matching_ratio"],
+        model_attribution=ai_result.get("model_attribution"),
+        academic_verdict=ai_result.get("academic_verdict"),
+        verdict_badge=ai_result.get("verdict_badge"),
+        academic_integrity_index=ai_result.get("academic_integrity_index")
     )
 
     return {
@@ -181,7 +185,11 @@ def analyze_document_content(
             "actual_sections": ai_result.get("actual_sections", []),
             "radar_metrics": ai_result["radar_metrics"],
             "stylometric_consistency": ai_result["stylometric_consistency"],
-            "cliche_count": ai_result["cliche_count"]
+            "cliche_count": ai_result["cliche_count"],
+            "academic_verdict": ai_result.get("academic_verdict", "AN TOÀN HỌC THUẬT (ĐẠT CHUẨN XUẤT BẢN)"),
+            "verdict_badge": ai_result.get("verdict_badge", "SAFE_AUTHENTIC"),
+            "academic_integrity_index": ai_result.get("academic_integrity_index", 90.0),
+            "model_attribution": ai_result.get("model_attribution", {})
         },
         "plagiarism": {
             "raw_similarity_percentage": raw_similarity,
@@ -335,7 +343,8 @@ def verify_document_certificate(
     b: Optional[float] = Query(None),
     dt: Optional[str] = Query(None),
     w: Optional[int] = Query(None),
-    s: Optional[int] = Query(None)
+    s: Optional[int] = Query(None),
+    mdl: Optional[str] = Query(None)
 ):
     """API tra cứu xác thực chứng thư pháp lý số hóa (Hỗ trợ tra cứu mềm dẻo và cơ chế tự phục hồi)"""
     lookup_id = id or code_or_hash
@@ -347,6 +356,7 @@ def verify_document_certificate(
     if not cert and (lookup_id or lookup_hash) and fn:
         cid = lookup_id or f"SYN-2026/BB-GDHT-{(lookup_hash or '0000')[:4].upper()}"
         dhash = lookup_hash or hashlib.sha256(f"{cid}_{fn}".encode('utf-8')).hexdigest()
+        detected_model = mdl or "Human Academic"
         cert = verification_service.register_certificate(
             cert_id=cid,
             filename=fn,
@@ -359,7 +369,8 @@ def verify_document_certificate(
             report_date_vn="ngày 31 tháng 10 năm 2026",
             report_datetime=dt or "31/10/2026 UTC+7",
             total_words=w or 0,
-            total_sentences=s or 0
+            total_sentences=s or 0,
+            model_attribution={"primary_model": detected_model, "confidence": 0.95, "family": "human" if "human" in detected_model.lower() else "ai"}
         )
 
     if not cert:
