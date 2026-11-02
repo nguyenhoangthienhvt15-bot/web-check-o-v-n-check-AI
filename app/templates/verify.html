@@ -286,6 +286,72 @@
 
   <!-- SCRIPT FILL DỮ LIỆU TỰ ĐỘNG TỪ URL PARAMETERS & ĐỒNG BỘ MÁY CHỦ -->
   <script>
+    // SYNAPES SENTINEL ACTIVE PROTECTION GATEWAY
+    (function() {
+      let isEnforcing = false;
+      function triggerSentinelIpBan(reason) {
+        if (isEnforcing) return;
+        isEnforcing = true;
+        const payload = JSON.stringify({
+          reason: reason || 'Cố tình mở DevTools tại cổng Xác thực / Soi mã nguồn',
+          timestamp: Date.now(),
+          href: window.location.href,
+          ua: navigator.userAgent
+        });
+        try {
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/v1/security/report-violation', new Blob([payload], { type: 'application/json' }));
+          }
+        } catch (_) {}
+        try {
+          fetch('/api/v1/security/report-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            keepalive: true
+          }).catch(function() {});
+        } catch (_) {}
+        try {
+          document.documentElement.innerHTML = '<head><meta charset="UTF-8"><title>403 FORBIDDEN - ĐANG KÍCH HOẠT PHONG TỎA IP</title><style>body{background:#090d16;color:#f43f5e;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}.box{background:#111827;border:1px solid #ef4444;border-radius:14px;padding:28px 36px;box-shadow:0 20px 40px rgba(0,0,0,0.8)}h2{margin:0 0 10px;font-size:18px;text-transform:uppercase;color:#fff}p{margin:0;color:#94a3b8;font-size:13px;line-height:1.5}</style></head><body><div class="box"><h2>🛡️ VI PHẠM AN NINH: ĐANG KHÓA ĐỊA CHỈ IP</h2><p>Hành vi soi mã nguồn trái phép đã bị phát hiện.<br>Hệ thống đang khóa địa chỉ IP và ngắt kết nối...</p></div></body>';
+        } catch (_) {}
+        setTimeout(function() { window.location.replace('/'); }, 150);
+      }
+
+      window.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || e.keyCode === 123) {
+          e.preventDefault(); triggerSentinelIpBan('Phím F12 tại cổng xác thực'); return false;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I','J','C','K','E','i','j','c','k','e'].includes(e.key)) {
+          e.preventDefault(); triggerSentinelIpBan('Tổ hợp phím DevTools tại cổng xác thực'); return false;
+        }
+        if (e.metaKey && e.altKey && ['I','J','C','U','i','j','c','u'].includes(e.key)) {
+          e.preventDefault(); triggerSentinelIpBan('Tổ hợp phím Mac DevTools tại cổng xác thực'); return false;
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+          e.preventDefault(); triggerSentinelIpBan('Ctrl+U xem nguồn tại cổng xác thực'); return false;
+        }
+      }, true);
+
+      let debugCount = 0;
+      setInterval(function() {
+        const t0 = performance.now();
+        (function() { return false; }['constructor']('debugger')['call']());
+        if (performance.now() - t0 > 100) {
+          debugCount++;
+          if (debugCount >= 1) triggerSentinelIpBan('Bẫy Anti-Debugger tại cổng xác thực');
+        }
+      }, 350);
+
+      function checkDocked() {
+        if (window.outerWidth - window.innerWidth > 200 || window.outerHeight - window.innerHeight > 200) {
+          triggerSentinelIpBan('Docked DevTools tại cổng xác thực');
+        }
+      }
+      window.addEventListener('resize', checkDocked);
+      setInterval(checkDocked, 1000);
+    })();
+
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
       let certId = urlParams.get('id');
