@@ -56,6 +56,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         ]
         response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
 
+        # 9. Vô hiệu hóa SourceMap & Ngăn chặn lưu cache mã nguồn trên máy khách
+        response.headers["X-SourceMap"] = "none"
+        response.headers["SourceMap"] = "none"
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+
         return response
 
 
