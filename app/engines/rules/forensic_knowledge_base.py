@@ -55,8 +55,8 @@ ALGORITHM_EXECUTION_TRACE_PATTERNS: List[str] = [
     r"\b(đặt biến phụ|gán biến)\s+([a-zA-Z0-9_]+)\s*=",
     r"\b(lần xử lý|bước lặp|lần lặp|pass)\s+\d+\s*\([a-zA-Z0-9_\s=<>≤≥,\+\-]+\)",
     r"\b(kết thúc|khởi tạo)\s+[a-zA-Z0-9_]+\s*=\s*\d+",
-    r"\b(\$|\\\(|\\\[)?[A-Za-z]\[[a-zA-Z0-9_\+\-]+\](\$|\\\)|\\\])?\s*([=<>≤≥]|hoán vị|so sánh)",
-    r"\b(\Theta|O|\Omega)\s*\([a-zA-Z0-9_\^\s\+\-\*\/\.]+\)"
+    r"(\$|\\\(|\\\[)?[A-Za-z]\[[a-zA-Z0-9_\+\-]+\](\$|\\\)|\\\])?\s*([=<>≤≥]|hoán vị|so sánh)",
+    r"(?:\\Theta|Θ|\\Omega|Ω|\bO)\s*\([a-zA-Z0-9_\^\s\+\-\*\/\.]+\)"
 ]
 
 # Biểu thức Toán học / Phương trình thuần túy (Pure Equations)
