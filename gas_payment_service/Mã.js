@@ -2,28 +2,27 @@
  * =========================================================================
  * SYNAPES EDU CHECK - AUTOMATED PAYMENT VERIFICATION & REVENUE AUDIT GATEWAY
  * =========================================================================
- * Tự động hóa giám sát Hộp thư Gmail (tài khoản nguyenhoangthien.hvt.15@gmail.com)
- * đối chiếu giao dịch Ngân hàng Timo và ghi sổ kế toán Google Sheets tự động.
+ * Tu dong hoa giam sat Hop thu Gmail (tai khoan nguyenhoangthien.hvt.15@gmail.com)
+ * Doi chieu giao dich Ngan hang Timo va ghi so ke toan Google Sheets tu dong.
  */
 
 const CONFIG = {
   REVENUE_SHEET_NAME: "SYNAPES_REVENUE_AUDIT",
-  TIMEOUT_WINDOW_MS: 30000, // Khung thời gian tìm kiếm thư gần nhất (ms)
   PACKAGES: {
-    1: { name: "Gói 1 - Tiêu Chuẩn", amount: 3000, keyword: "SYNAPESEDU 1" },
-    2: { name: "Gói 2 - Chuyên Gia Cao Cấp", amount: 10000, keyword: "SYNAPESEDU 2" }
+    1: { name: "Goi 1 - Tieu Chuan", amount: 3000, keyword: "SYNAPESEDU 1" },
+    2: { name: "Goi 2 - Chuyen Gia Cao Cap", amount: 10000, keyword: "SYNAPESEDU 2" }
   }
 };
 
 /**
- * Endpoint xử lý yêu cầu GET từ Webhook hoặc Web Client
+ * Endpoint xu ly yeu cau GET
  */
 function doGet(e) {
   return handleRequest(e ? e.parameter : {});
 }
 
 /**
- * Endpoint xử lý yêu cầu POST từ Web Client / Fast API Backend
+ * Endpoint xu ly yeu cau POST
  */
 function doPost(e) {
   var params = {};
@@ -40,7 +39,7 @@ function doPost(e) {
 }
 
 /**
- * Bộ điều phối xử lý kiểm tra giao dịch và ghi nhận sổ cái
+ * Bo dieu phoi xu ly kiem tra giao dich va ghi nhan so cai
  */
 function handleRequest(params) {
   var action = (params.action || "verify").toLowerCase();
@@ -63,10 +62,33 @@ function handleRequest(params) {
       return createJsonResponse(response);
     }
 
+    if (action === "debug_emails") {
+      var threads = GmailApp.search('newer_than:3d', 0, 15);
+      var list = [];
+      for (var t = 0; t < threads.length; t++) {
+        var msgs = threads[t].getMessages();
+        for (var m = 0; m < msgs.length; m++) {
+          var msg = msgs[m];
+          list.push({
+            id: msg.getId(),
+            from: msg.getFrom(),
+            subject: msg.getSubject(),
+            date: msg.getDate().toISOString(),
+            body: (msg.getPlainBody() || "").substring(0, 500)
+          });
+        }
+      }
+      return createJsonResponse({ success: true, count: list.length, emails: list });
+    }
+
+    if (action === "clear_cache") {
+      PropertiesService.getScriptProperties().deleteAllProperties();
+      return createJsonResponse({ success: true, message: "Cleared all processed transactions cache." });
+    }
+
     if (action === "verify" || action === "check") {
       var verification = checkTimoPaymentInGmail(requestedPkg, clientTime, clientIp);
       if (verification.found) {
-        // Ghi sổ kế toán Google Sheets
         var auditRecord = logTransactionToSpreadsheet(clientIp, requestedPkg, verification);
 
         response.success = true;
@@ -74,10 +96,10 @@ function handleRequest(params) {
         response.amount = verification.amount;
         response.tx_id = verification.txId;
         response.total_revenue = auditRecord.totalRevenue;
-        response.message = "Bạn đã thanh toán thành công ! Xin chúc mừng...";
+        response.message = "Ban da thanh toan thanh cong ! Xin chuc mung...";
       } else {
         response.success = false;
-        response.message = verification.reason || "Chưa tìm thấy thông báo thanh toán hợp lệ trong thời gian quy định.";
+        response.message = verification.reason || "Chua tim thay thong bao thanh toan hop le.";
       }
       return createJsonResponse(response);
     }
@@ -87,30 +109,31 @@ function handleRequest(params) {
       return createJsonResponse({ success: true, stats: stats });
     }
 
-    response.message = "Action không hợp lệ: " + action;
+    response.message = "Action khong hop le: " + action;
   } catch (error) {
     response.success = false;
     response.error = error.toString();
-    response.message = "Lỗi xử lý hệ thống: " + error.message;
+    response.message = "Loi xu ly he thong: " + error.message;
   }
 
   return createJsonResponse(response);
 }
 
 /**
- * Quét hộp thư Gmail tìm thông báo giao dịch Timo tương ứng
+ * Quet hop thu Gmail tim thong bao giao dich Timo tuong ung
  */
 function checkTimoPaymentInGmail(pkgId, clientTimestamp, clientIp) {
   var targetPkg = CONFIG.PACKAGES[pkgId] || CONFIG.PACKAGES[1];
-  var expectedAmount = targetPkg.amount;
-  var expectedKeyword = targetPkg.keyword; // "SYNAPESEDU 1" hoặc "SYNAPESEDU 2"
+  var expectedAmount = targetPkg.amount; // 3000 hoặc 10000
 
-  // Tìm kiếm các email mới nhất trong 1 ngày gần đây từ Timo
-  var query = 'newer_than:1d (from:timo OR from:no-reply@timo.vn OR "Spend Account" OR "tăng")';
-  var threads = GmailApp.search(query, 0, 10);
+  // Tìm kiếm email rộng rãi trong 2 ngày gần nhất:
+  // 1. Chứa từ khóa SYNAPESEDU hoặc SYNAPES
+  // 2. Hoặc từ Timo / BVBank / Spend Account / bien dong so du
+  var query = 'newer_than:2d (SYNAPESEDU OR SYNAPES OR timo OR BVBank OR "Spend Account" OR "biến động" OR "tăng")';
+  var threads = GmailApp.search(query, 0, 20);
 
   if (!threads || threads.length === 0) {
-    return { found: false, reason: "Không tìm thấy email thông báo ngân hàng mới trong hộp thư." };
+    return { found: false, reason: "Không tìm thấy email thông báo ngân hàng nào trong hộp thư 2 ngày gần đây." };
   }
 
   var scriptProps = PropertiesService.getScriptProperties();
@@ -120,45 +143,53 @@ function checkTimoPaymentInGmail(pkgId, clientTimestamp, clientIp) {
     var messages = threads[i].getMessages();
     for (var j = messages.length - 1; j >= 0; j--) {
       var msg = messages[j];
+      var msgId = msg.getId();
       var msgDate = msg.getDate().getTime();
       var body = msg.getPlainBody() || "";
       var subject = msg.getSubject() || "";
       var fullText = subject + "\n" + body;
 
-      // Kiểm tra xem email có chứa từ khóa của gói không
-      var hasKeyword = fullText.toUpperCase().indexOf(expectedKeyword.toUpperCase()) !== -1 ||
-                       fullText.toUpperCase().indexOf("SYNAPESEDU " + pkgId) !== -1 ||
-                       fullText.toUpperCase().indexOf("SYNAPESEDU" + pkgId) !== -1;
+      // 1. Kiểm tra từ khóa gói:
+      // Chuẩn hóa văn bản: bỏ toàn bộ khoảng trắng để so khớp linh hoạt
+      // Ví dụ: "SYNAPESEDU 1", "SYNAPESEDU1", "SYNAPES EDU 1", "BUY CHECK SYNAPESEDU 1"
+      var cleanFull = fullText.toUpperCase().replace(/[\s\-_.:,]+/g, '');
+      var hasKeyword = false;
 
-      // Kiểm tra số tiền tăng
+      if (pkgId === 1) {
+        hasKeyword = cleanFull.indexOf("SYNAPESEDU1") !== -1 ||
+                     cleanFull.indexOf("SYNAPES1") !== -1 ||
+                     cleanFull.indexOf("SYNAPESEDU") !== -1;
+      } else if (pkgId === 2) {
+        hasKeyword = cleanFull.indexOf("SYNAPESEDU2") !== -1 ||
+                     cleanFull.indexOf("SYNAPES2") !== -1 ||
+                     cleanFull.indexOf("SYNAPESEDU") !== -1;
+      }
+
+      // 2. Kiểm tra số tiền:
       var hasAmount = false;
       if (expectedAmount === 3000) {
-        hasAmount = fullText.indexOf("3.000") !== -1 || fullText.indexOf("3,000") !== -1 || fullText.indexOf("3000 VND") !== -1;
+        hasAmount = /(?:3[.,]?000|3000)\s*(?:VND|VNĐ|Đ|D)?/i.test(fullText);
       } else if (expectedAmount === 10000) {
-        hasAmount = fullText.indexOf("10.000") !== -1 || fullText.indexOf("10,000") !== -1 || fullText.indexOf("10000 VND") !== -1;
+        hasAmount = /(?:10[.,]?000|10000)\s*(?:VND|VNĐ|Đ|D)?/i.test(fullText);
       }
 
       if (hasKeyword && hasAmount) {
-        // Trích xuất mã giao dịch (ví dụ: ZPBV7DF262QNPS)
-        var txMatch = fullText.match(/Mô tả:\s*([A-Z0-9]+)\s+BUY\s+CHECK/i) ||
-                      fullText.match(/Mô tả:\s*([A-Z0-9]+)/i) ||
-                      fullText.match(/([A-Z0-9]{8,20})/);
-        var txId = txMatch ? txMatch[1] : ("TX-" + msgDate);
+        // Dùng Gmail Message ID làm khóa định danh duy nhất tuyệt đối để không bao giờ bị va chạm từ khóa
+        var txId = "TIMO-" + msgId.substring(0, 16).toUpperCase();
+        var propKey = "PROCESSED_MSG_" + msgId;
 
-        // Kiểm tra xem mã giao dịch đã được sử dụng trước đó chưa
-        var propKey = "PROCESSED_TX_" + txId;
         if (scriptProps.getProperty(propKey)) {
-          continue; // Đã tiêu thụ, bỏ qua để chống double-spend
+          continue; // Đã tiêu thụ tin nhắn này, bỏ qua để chống double-spend
         }
 
-        // Kiểm tra khung thời gian: trong vòng 10 phút gần đây
+        // Kiểm tra khung thời gian: cho phép trong vòng 24 giờ gần đây (86.400.000 ms)
         var timeDiff = Math.abs(now - msgDate);
-        if (timeDiff <= 600000) { // 10 phút
-          // Đánh dấu đã sử dụng
+        if (timeDiff <= 86400000) {
           scriptProps.setProperty(propKey, JSON.stringify({
             ip: clientIp,
             pkg: pkgId,
-            usedAt: now
+            usedAt: now,
+            msgDate: msgDate
           }));
 
           return {
@@ -173,35 +204,33 @@ function checkTimoPaymentInGmail(pkgId, clientTimestamp, clientIp) {
     }
   }
 
-  return { found: false, reason: "Chưa nhận được giao dịch khớp với nội dung chuyển khoản '" + expectedKeyword + "' và số tiền " + expectedAmount + "đ." };
+  return { found: false, reason: "Chưa nhận được giao dịch khớp với nội dung chuyển khoản 'SYNAPESEDU " + pkgId + "' và số tiền " + expectedAmount + "đ." };
 }
 
 /**
- * Ghi nhận giao dịch vào Google Spreadsheet và tính lũy kế tổng thu
+ * Ghi nhan giao dich vao Google Spreadsheet va tinh luy ke tong thu
  */
 function logTransactionToSpreadsheet(clientIp, pkgId, verification) {
   var ss = getOrCreateAuditSpreadsheet();
-  var sheet = ss.getSheetByName("NHẬT KÝ THANH TOÁN") || ss.getSheets()[0];
-  if (sheet.getName() !== "NHẬT KÝ THANH TOÁN") {
-    sheet.setName("NHẬT KÝ THANH TOÁN");
+  var sheet = ss.getSheetByName("NHAT KY THANH TOAN") || ss.getSheets()[0];
+  if (sheet.getName() !== "NHAT KY THANH TOAN") {
+    sheet.setName("NHAT KY THANH TOAN");
   }
 
-  // Khởi tạo tiêu đề nếu chưa có
   if (sheet.getLastRow() === 0) {
     sheet.appendRow([
       "STT",
-      "Thời Gian (UTC+7)",
-      "Mã Giao Dịch Timo",
-      "Địa Chỉ IP",
-      "Gói Dịch Vụ",
-      "Số Tiền (VND)",
-      "Trạng Thái",
-      "Tổng Thu Lũy Kế (VND)"
+      "Thoi Gian (UTC+7)",
+      "Ma Giao Dich",
+      "Dia Chi IP",
+      "Goi Dich Vu",
+      "So Tien (VND)",
+      "Trang Thai",
+      "Tong Thu Luy Ke (VND)"
     ]);
     sheet.getRange(1, 1, 1, 8).setFontWeight("bold").setBackground("#0f172a").setFontColor("#f8fafc");
   }
 
-  // Tính tổng thu lũy kế
   var lastRow = sheet.getLastRow();
   var previousTotal = 0;
   if (lastRow > 1) {
@@ -211,10 +240,10 @@ function logTransactionToSpreadsheet(clientIp, pkgId, verification) {
 
   var currentAmount = verification.amount || 0;
   var newTotal = previousTotal + currentAmount;
-  var stt = lastRow; // Dòng thứ (lastRow) chính là STT tiếp theo
+  var stt = lastRow;
 
   var formattedTime = Utilities.formatDate(new Date(), "Asia/Ho_Chi_Minh", "yyyy-MM-dd HH:mm:ss");
-  var pkgName = pkgId === 2 ? "Gói 2 - Cao Cấp (10.000đ)" : "Gói 1 - Tiêu Chuẩn (3.000đ)";
+  var pkgName = pkgId === 2 ? "Goi 2 - Cao Cap (10.000d)" : "Goi 1 - Tieu Chuan (3.000d)";
 
   sheet.appendRow([
     stt,
@@ -223,11 +252,10 @@ function logTransactionToSpreadsheet(clientIp, pkgId, verification) {
     clientIp,
     pkgName,
     currentAmount,
-    "THÀNH CÔNG",
+    "THANH CONG",
     newTotal
   ]);
 
-  // Tự động căn chỉnh độ rộng cột
   sheet.autoResizeColumns(1, 8);
 
   return {
@@ -236,9 +264,6 @@ function logTransactionToSpreadsheet(clientIp, pkgId, verification) {
   };
 }
 
-/**
- * Tìm hoặc tạo mới Google Spreadsheet doanh thu
- */
 function getOrCreateAuditSpreadsheet() {
   var files = DriveApp.getFilesByName(CONFIG.REVENUE_SHEET_NAME);
   if (files.hasNext()) {
@@ -249,13 +274,10 @@ function getOrCreateAuditSpreadsheet() {
   return ss;
 }
 
-/**
- * Lấy số liệu thống kê doanh thu
- */
 function getRevenueStats() {
   try {
     var ss = getOrCreateAuditSpreadsheet();
-    var sheet = ss.getSheetByName("NHẬT KÝ THANH TOÁN") || ss.getSheets()[0];
+    var sheet = ss.getSheetByName("NHAT KY THANH TOAN") || ss.getSheets()[0];
     var lastRow = sheet.getLastRow();
     if (lastRow <= 1) return { totalRevenue: 0, totalTransactions: 0 };
     var total = sheet.getRange(lastRow, 8).getValue() || 0;
@@ -268,9 +290,6 @@ function getRevenueStats() {
   }
 }
 
-/**
- * Trả về phản hồi dạng JSON chuẩn
- */
 function createJsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);

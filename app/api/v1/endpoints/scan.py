@@ -478,7 +478,7 @@ async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Req
                 target_url,
                 headers={"User-Agent": "Synapes-EduCheck-Backend/3.5"}
             )
-            with urllib.request.urlopen(req, timeout=12) as response:
+            with urllib.request.urlopen(req, timeout=25) as response:
                 raw_body = response.read().decode('utf-8')
                 if raw_body.strip().startswith("{"):
                     res_data = json.loads(raw_body)
