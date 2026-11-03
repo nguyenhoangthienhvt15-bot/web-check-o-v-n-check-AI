@@ -201,6 +201,24 @@
       background-color: rgba(16, 185, 129, 0.12);
     }
 
+    .spell-error-word {
+      text-decoration: underline wavy #EF4444 2px !important;
+      text-underline-offset: 3.5px !important;
+      cursor: pointer !important;
+      position: relative !important;
+      background-color: rgba(239, 68, 68, 0.08) !important;
+      border-radius: 2px !important;
+      transition: background-color 0.15s ease !important;
+    }
+    .spell-error-word:hover {
+      background-color: rgba(239, 68, 68, 0.22) !important;
+    }
+    .hl-plain-free {
+      background-color: transparent !important;
+      color: inherit !important;
+      cursor: pointer !important;
+      border-bottom: none !important;
+    }
     .active-sent {
       outline: 2px solid #6366F1 !important;
       background-color: rgba(99, 102, 241, 0.25) !important;
@@ -632,7 +650,7 @@
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO III: RÀ SOÁT CHÍNH TẢ & NGỮ PHÁP</span>
             <span class="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono-num font-semibold">
-              VI · EN · ZH
+              VI · EN (100% TOÀN VĂN)
             </span>
           </div>
 
@@ -642,12 +660,12 @@
               <span id="stat-spell-total" class="font-bold text-base text-rose-600 font-mono-num">0</span>
             </div>
             <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
-              <span class="text-[10px] text-slate-500 block">Việt / Anh</span>
-              <span id="stat-spell-vien" class="font-bold text-xs text-slate-700 font-mono-num">0 / 0</span>
+              <span class="text-[10px] text-slate-500 block">Tiếng Việt</span>
+              <span id="stat-spell-vi" class="font-bold text-xs text-slate-700 font-mono-num">0</span>
             </div>
             <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
-              <span class="text-[10px] text-slate-500 block">Tiếng Trung</span>
-              <span id="stat-spell-zh" class="font-bold text-xs text-slate-700 font-mono-num">0</span>
+              <span class="text-[10px] text-slate-500 block">Tiếng Anh</span>
+              <span id="stat-spell-en" class="font-bold text-xs text-slate-700 font-mono-num">0</span>
             </div>
           </div>
 
@@ -944,7 +962,11 @@
 
       <!-- Footer tác giả trên Sidebar -->
       <div class="p-3 border-t border-slate-200 text-[11px] text-slate-500 text-center font-mono-num bg-slate-50">
-        Giám định viên: <strong class="text-indigo-600">KS Nguyễn Hoàng Thiện [SYNAPES EDU]</strong>
+        <div>Giám định viên: <strong class="text-indigo-600">KS Nguyễn Hoàng Thiện [SYNAPES EDU]</strong></div>
+        <a href="mailto:nguyenhoangthien.hvt.15@gmail.com?subject=LI%C3%8AN%20H%E1%BB%86%20NH%C3%80%20PH%C3%81T%20TRI%E1%BB%82N"
+           class="inline-block mt-1 text-[10px] text-slate-400 hover:text-indigo-600 transition-colors underline decoration-dotted tracking-wide">
+          Liên hệ nhà phát triển
+        </a>
       </div>
 
     </aside>
@@ -1143,15 +1165,23 @@
                 </li>
                 <li class="flex items-start gap-1.5">
                   <span class="text-emerald-500 font-bold">✓</span>
-                  <span>Kiểm tra số lượng lỗi chính tả (3 ngôn ngữ)</span>
+                  <span>Kiểm tra số lượng lỗi chính tả (Việt - Anh)</span>
+                </li>
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-500 font-bold">✓</span>
+                  <span>Xem báo cáo thẩm định nguồn trích dẫn (3 dạng)</span>
+                </li>
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-500 font-bold">✓</span>
+                  <span>Highlight câu AI / Đạo văn & gạch chân lỗi chính tả</span>
                 </li>
                 <li class="flex items-start gap-1.5 text-rose-500 font-medium">
                   <span>✕</span>
-                  <span>Không xem được các báo cáo trích nguồn</span>
+                  <span>Không xem/tải báo cáo chính tả & báo cáo tổng quát</span>
                 </li>
                 <li class="flex items-start gap-1.5 text-rose-500 font-medium">
                   <span>✕</span>
-                  <span>Không tải được báo cáo (mọi báo cáo)</span>
+                  <span>Không tải được báo cáo PDF (mọi báo cáo)</span>
                 </li>
               </ul>
             </div>
