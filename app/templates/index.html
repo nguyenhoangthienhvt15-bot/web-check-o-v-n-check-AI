@@ -1083,7 +1083,7 @@
   <!-- ========================================================================= -->
   <div id="synapes-payment-modal"
     class="fixed inset-0 z-[60] bg-zinc-950/65 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-5 select-none">
-    <div class="bg-white border border-zinc-200/90 rounded-2xl w-full max-w-2xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+    <div class="bg-white border border-zinc-200/90 rounded-2xl w-full max-w-4xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
       
       <!-- Modal Header -->
       <div class="px-6 py-4 border-b border-zinc-200/80 flex items-center justify-between bg-white">
@@ -1115,8 +1115,8 @@
           </div>
         </div>
 
-        <!-- 2 Lựa chọn Gói Dịch Vụ -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- 3 Lựa chọn Gói Dịch Vụ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
           
           <!-- LỰA CHỌN 1: GÓI TIÊU CHUẨN (3.000 VND) -->
           <div id="pkg-card-1" onclick="selectPaymentPackage(1)"
@@ -1146,14 +1146,6 @@
                 <li class="flex items-start gap-1.5">
                   <span class="text-emerald-600 font-bold">✓</span>
                   <span>Đọc và phân tích thông tin mức độ an toàn học thuật</span>
-                </li>
-                <li class="flex items-start gap-1.5 text-zinc-400">
-                  <span>✕</span>
-                  <span>Không cho phép check cụ thể từng câu trên bài</span>
-                </li>
-                <li class="flex items-start gap-1.5 text-zinc-400">
-                  <span>✕</span>
-                  <span>Không được xem trước báo cáo &amp; Không tải về báo cáo (PDF)</span>
                 </li>
               </ul>
             </div>
@@ -1220,6 +1212,64 @@
             </button>
           </div>
 
+          <!-- LỰA CHỌN 3: GÓI NGHIÊN CỨU TOÀN DIỆN (50.000 VND - GIẢM TỪ 200.000 VND - 20 LƯỢT TRONG 30 NGÀY) -->
+          <div id="pkg-card-3" onclick="selectPaymentPackage(3)"
+            class="p-4 rounded-xl border-2 border-zinc-200 hover:border-zinc-400 bg-white transition-all cursor-pointer relative flex flex-col justify-between shadow-2xs space-y-3">
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-700 text-white">
+                  Lựa chọn 3 • X10 Hạn mức
+                </span>
+                <span class="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/90">
+                  20 lượt / 30 ngày
+                </span>
+              </div>
+              <div class="space-y-1">
+                <h4 class="text-sm font-bold text-zinc-900">Gói Chuyên Gia 30 Ngày (20 Lượt)</h4>
+                <div class="flex items-baseline gap-2">
+                  <div class="text-2xl font-extrabold text-zinc-900 font-mono-num">
+                    50.000 <span class="text-xs font-normal text-zinc-500">VND</span>
+                  </div>
+                  <div class="text-xs text-zinc-400 line-through font-mono-num">
+                    200.000 VND
+                  </div>
+                  <span class="text-[10px] font-bold bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded-md border border-rose-200/80">
+                    -75%
+                  </span>
+                </div>
+                <div class="text-[10.5px] text-amber-800 font-medium flex items-center gap-1.5 bg-amber-50/80 px-2 py-1 rounded-md border border-amber-200/80">
+                  <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>Ưu đãi chỉ diễn ra đến 31/12/2026</span>
+                </div>
+              </div>
+              <ul class="text-[11.5px] text-zinc-700 space-y-1.5 pt-2 border-t border-zinc-200/80">
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span><strong class="text-zinc-900">Nâng hạn mức lên 20 lần check cao cấp</strong> (gấp 10 lần so với Gói 2) trong vòng <strong>30 ngày</strong></span>
+                </li>
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span>Truy cập tối đa 100% mọi tính năng của công cụ</span>
+                </li>
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span>Kiểm tra chi tiết 100% từng câu (Highlight AI, Đạo văn, Gạch chân lỗi chính tả)</span>
+                </li>
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span><strong class="text-zinc-900">Xem trước &amp; Tải về toàn bộ các báo cáo</strong> (PDF Times New Roman, Báo cáo nguồn 3 dạng, Báo cáo chính tả)</span>
+                </li>
+                <li class="flex items-start gap-1.5">
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span>Xem xét các báo cáo chuyên gia, chỉ số logic và dẫn nguồn chính xác</span>
+                </li>
+              </ul>
+            </div>
+            <button type="button" onclick="selectPaymentPackage(3)" class="w-full py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition shadow-2xs">
+              Thanh toán ngay (50.000đ - 20 lượt)
+            </button>
+          </div>
+
         </div>
 
         <!-- KHU VỰC QUÉT MÃ QR THANH TOÁN (HIỂN THỊ KHI ĐÃ BẤM CHỌN GÓI) -->
@@ -1230,7 +1280,7 @@
           </div>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <!-- Ảnh QR tương ứng gói (Dual preloaded containers - 0ms switch) -->
+            <!-- Ảnh QR tương ứng gói (Preloaded containers - 0ms switch) -->
             <div class="p-2.5 bg-white rounded-xl border border-zinc-200/90 shadow-2xs shrink-0 flex flex-col items-center">
               <div id="qr-container-1" class="flex flex-col items-center">
                 <img id="checkout-qr-img-1" src="/static/img/qr_3k.jpg?v=3.5.2" alt="Mã QR Thanh Toán 3.000đ" class="w-44 h-auto rounded-lg object-contain" />
@@ -1239,6 +1289,10 @@
               <div id="qr-container-2" class="flex flex-col items-center hidden">
                 <img id="checkout-qr-img-2" src="/static/img/qr_10k.jpg?v=3.5.2" alt="Mã QR Thanh Toán 10.000đ" class="w-44 h-auto rounded-lg object-contain" />
                 <span class="text-[10px] text-zinc-900 mt-1.5 font-semibold font-mono-num">VietQR 10.000đ (2 Lượt) • Napas 24/7</span>
+              </div>
+              <div id="qr-container-3" class="flex flex-col items-center hidden">
+                <img id="checkout-qr-img-3" src="/static/img/qr_50k.jpg?v=4.6.0" alt="Mã QR Thanh Toán 50.000đ" class="w-44 h-auto rounded-lg object-contain" />
+                <span class="text-[10px] text-emerald-700 mt-1.5 font-semibold font-mono-num">VietQR 50.000đ (20 Lượt / 30 Ngày) • Napas 24/7</span>
               </div>
               <!-- Fallback element for script backward-compatibility -->
               <img id="checkout-qr-img" src="/static/img/qr_3k.jpg?v=3.5.2" alt="Mã QR Thanh Toán" class="hidden" />
@@ -1814,7 +1868,7 @@
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <!-- ================= TỆP MÃ NGUỒN ĐƯỢC MÃ HÓA BẢO VỆ ĐA TẦNG ================= -->
-  <script src="/static/js/synapes.bundle.min.js?v=4.5.0" defer></script>
+  <script src="/static/js/synapes.bundle.min.js?v=4.6.0" defer></script>
 </body>
 
 </html>

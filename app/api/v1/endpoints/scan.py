@@ -314,7 +314,7 @@ async def process_document_background(task_id: str, filename: str, file_bytes: b
         result["tier_used"] = tier_used
         scan_quota = quota_manager.get_quota_status(client_ip)
         scan_quota["active_tier"] = tier_used
-        scan_quota["tier_name"] = "Gói 2 (10.000đ - Chuyên gia)" if tier_used == 2 else ("Gói 1 (3.000đ - Tiêu chuẩn)" if tier_used == 1 else "Bản Miễn Phí (Free)")
+        scan_quota["tier_name"] = quota_manager._get_tier_label(tier_used)
         result["quota_status"] = scan_quota
 
         async_task_manager.update_progress(
@@ -466,7 +466,7 @@ def run_regression_self_test():
     return harness.run_all_benchmarks()
 
 class PaymentVerificationRequest(BaseModel):
-    package: int = Field(1, description="1: Gói Tiêu chuẩn 3.000đ, 2: Gói Chuyên gia 10.000đ")
+    package: int = Field(1, description="1: Gói Tiêu chuẩn 3.000đ, 2: Gói Chuyên gia 10.000đ, 3: Gói Toàn diện 50.000đ")
     timestamp: Optional[int] = Field(None, description="Thời điểm bấm nút thanh toán (epoch ms)")
 
 @router.get("/quota/status")
@@ -525,8 +525,8 @@ async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Req
     client_ip = _extract_ip(request)
     _sync_quota_from_request(request, client_ip)
 
-    pkg = req_body.package if req_body.package in [1, 2] else 1
-    amount = 3000 if pkg == 1 else 10000
+    pkg = req_body.package if req_body.package in [1, 2, 3] else 1
+    amount = 3000 if pkg == 1 else (10000 if pkg == 2 else 50000)
 
     # Thời điểm chuẩn trên máy chủ khi người dùng bấm "Bạn đã thanh toán..."
     server_click_ms = int(time.time() * 1000)
@@ -583,21 +583,25 @@ async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Req
                         if msg_ms < window_start_ms or msg_ms > (window_end_ms + 10000):
                             continue
 
-                        # 4. Kiểm tra chính xác số tiền tăng theo gói (3.000 VND hoặc 10.000 VND)
+                        # 4. Kiểm tra chính xác số tiền tăng theo gói (3.000 VND, 10.000 VND hoặc 50.000 VND)
                         if pkg == 1:
                             amt_ok = bool(re.search(r"(?:vừa\s+tăng|tăng)\s*(?:3[.,]?000|3000)\s*(?:VND|VNĐ|Đ|D)?", body, re.IGNORECASE))
-                        else:
+                        elif pkg == 2:
                             amt_ok = bool(re.search(r"(?:vừa\s+tăng|tăng)\s*(?:10[.,]?000|10000)\s*(?:VND|VNĐ|Đ|D)?", body, re.IGNORECASE))
+                        else:
+                            amt_ok = bool(re.search(r"(?:vừa\s+tăng|tăng)\s*(?:50[.,]?000|50000)\s*(?:VND|VNĐ|Đ|D)?", body, re.IGNORECASE))
 
                         if not amt_ok:
                             continue
 
-                        # 5. Kiểm tra nội dung mô tả đính kèm QR Code ('BUY CHECK SYNAPESEDU 1' hoặc '2')
+                        # 5. Kiểm tra nội dung mô tả đính kèm QR Code ('BUY CHECK SYNAPESEDU 1' / '2' / 'BUY CHECK SYNAPES EDU 3 FULLMONT')
                         clean_full = re.sub(r"[^A-Z0-9]", "", (subject + " " + body).upper())
                         if pkg == 1:
-                            kw_ok = ("BUYCHECKSYNAPESEDU1" in clean_full or "SYNAPESEDU1" in clean_full) and ("SYNAPESEDU2" not in clean_full)
+                            kw_ok = ("BUYCHECKSYNAPESEDU1" in clean_full or "SYNAPESEDU1" in clean_full) and ("SYNAPESEDU2" not in clean_full) and ("SYNAPESEDU3" not in clean_full)
+                        elif pkg == 2:
+                            kw_ok = ("BUYCHECKSYNAPESEDU2" in clean_full or "SYNAPESEDU2" in clean_full) and ("SYNAPESEDU1" not in clean_full) and ("SYNAPESEDU3" not in clean_full)
                         else:
-                            kw_ok = ("BUYCHECKSYNAPESEDU2" in clean_full or "SYNAPESEDU2" in clean_full) and ("SYNAPESEDU1" not in clean_full)
+                            kw_ok = ("BUYCHECKSYNAPESEDU3" in clean_full or "SYNAPESEDU3" in clean_full or "FULLMONT" in clean_full) and ("SYNAPESEDU1" not in clean_full) and ("SYNAPESEDU2" not in clean_full)
 
                         if not kw_ok:
                             continue
@@ -627,12 +631,13 @@ async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Req
 
     # NẾU CHƯA HOẶC KHÔNG THỂ XÁC THỰC -> TUYỆT ĐỐI TỪ CHỐI CẤP QUYỀN
     if not payment_verified:
-        amt_str = "3.000" if pkg == 1 else "10.000"
+        amt_str = "3.000" if pkg == 1 else ("10.000" if pkg == 2 else "50.000")
+        expected_desc = "BUY CHECK SYNAPES EDU 3 FULLMONT" if pkg == 3 else f"BUY CHECK SYNAPESEDU {pkg}"
         return {
             "success": False,
             "package": pkg,
             "ip": client_ip,
-            "message": f"Chưa nhận được thông báo biến động số dư tăng {amt_str} VND từ Ngân hàng Timo với nội dung 'BUY CHECK SYNAPESEDU {pkg}' trong khung thời gian xác nhận.\n\nHãy đảm bảo bạn đã thanh toán chính xác trước khi xác nhận nhé!",
+            "message": f"Chưa nhận được thông báo biến động số dư tăng {amt_str} VND từ Ngân hàng Timo với nội dung '{expected_desc}' trong khung thời gian xác nhận.\n\nHãy đảm bảo bạn đã thanh toán chính xác trước khi xác nhận nhé!",
             "error_code": "PAYMENT_NOT_FOUND",
             "quota": quota_manager.get_quota_status(client_ip)
         }

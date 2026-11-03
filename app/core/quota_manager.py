@@ -168,14 +168,14 @@ class QuotaManager:
         # 2. Khôi phục hạn mức trả phí nếu container vừa cập nhật mới và client còn lượt hợp lệ
         if client_paid_credits is not None and client_paid_tier is not None and client_tx_id:
             try:
-                cpc = max(0, min(2, int(client_paid_credits)))
+                cpc = max(0, min(20, int(client_paid_credits)))
                 cpt = int(client_paid_tier)
                 ctx = str(client_tx_id).strip()
                 exhausted_map = self._quotas.get("_exhausted_tx", {})
 
                 if (
                     cpc > 0
-                    and cpt in (1, 2)
+                    and cpt in (1, 2, 3)
                     and ctx.startswith("TIMO-")
                     and len(ctx) >= 12
                     and ctx not in exhausted_map
@@ -185,6 +185,8 @@ class QuotaManager:
                     rec["paid_tier"] = cpt
                     rec["paid_credits"] = cpc
                     rec["last_tx_id"] = ctx
+                    if cpt == 3 and not rec.get("paid_expires_at"):
+                        rec["paid_expires_at"] = int((time.time() + 30 * 86400) * 1000)
                     changed = True
             except Exception:
                 pass
@@ -194,12 +196,32 @@ class QuotaManager:
 
         return rec
 
+    def _get_tier_label(self, tier: int) -> str:
+        if tier == 3:
+            return "Gói 3 (50.000đ - 20 lượt / 30 ngày)"
+        if tier == 2:
+            return "Gói 2 (10.000đ - Chuyên gia)"
+        if tier == 1:
+            return "Gói 1 (3.000đ - Tiêu chuẩn)"
+        return "Bản Miễn Phí (Free)"
+
     def get_quota_status(self, ip: str) -> Dict[str, Any]:
         """Tính toán trạng thái hạn mức và quyền truy cập hiện tại của IP"""
         rec = self.get_record(ip)
         free_used = rec.get("free_used", 0)
         paid_tier = rec.get("paid_tier", 0)
         paid_credits = rec.get("paid_credits", 0)
+        paid_expires_at = rec.get("paid_expires_at", 0)
+
+        # Kiểm tra thời hạn 30 ngày của Gói 3 nếu có
+        now_ms = int(time.time() * 1000)
+        if paid_credits > 0 and paid_expires_at and now_ms > paid_expires_at:
+            paid_credits = 0
+            paid_tier = 0
+            rec["paid_credits"] = 0
+            rec["paid_tier"] = 0
+            self._save_to_disk()
+
         last_tx_id = rec.get("last_tx_id", "")
         free_remaining = max(0, 2 - free_used)
         can_scan = (free_remaining > 0) or (paid_credits > 0)
@@ -211,10 +233,11 @@ class QuotaManager:
             "free_remaining": free_remaining,
             "paid_tier": paid_tier,
             "paid_credits": paid_credits,
+            "paid_expires_at": paid_expires_at,
             "last_tx_id": last_tx_id,
             "active_tier": active_tier,
             "can_scan": can_scan,
-            "tier_name": "Gói 2 (10.000đ - Chuyên gia)" if active_tier == 2 else ("Gói 1 (3.000đ - Tiêu chuẩn)" if active_tier == 1 else "Bản Miễn Phí (Free)")
+            "tier_name": self._get_tier_label(active_tier)
         }
 
     def consume_scan(self, ip: str) -> Dict[str, Any]:
@@ -226,11 +249,20 @@ class QuotaManager:
         rec = self.get_record(ip)
         paid_credits = rec.get("paid_credits", 0)
         paid_tier = rec.get("paid_tier", 0)
+        paid_expires_at = rec.get("paid_expires_at", 0)
         free_used = rec.get("free_used", 0)
+
+        now_ms = int(time.time() * 1000)
+        if paid_credits > 0 and paid_expires_at and now_ms > paid_expires_at:
+            paid_credits = 0
+            paid_tier = 0
+            rec["paid_credits"] = 0
+            rec["paid_tier"] = 0
+            self._save_to_disk()
 
         now_str = time.strftime("%Y-%m-%d %H:%M:%S UTC+7", time.gmtime(time.time() + 7 * 3600))
 
-        # 1. Trường hợp có lượt trả phí (Gói 1 hoặc Gói 2)
+        # 1. Trường hợp có lượt trả phí (Gói 1, Gói 2 hoặc Gói 3)
         if paid_credits > 0:
             tier_used = paid_tier
             rec["paid_credits"] = paid_credits - 1
@@ -249,7 +281,7 @@ class QuotaManager:
             print(f"[QuotaManager] Đã trừ 1 lượt trả phí (Gói {tier_used}) của IP: {ip}. Còn lại: {rec['paid_credits']}")
             quota_status = self.get_quota_status(ip)
             quota_status["active_tier"] = tier_used
-            quota_status["tier_name"] = "Gói 2 (10.000đ - Chuyên gia)" if tier_used == 2 else "Gói 1 (3.000đ - Tiêu chuẩn)"
+            quota_status["tier_name"] = self._get_tier_label(tier_used)
             return {
                 "allowed": True,
                 "tier_used": tier_used,
@@ -291,12 +323,21 @@ class QuotaManager:
     def grant_package(self, ip: str, package_id: int, tx_id: str = "", amount: int = 0) -> Dict[str, Any]:
         """
         Cấp lượt sử dụng cho gói trả phí sau khi ĐÃ XÁC THỰC THÀNH CÔNG THANH TOÁN:
+        - Gói 3 (50.000đ): Cung cấp 20 lượt truy cập cao cấp (gấp 10 lần gói 2) trong 30 ngày.
         - Gói 2 (10.000đ): Cung cấp 2 lượt truy cập cao cấp.
         - Gói 1 (3.000đ): Cung cấp 1 lượt kiểm tra chỉ số.
         """
         rec = self.get_record(ip)
         rec["paid_tier"] = package_id
-        rec["paid_credits"] = 2 if package_id == 2 else 1
+        if package_id == 3:
+            rec["paid_credits"] = 20
+            rec["paid_expires_at"] = int((time.time() + 30 * 86400) * 1000)
+        elif package_id == 2:
+            rec["paid_credits"] = 2
+            rec["paid_expires_at"] = 0
+        else:
+            rec["paid_credits"] = 1
+            rec["paid_expires_at"] = 0
         if tx_id:
             rec["last_tx_id"] = tx_id
         now_str = time.strftime("%Y-%m-%d %H:%M:%S UTC+7", time.gmtime(time.time() + 7 * 3600))
