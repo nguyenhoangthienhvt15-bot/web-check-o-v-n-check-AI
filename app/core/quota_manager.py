@@ -135,12 +135,15 @@ class QuotaManager:
             })
             self._save_to_disk()
             print(f"[QuotaManager] Đã trừ 1 lượt trả phí (Gói {tier_used}) của IP: {ip}. Còn lại: {rec['paid_credits']}")
+            quota_status = self.get_quota_status(ip)
+            quota_status["active_tier"] = tier_used
+            quota_status["tier_name"] = "Gói 2 (10.000đ - Chuyên gia)" if tier_used == 2 else "Gói 1 (3.000đ - Tiêu chuẩn)"
             return {
                 "allowed": True,
                 "tier_used": tier_used,
                 "type": "PAID",
                 "credits_remaining": rec["paid_credits"],
-                "quota": self.get_quota_status(ip)
+                "quota": quota_status
             }
 
         # 2. Trường hợp dùng lượt miễn phí (tối đa 2 lượt)
@@ -175,11 +178,13 @@ class QuotaManager:
 
     def grant_package(self, ip: str, package_id: int, tx_id: str = "", amount: int = 0) -> Dict[str, Any]:
         """
-        Cấp 1 lượt sử dụng cho gói trả phí (Gói 1 hoặc Gói 2) sau khi ĐÃ XÁC THỰC THÀNH CÔNG THANH TOÁN.
+        Cấp lượt sử dụng cho gói trả phí sau khi ĐÃ XÁC THỰC THÀNH CÔNG THANH TOÁN:
+        - Gói 2 (10.000đ): Cung cấp 2 lượt truy cập cao cấp.
+        - Gói 1 (3.000đ): Cung cấp 1 lượt kiểm tra chỉ số.
         """
         rec = self.get_record(ip)
         rec["paid_tier"] = package_id
-        rec["paid_credits"] = 1
+        rec["paid_credits"] = 2 if package_id == 2 else 1
         now_str = time.strftime("%Y-%m-%d %H:%M:%S UTC+7", time.gmtime(time.time() + 7 * 3600))
         rec.setdefault("history", []).append({
             "action": "PURCHASE_PACKAGE",

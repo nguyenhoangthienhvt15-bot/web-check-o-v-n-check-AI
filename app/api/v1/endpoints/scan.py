@@ -280,7 +280,10 @@ async def process_document_background(task_id: str, filename: str, file_bytes: b
         )
 
         result["tier_used"] = tier_used
-        result["quota_status"] = quota_manager.get_quota_status(client_ip)
+        scan_quota = quota_manager.get_quota_status(client_ip)
+        scan_quota["active_tier"] = tier_used
+        scan_quota["tier_name"] = "Gói 2 (10.000đ - Chuyên gia)" if tier_used == 2 else ("Gói 1 (3.000đ - Tiêu chuẩn)" if tier_used == 1 else "Bản Miễn Phí (Free)")
+        result["quota_status"] = scan_quota
 
         async_task_manager.update_progress(
             task_id,
