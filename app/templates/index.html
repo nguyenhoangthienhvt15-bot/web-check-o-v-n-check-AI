@@ -651,7 +651,7 @@
           </div>
         </div>
 
-        <!-- ================= CARD III: BÁO CÁO KIỂM ĐỊNH CHÍNH TẢ & NGỮ PHÁP (3 NGÔN NGỮ) ================= -->
+        <!-- ================= CARD III: BÁO CÁO KIỂM ĐỊNH CHÍNH TẢ & NGỮ PHÁP (2 NGÔN NGỮ VI - EN) ================= -->
         <div onclick="handleCardMetricClick('spelling')" class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white cursor-pointer hover:border-blue-300 transition-colors">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO III: RÀ SOÁT CHÍNH TẢ & NGỮ PHÁP</span>
@@ -681,10 +681,16 @@
             </p>
           </div>
 
-          <button id="btn-download-spell-pdf" onclick="handleSpellPdfDownloadClick()"
-            class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-2xs">
-            <span>📑</span> Tải Báo cáo Pháp y Chính tả & Ngữ pháp (.PDF)
-          </button>
+          <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+            <button type="button" onclick="event.stopPropagation(); previewSpellGrammarReportPDF()"
+              class="py-1.5 px-2 bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 rounded-md font-semibold text-[10px] flex items-center justify-center gap-1 transition cursor-pointer">
+              <span>👁️</span> Đọc trước PDF
+            </button>
+            <button type="button" id="btn-download-spell-pdf" onclick="event.stopPropagation(); handleSpellPdfDownloadClick()"
+              class="py-1.5 px-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-[10px] font-bold flex items-center justify-center gap-1 transition shadow-xs cursor-pointer">
+              <span>📑</span> Tải Báo cáo
+            </button>
+          </div>
         </div>
 
         <!-- ================= CARD: HƯỚNG DẪN ĐỌC CHỈ SỐ BÁO CÁO & BẢNG ĐỐI SÁNH TIÊU CHUẨN ================= -->
@@ -1837,7 +1843,7 @@
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <!-- ================= TỆP MÃ NGUỒN ĐƯỢC MÃ HÓA BẢO VỆ ĐA TẦNG ================= -->
-  <script src="/static/js/synapes.bundle.min.js?v=4.3.0" defer></script>
+  <script src="/static/js/synapes.bundle.min.js?v=4.4.0" defer></script>
 </body>
 
 </html>
