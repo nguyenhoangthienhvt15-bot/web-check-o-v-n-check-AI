@@ -1173,7 +1173,7 @@
                 </li>
               </ul>
             </div>
-            <button type="button" class="w-full py-2 px-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white font-bold text-xs transition border border-blue-200">
+            <button type="button" onclick="selectPaymentPackage(1)" class="w-full py-2 px-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white font-bold text-xs transition border border-blue-200">
               Thanh toán ngay (3.000đ)
             </button>
           </div>
@@ -1230,7 +1230,7 @@
                 </li>
               </ul>
             </div>
-            <button type="button" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs transition shadow-xs hover:from-amber-600 hover:to-orange-600">
+            <button type="button" onclick="selectPaymentPackage(2)" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs transition shadow-xs hover:from-amber-600 hover:to-orange-600">
               Thanh toán ngay (10.000đ - 2 lượt)
             </button>
           </div>
@@ -1245,10 +1245,18 @@
           </div>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <!-- Ảnh QR tương ứng gói -->
+            <!-- Ảnh QR tương ứng gói (Dual preloaded containers - 0ms switch) -->
             <div class="p-2 bg-white rounded-xl border border-slate-200 shadow-sm shrink-0 flex flex-col items-center">
-              <img id="checkout-qr-img" src="/static/img/qr_3k.jpg" alt="Mã QR Thanh Toán" class="w-44 h-auto rounded-lg object-contain" />
-              <span class="text-[10px] text-slate-500 mt-1.5 font-medium">VietQR Napas 24/7 Chuẩn hóa</span>
+              <div id="qr-container-1" class="flex flex-col items-center">
+                <img id="checkout-qr-img-1" src="/static/img/qr_3k.jpg?v=3.5.2" alt="Mã QR Thanh Toán 3.000đ" class="w-44 h-auto rounded-lg object-contain" />
+                <span class="text-[10px] text-blue-600 mt-1.5 font-bold">VietQR 3.000đ • Napas 24/7 Chuẩn hóa</span>
+              </div>
+              <div id="qr-container-2" class="flex flex-col items-center hidden">
+                <img id="checkout-qr-img-2" src="/static/img/qr_10k.jpg?v=3.5.2" alt="Mã QR Thanh Toán 10.000đ" class="w-44 h-auto rounded-lg object-contain" />
+                <span class="text-[10px] text-amber-600 mt-1.5 font-bold">VietQR 10.000đ (2 Lượt) • Napas 24/7 Chuẩn hóa</span>
+              </div>
+              <!-- Fallback element for script backward-compatibility -->
+              <img id="checkout-qr-img" src="/static/img/qr_3k.jpg?v=3.5.2" alt="Mã QR Thanh Toán" class="hidden" />
             </div>
 
             <!-- Thông tin chuyển khoản chi tiết -->
@@ -1818,7 +1826,7 @@
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <!-- ================= TỆP MÃ NGUỒN ĐƯỢC MÃ HÓA BẢO VỆ ĐA TẦNG ================= -->
-  <script src="/static/js/synapes.bundle.min.js?v=4.0.0" defer></script>
+  <script src="/static/js/synapes.bundle.min.js?v=4.1.0" defer></script>
 </body>
 
 </html>
