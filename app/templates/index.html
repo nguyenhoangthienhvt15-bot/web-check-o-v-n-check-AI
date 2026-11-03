@@ -7,12 +7,12 @@
   <title>SYNAPES AUDIT | Hệ thống Giám định Tính toàn vẹn Học thuật & Thẩm tra Nguồn Trích dẫn</title>
   <link rel="icon" type="image/jpeg" href="/static/img/synapes-logo.jpg">
 
-  <!-- Tailwind CSS & Google Fonts (Plus Jakarta Sans, JetBrains Mono) -->
+  <!-- Tailwind CSS & Google Fonts (Plus Jakarta Sans, Newsreader Editorial Serif, JetBrains Mono) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
   <!-- Chart.js cho Biểu đồ Cột và Biểu đồ Miền 5 Trục Pháp y -->
@@ -22,7 +22,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- Thư viện tạo Mã QR xác thực số hóa độc lập nội bộ (Zero-Dependency SVG & Canvas) -->
 
   <!-- KaTeX hỗ trợ biên dịch công thức toán học học thuật chuẩn xác -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -30,37 +29,18 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <style>
-    /* ================= THIẾT KẾ PAPERMARK DESIGN SYSTEM (papermark/papermark) ================= */
+    /* ================= APPLE HIG / VERCEL GEIST / STRIPE EDITORIAL DESIGN SYSTEM ================= */
     :root {
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'SF Pro Text', 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
       --font-serif: 'Times New Roman', Times, serif;
-    }
-
-    body {
-      font-family: var(--font-sans);
-      background-color: #0B0D11;
-      color: #E2E8F0;
-      transition: background-color 0.2s ease, color 0.2s ease;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .font-times {
-      font-family: var(--font-serif) !important;
-    }
-
-    .font-mono-num {
-      font-family: var(--font-mono);
-    }
-
-    /* ================= 100% GIAO DIỆN SÁNG (LIGHT MODE) + HỆ THỐNG MÀU RGB DYNAMIC 86.400 GIÂY ================= */
-    :root {
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-      --font-serif: 'Times New Roman', Times, serif;
-      --rgb-1: 59, 130, 246;
-      --rgb-2: 99, 102, 241;
-      --rgb-3: 139, 92, 246;
+      --font-editorial: 'Instrument Serif', Georgia, serif;
+      --surface-bg: #F5F5F7;
+      --surface-card: #FFFFFF;
+      --border-hairline: #E4E4E7;
+      --text-primary: #18181B;
+      --text-secondary: #52525B;
+      --text-muted: #71717A;
     }
 
     html,
@@ -74,121 +54,137 @@
 
     body {
       font-family: var(--font-sans);
-      background-color: #F8FAFC !important;
-      color: #0F172A !important;
+      background-color: var(--surface-bg) !important;
+      color: var(--text-primary) !important;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.011em;
     }
 
     .font-times {
       font-family: var(--font-serif) !important;
+      letter-spacing: normal !important;
     }
 
     .font-mono-num {
       font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
     }
 
-    /* Thanh điều hướng Topbar: Trắng thuần khiết 100%, cố định chiều cao tuyệt đối chống giật/xô lệch layout */
+    /* Thanh điều hướng Topbar chuẩn Apple Frosted Glass */
     header {
-      background-color: #FFFFFF !important;
-      border-color: #E2E8F0 !important;
-      color: #0F172A !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+      background-color: rgba(255, 255, 255, 0.92) !important;
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(24, 24, 27, 0.08) !important;
+      color: #18181B !important;
       position: relative;
       z-index: 30;
-      height: 56px !important;
-      min-height: 56px !important;
-      max-height: 56px !important;
+      height: 54px !important;
+      min-height: 54px !important;
+      max-height: 54px !important;
       overflow: hidden !important;
       flex-shrink: 0 !important;
     }
 
-    /* Vùng làm việc chính: Chứa không gian canvas phía sau tài liệu (trong suốt để lộ nền RGB) */
+    /* Vùng làm việc chính: Nền giấy kỹ thuật Apple Studio + Dot Matrix mảnh */
     .main-viewport {
       background-color: transparent !important;
       position: relative;
     }
 
-    /* Lớp nền RGB ĐỘC QUYỀN trải đều 100% từ trên xuống dưới toàn bộ không gian phía sau tài liệu */
     #canvas-rgb-bg {
       position: absolute;
       top: 0;
       bottom: 0;
       left: 0;
-      right: 390px;
+      right: 396px;
       pointer-events: none;
       z-index: 0;
-      opacity: 0;
-      transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+      background-color: #F4F4F5 !important;
+      background-image: radial-gradient(rgba(24, 24, 27, 0.075) 1px, transparent 1px) !important;
+      background-size: 20px 20px !important;
+      opacity: 1 !important;
     }
 
-    /* Trang giấy hiển thị tài liệu: BẢO VỆ 100% NỀN TRẮNG TINH KHÔI CHUẨN A4 */
+    /* Trang giấy hiển thị tài liệu: Bóng đổ vật lý đa tầng chuẩn Apple Pages / Craft */
     .drive-paper-page {
       background-color: #FFFFFF !important;
       background: #FFFFFF !important;
       position: relative;
       z-index: 10;
-      box-shadow: 0 10px 40px -5px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
-      color: #0F172A !important;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 12px 32px -4px rgba(24, 24, 27, 0.07),
+        0 0 0 1px rgba(24, 24, 27, 0.06) !important;
+      color: #18181B !important;
     }
 
-    /* Bảng điều khiển phân tích & Sidebar: Trắng thuần khiết 100% */
+    /* Bảng điều khiển phân tích & Sidebar: Tinh gọn chuẩn Stripe / Linear */
     aside {
-      background-color: #FFFFFF !important;
-      border-color: #E2E8F0 !important;
-      color: #0F172A !important;
+      background-color: #FAFAFA !important;
+      border-left: 1px solid #E4E4E7 !important;
+      color: #18181B !important;
       position: relative;
       z-index: 20;
     }
 
     .pm-card {
       background-color: #FFFFFF !important;
-      border-color: #E2E8F0 !important;
-      color: #0F172A !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02) !important;
+      border: 1px solid #E4E4E7 !important;
+      color: #18181B !important;
+      box-shadow: 0 1px 2px 0 rgba(24, 24, 27, 0.03) !important;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .pm-card:hover {
+      border-color: #D4D4D8 !important;
+      box-shadow: 0 2px 6px -1px rgba(24, 24, 27, 0.05) !important;
     }
 
     .pm-subcard {
-      background-color: #F8FAFC !important;
-      border-color: #E2E8F0 !important;
-      color: #1E293B !important;
+      background-color: #FAFAFA !important;
+      border-color: #E4E4E7 !important;
+      color: #18181B !important;
     }
 
     .pm-muted-text {
-      color: #64748B !important;
+      color: #71717A !important;
     }
 
     /* Highlight văn bản học thuật trên Paper */
     .hl-high-ai {
-      background-color: rgba(244, 63, 94, 0.22);
-      border-bottom: 2px solid #F43F5E;
+      background-color: rgba(225, 29, 72, 0.14);
+      border-bottom: 1.5px solid #E11D48;
       cursor: pointer;
       transition: background 0.15s;
     }
 
     .hl-high-ai:hover {
-      background-color: rgba(244, 63, 94, 0.38);
+      background-color: rgba(225, 29, 72, 0.26);
     }
 
     .hl-medium-ai {
-      background-color: rgba(245, 158, 11, 0.22);
-      border-bottom: 2px dashed #F59E0B;
+      background-color: rgba(217, 119, 6, 0.14);
+      border-bottom: 1.5px dashed #D97706;
       cursor: pointer;
       transition: background 0.15s;
     }
 
     .hl-medium-ai:hover {
-      background-color: rgba(245, 158, 11, 0.38);
+      background-color: rgba(217, 119, 6, 0.26);
     }
 
     .hl-plag {
-      background-color: rgba(59, 130, 246, 0.22);
-      border-bottom: 2px solid #3B82F6;
+      background-color: rgba(37, 99, 235, 0.14);
+      border-bottom: 1.5px solid #2563EB;
       cursor: pointer;
     }
 
     .hl-semantic {
-      background-color: rgba(168, 85, 247, 0.22);
-      border-bottom: 2px dashed #9333EA;
+      background-color: rgba(124, 58, 237, 0.14);
+      border-bottom: 1.5px dashed #7C3AED;
       cursor: pointer;
     }
 
@@ -198,20 +194,20 @@
     }
 
     .hl-human:hover {
-      background-color: rgba(16, 185, 129, 0.12);
+      background-color: rgba(5, 150, 105, 0.09);
     }
 
     .spell-error-word {
-      text-decoration: underline wavy #EF4444 2px !important;
+      text-decoration: underline wavy #DC2626 1.75px !important;
       text-underline-offset: 3.5px !important;
       cursor: pointer !important;
       position: relative !important;
-      background-color: rgba(239, 68, 68, 0.08) !important;
+      background-color: rgba(220, 38, 38, 0.06) !important;
       border-radius: 2px !important;
       transition: background-color 0.15s ease !important;
     }
     .spell-error-word:hover {
-      background-color: rgba(239, 68, 68, 0.22) !important;
+      background-color: rgba(220, 38, 38, 0.18) !important;
     }
     .hl-plain-free {
       background-color: transparent !important;
@@ -220,22 +216,22 @@
       border-bottom: none !important;
     }
     .active-sent {
-      outline: 2px solid #6366F1 !important;
-      background-color: rgba(99, 102, 241, 0.25) !important;
+      outline: 1.5px solid #18181B !important;
+      background-color: rgba(24, 24, 27, 0.08) !important;
       border-radius: 2px;
     }
 
     .hl-header {
       font-weight: 700;
-      color: #0F172A;
+      color: #18181B;
       margin: 14px 0 6px 0;
       font-size: 11pt;
     }
 
-    /* Scrollbars tinh tế */
+    /* Scrollbars chuẩn macOS mỏng tinh tế */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
 
     ::-webkit-scrollbar-track {
@@ -243,27 +239,25 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #333A48;
-      border-radius: 3px;
+      background: #D4D4D8;
+      border-radius: 9999px;
     }
 
-    body.theme-light ::-webkit-scrollbar-thumb {
-      background: #CBD5E1;
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A1A1AA;
     }
 
-    /* ================= HIỆU ỨNG THANH TIẾN TRÌNH RGB SÓNG BIỂN LƯỢN SÓNG (OCEAN WAVE PROGRESS) ================= */
+    /* ================= HIỆU ỨNG THANH TIẾN TRÌNH CHUẨN APPLE / STRIPE ================= */
     .ocean-wave-progress-container {
       position: relative;
-      background: #F1F5F9;
-      border: 1px solid #E2E8F0;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      background: #F4F4F5;
+      border: 1px solid #E4E4E7;
     }
 
     .ocean-wave-bar {
-      background: linear-gradient(90deg, #06b6d4, #2563eb, #6366f1, #9333ea, #06b6d4);
-      background-size: 300% 100%;
-      animation: rgbOceanShift 5s ease infinite;
-      box-shadow: 0 0 16px rgba(6, 182, 212, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.35);
+      background: linear-gradient(90deg, #18181B, #2563EB, #1D4ED8, #18181B);
+      background-size: 250% 100%;
+      animation: rgbOceanShift 4s ease infinite;
       border-radius: 9999px;
       position: relative;
       overflow: hidden;
@@ -271,170 +265,122 @@
     }
 
     @keyframes rgbOceanShift {
-      0% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-
-      100% {
-        background-position: 0% 50%;
-      }
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     .ocean-wave-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 200%;
-      height: 100%;
-      background-repeat: repeat-x;
-      background-size: 50px 100%;
-      pointer-events: none;
-    }
-
-    .ocean-wave-layer-1 {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 28' preserveAspectRatio='none'%3E%3Cpath d='M0,13 C25,3 25,23 50,13 C75,3 75,23 100,13 L100,28 L0,28 Z' fill='rgba(255,255,255,0.35)'/%3E%3C/svg%3E");
-      animation: oceanWaveFlow1 2.8s linear infinite;
-    }
-
-    .ocean-wave-layer-2 {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 28' preserveAspectRatio='none'%3E%3Cpath d='M0,15 C20,25 35,5 50,15 C65,25 80,5 100,15 L100,28 L0,28 Z' fill='rgba(255,255,255,0.22)'/%3E%3C/svg%3E");
-      animation: oceanWaveFlow2 4.2s ease-in-out infinite alternate;
+      display: none;
     }
 
     .ocean-wave-shimmer {
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
       background-size: 200% 100%;
-      animation: oceanShimmer 2s infinite;
+      animation: oceanShimmer 1.8s infinite;
       pointer-events: none;
     }
 
-    @keyframes oceanWaveFlow1 {
-      0% {
-        transform: translateX(0);
-      }
-
-      100% {
-        transform: translateX(-50%);
-      }
-    }
-
-    @keyframes oceanWaveFlow2 {
-      0% {
-        transform: translateX(0) scaleY(0.95);
-      }
-
-      50% {
-        transform: translateX(-25%) scaleY(1.25);
-      }
-
-      100% {
-        transform: translateX(-50%) scaleY(0.95);
-      }
-    }
-
     @keyframes oceanShimmer {
-      0% {
-        background-position: -200% 0;
-      }
-
-      100% {
-        background-position: 200% 0;
-      }
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
     }
   </style>
 </head>
 
-<body class="theme-light h-screen flex flex-col overflow-hidden relative bg-[#F8FAFC]">
+<body class="theme-light h-screen flex flex-col overflow-hidden relative bg-[#F5F5F7]">
 
-  <!-- ================= TOPBAR (PAPERMARK MINIMAL LIGHT HEADER) ================= -->
-    <header
-    class="h-14 min-h-[56px] max-h-14 border-b border-slate-200 shrink-0 flex items-center justify-between px-2.5 sm:px-4 z-30 bg-white select-none gap-2">
+  <!-- ================= TOPBAR (APPLE HIG / VERCEL GEIST MINIMAL HEADER) ================= -->
+  <header
+    class="h-[54px] min-h-[54px] max-h-[54px] shrink-0 flex items-center justify-between px-3 sm:px-5 z-30 select-none gap-2">
 
-    <!-- Left: Brand Logo & Document Status Pill -->
-    <div class="flex items-center gap-2 shrink min-w-0">
-      <div class="flex items-center gap-2 shrink-0">
+    <!-- Left: Brand Identity & Document Status -->
+    <div class="flex items-center gap-2.5 shrink min-w-0">
+      <div class="flex items-center gap-2.5 shrink-0">
         <div
-          class="h-9 w-9 rounded-lg bg-white p-0.5 shadow-2xs border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-slate-100 transition hover:scale-105 cursor-pointer">
+          class="h-8 w-8 rounded-lg bg-white p-0.5 border border-zinc-200/90 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs transition hover:border-zinc-300 cursor-pointer">
           <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo"
-            class="h-full w-full object-contain rounded-md select-none" />
+            class="h-full w-full object-contain rounded-[5px] select-none" />
         </div>
         <div class="flex flex-col justify-center shrink-0">
-          <div class="flex items-center gap-1.5">
-            <span class="font-bold text-sm tracking-tight text-slate-900" id="topbar-brand-title">SYNAPES AUDIT</span>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-[13.5px] tracking-tight text-zinc-900" id="topbar-brand-title">SYNAPES AUDIT</span>
             <span
-              class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-mono-num border border-emerald-200 font-semibold tracking-wide">v3.3</span>
+              class="text-[9.5px] px-1.5 py-0.2 rounded-md bg-zinc-100 text-zinc-600 font-mono-num border border-zinc-200/80 font-medium">v3.4</span>
           </div>
-          <p class="text-[10px] text-slate-500 leading-tight mt-0.5 hidden 2xl:block">Giám định Pháp y Học thuật & Thẩm tra Nguồn</p>
+          <p class="text-[10px] text-zinc-500 leading-tight mt-0.5 hidden 2xl:block">Hệ thống Giám định Tính toàn vẹn Học thuật</p>
         </div>
       </div>
 
-      <div class="h-6 w-px bg-slate-200 hidden 2xl:block shrink-0"></div>
+      <div class="h-4 w-px bg-zinc-200 hidden 2xl:block shrink-0"></div>
 
-      <!-- File Status Badge (Chỉ hiện trên màn hình rất rộng 2xl >= 1536px để bảo toàn 100% không gian cho nút Tải tệp lên) -->
+      <!-- File Status Badge -->
       <div id="topbar-doc-badge"
-        class="hidden 2xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs shadow-2xs transition shrink-0 whitespace-nowrap">
-        <span class="w-2 h-2 rounded-full bg-slate-400 shrink-0" id="topbar-doc-status-dot"></span>
-        <span id="topbar-filename" class="font-medium text-slate-700 truncate max-w-[120px] whitespace-nowrap">Sẵn sàng thẩm định</span>
+        class="hidden 2xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-50 border border-zinc-200/80 text-xs transition shrink-0 whitespace-nowrap">
+        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 shrink-0" id="topbar-doc-status-dot"></span>
+        <span id="topbar-filename" class="font-medium text-zinc-700 truncate max-w-[140px] whitespace-nowrap text-[11.5px]">Sẵn sàng thẩm định</span>
         <span id="topbar-meta"
-          class="text-[10.5px] text-slate-400 font-mono-num border-l border-slate-200 pl-2 whitespace-nowrap shrink-0">0 từ • 0 câu</span>
+          class="text-[10.5px] text-zinc-400 font-mono-num border-l border-zinc-200 pl-2 whitespace-nowrap shrink-0">0 từ • 0 câu</span>
       </div>
     </div>
 
-    <!-- Center: View Mode Switcher (Clean Light Segmented Control) -->
+    <!-- Center: Apple Segmented Control View Switcher -->
     <div
-      class="flex items-center bg-slate-100/90 p-0.5 rounded-xl border border-slate-200/80 text-xs font-medium shadow-2xs shrink-0">
+      class="flex items-center bg-zinc-100/90 p-0.5 rounded-lg border border-zinc-200/80 text-xs font-medium shrink-0">
       <button id="btn-view-rich" onclick="switchDocumentView('rich')"
-        class="px-2 sm:px-2.5 py-1 rounded-lg transition flex items-center gap-1 font-semibold bg-white text-slate-900 shadow-xs border border-slate-200/80 whitespace-nowrap">
-        <span class="text-xs">📄</span> <span class="hidden sm:inline">Văn bản </span>gốc
+        class="px-2.5 sm:px-3 py-1 rounded-[6px] transition flex items-center gap-1.5 font-semibold bg-white text-zinc-900 shadow-2xs border border-zinc-200/70 whitespace-nowrap text-[11.5px]">
+        <svg class="w-3.5 h-3.5 text-zinc-700 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span><span class="hidden sm:inline">Văn bản </span>gốc</span>
       </button>
       <button id="btn-view-sentences" onclick="switchDocumentView('sentences')"
-        class="px-2 sm:px-2.5 py-1 rounded-lg transition flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
-        <span class="text-xs">🔬</span> <span class="hidden sm:inline">Pháp y </span>câu <span id="total-sent-badge"
-          class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold ml-0.5">0</span>
+        class="px-2.5 sm:px-3 py-1 rounded-[6px] transition flex items-center gap-1.5 text-zinc-600 hover:text-zinc-900 font-medium hover:bg-zinc-200/40 whitespace-nowrap text-[11.5px]">
+        <svg class="w-3.5 h-3.5 text-zinc-500 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+        <span><span class="hidden sm:inline">Pháp y </span>câu</span>
+        <span id="total-sent-badge"
+          class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-zinc-200/80 text-zinc-700 font-semibold ml-0.5">0</span>
       </button>
       <button id="btn-view-media" onclick="switchDocumentView('media')"
-        class="px-2 sm:px-2.5 py-1 rounded-lg transition flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50 whitespace-nowrap">
-        <span class="text-xs">🖼️</span> <span class="hidden md:inline">Sơ đồ & </span>Bảng <span id="total-media-badge"
-          class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-num bg-slate-200 text-slate-700 font-semibold ml-0.5">0</span>
+        class="px-2.5 sm:px-3 py-1 rounded-[6px] transition flex items-center gap-1.5 text-zinc-600 hover:text-zinc-900 font-medium hover:bg-zinc-200/40 whitespace-nowrap text-[11.5px]">
+        <svg class="w-3.5 h-3.5 text-zinc-500 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span><span class="hidden md:inline">Sơ đồ & </span>Bảng</span>
+        <span id="total-media-badge"
+          class="px-1.5 py-0.2 rounded text-[10px] font-mono-num bg-zinc-200/80 text-zinc-700 font-semibold ml-0.5">0</span>
       </button>
     </div>
 
-    <!-- Right: Zoom & Action Buttons (BẢO TOÀN 100% LUÔN NẰM TRONG KHUNG HÌNH, NÚT TẢI TỆP KHÔNG BAO GIỜ BỊ TRÔI) -->
+    <!-- Right: Controls & Primary Actions -->
     <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
-      <!-- Zoom controls (hiển thị trên màn hình rộng) -->
+      <!-- Zoom controls -->
       <div
-        class="hidden 2xl:flex items-center bg-slate-100 rounded-lg border border-slate-200 p-0.5 text-xs text-slate-700 font-mono-num shrink-0">
+        class="hidden 2xl:flex items-center bg-zinc-100 rounded-md border border-zinc-200/80 p-0.5 text-[11px] text-zinc-700 font-mono-num shrink-0">
         <button onclick="adjustZoom(-10)"
-          class="px-2 py-0.5 hover:bg-white rounded hover:shadow-2xs transition font-bold text-slate-500 hover:text-slate-900">-</button>
+          class="px-2 py-0.5 hover:bg-white rounded transition font-semibold text-zinc-500 hover:text-zinc-900">−</button>
         <span id="zoom-text" class="px-2 font-medium">100%</span>
         <button onclick="adjustZoom(10)"
-          class="px-2 py-0.5 hover:bg-white rounded hover:shadow-2xs transition font-bold text-slate-500 hover:text-slate-900">+</button>
+          class="px-2 py-0.5 hover:bg-white rounded transition font-semibold text-zinc-500 hover:text-zinc-900">+</button>
       </div>
 
-      <!-- Badge Hạn Mức IP (2 lượt miễn phí / Gói trả phí) -->
+      <!-- Badge Hạn Mức IP -->
       <div id="header-quota-badge" onclick="showPaymentModal('header_badge')"
-        class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition whitespace-nowrap shadow-2xs shrink-0">
-        <span>⚡</span>
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-semibold bg-emerald-50/90 text-emerald-800 border border-emerald-200/90 hover:bg-emerald-100/80 cursor-pointer transition whitespace-nowrap shrink-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
         <span id="header-quota-text">Lượt miễn phí: 2/2</span>
       </div>
 
-      <!-- Tải báo cáo PDF chính (Clean Light Secondary Button) -->
+      <!-- Tải báo cáo PDF chính -->
       <button id="btn-download-pdf" onclick="downloadOfficialTimesNewRomanReportPDF()"
-        class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:border-slate-400 whitespace-nowrap shrink-0">
-        <span>📥</span> <span class="hidden lg:inline">Tải </span>Báo cáo PDF
+        class="px-2.5 sm:px-3 py-1.5 rounded-md bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 font-semibold text-[11.5px] shadow-2xs transition flex items-center gap-1.5 hover:border-zinc-400 whitespace-nowrap shrink-0 cursor-pointer">
+        <svg class="w-3.5 h-3.5 text-zinc-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        <span><span class="hidden lg:inline">Tải </span>Báo cáo PDF</span>
       </button>
 
-      <!-- Nút tải tệp lên (BẢO TOÀN 100% KHÔNG BAO GIỜ BỊ TRÔI HOẶC CẮT KHỎI MÀN HÌNH) -->
+      <!-- Nút tải tệp lên (Apple/Vercel Monochrome Obsidian CTA) -->
       <button onclick="showUploadModal()" id="btn-upload-cta"
-        class="px-3 sm:px-3.5 py-1.5 rounded-lg text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5 hover:opacity-95 whitespace-nowrap shrink-0"
-        style="background: linear-gradient(135deg, rgb(59, 130, 246), rgb(99, 102, 241));">
-        <span>⬆</span> <span>Tải tệp lên</span>
+        class="px-3 sm:px-3.5 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-950 text-white font-semibold text-[11.5px] shadow-2xs transition flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer">
+        <svg class="w-3.5 h-3.5 text-zinc-200 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>Tải tệp lên</span>
       </button>
     </div>
 
@@ -443,54 +389,54 @@
   <!-- ================= MAIN WORKSPACE (VIEWER & ANALYTICS) ================= -->
   <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- LỚP NỀN RGB PHÍA SAU GIAO DIỆN CHÍNH (TRẢI ĐỀU 100% TỪ TRÊN XUỐNG DƯỚI TOÀN BỘ KHÔNG GIAN) -->
-    <div id="canvas-rgb-bg" class="absolute top-0 bottom-0 left-0 right-[390px] pointer-events-none z-0"
-      style="transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0;"></div>
+    <!-- LỚP NỀN ARCHITECTURAL STUDIO CANVAS PHÍA SAU TỜ GIẤY -->
+    <div id="canvas-rgb-bg" class="absolute top-0 bottom-0 left-0 right-[396px] pointer-events-none z-0"></div>
 
-    <!-- LEFT: DOCUMENT VIEWER CANVAS (PAPERMARK STYLE) -->
+    <!-- LEFT: DOCUMENT VIEWER CANVAS (APPLE PAGES / EDITORIAL READER STYLE) -->
     <main class="flex-1 main-viewport overflow-y-auto p-4 sm:p-8 flex justify-center relative z-10"
       style="background: transparent !important;">
 
       <div id="drive-paper-container"
         style="width: 820px; transform-origin: top center; background-color: #FFFFFF !important; background: #FFFFFF !important;"
-        class="drive-paper-page rounded-lg p-12 sm:p-16 min-h-[1100px] transition-transform duration-150 relative z-10">
+        class="drive-paper-page rounded-[4px] p-12 sm:p-16 min-h-[1100px] transition-transform duration-150 relative z-10">
         <!-- Document Header Meta -->
         <div
-          class="border-b border-slate-200 pb-4 mb-8 flex items-center justify-between font-times text-xs text-slate-500">
+          class="border-b border-zinc-200 pb-3.5 mb-8 flex items-center justify-between font-times text-xs text-zinc-500">
           <div>
-            <span class="font-bold text-slate-700 uppercase">TÀI LIỆU HỌC THUẬT NGUYÊN BẢN (OFFICIAL DOCUMENT
-              READER)</span>
-            <div id="paper-doc-sub" class="text-[11px] text-slate-400">100% Font Times New Roman • Định dạng trang A4
-              tiêu chuẩn</div>
+            <span class="font-bold text-zinc-800 uppercase tracking-wide">BẢN TRÌNH ĐỌC TÀI LIỆU HỌC THUẬT NGUYÊN BẢN</span>
+            <div id="paper-doc-sub" class="text-[11px] text-zinc-400 mt-0.5">Chuẩn chế bản Times New Roman • Khổ giấy tiêu chuẩn A4</div>
           </div>
-          <div id="paper-date-time">31/10/2026</div>
+          <div id="paper-date-time" class="font-mono-num text-[11px] text-zinc-500">03/11/2026</div>
         </div>
 
-        <!-- Chế độ 1: Toàn bộ nội dung gốc (Ảnh, Bảng, Text bảo toàn 100%) -->
-        <div id="paper-rich-content" class="font-times text-base leading-relaxed space-y-4 text-slate-900 text-justify">
-          <div class="text-center py-20 text-slate-400 font-sans">
-            <span class="text-4xl block mb-3">📄</span>
-            <p class="text-sm font-semibold text-slate-700">Chưa có tài liệu nào được tải lên</p>
-            <p class="text-xs mt-1 text-slate-500 mb-4">Nhấn nút bên dưới hoặc nút "Tải tệp lên" ở góc trên bên phải để bắt đầu thẩm định pháp y học thuật.</p>
-            <button onclick="showUploadModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold text-xs shadow-sm hover:opacity-90 transition cursor-pointer" style="background: linear-gradient(135deg, rgb(59, 130, 246), rgb(99, 102, 241));">
-              <span>⬆</span> Tải tệp lên ngay
+        <!-- Chế độ 1: Toàn bộ nội dung gốc -->
+        <div id="paper-rich-content" class="font-times text-base leading-relaxed space-y-4 text-zinc-900 text-justify">
+          <div class="text-center py-24 text-zinc-400 font-sans max-w-md mx-auto">
+            <div class="w-12 h-12 rounded-xl bg-zinc-100 border border-zinc-200/80 flex items-center justify-center mx-auto mb-4 text-zinc-500">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            </div>
+            <p class="text-sm font-semibold text-zinc-800 tracking-tight">Chưa có tài liệu nào được nạp vào trình giám định</p>
+            <p class="text-xs mt-1.5 text-zinc-500 mb-5 leading-relaxed">Tải lên tệp luận văn, bài báo khoa học hoặc báo cáo (.docx, .pdf) để thực hiện đối soát trùng lặp, giám định AI và rà soát chính tả học thuật.</p>
+            <button onclick="showUploadModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs shadow-2xs transition cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span>Chọn tệp tài liệu để thẩm định</span>
             </button>
           </div>
         </div>
 
         <!-- Chế độ 2: Danh sách câu độc lập từng câu để đối soát -->
         <div id="paper-sentences-content"
-          class="font-times text-base leading-relaxed space-y-3 text-slate-900 hidden text-justify">
+          class="font-times text-base leading-relaxed space-y-3 text-zinc-900 hidden text-justify">
         </div>
 
-        <!-- Chế độ 3: Giám định thành phần phi văn bản (Hình ảnh, Sơ đồ, Bảng số liệu) -->
+        <!-- Chế độ 3: Giám định thành phần phi văn bản -->
         <div id="paper-media-content" class="hidden space-y-6 font-sans">
-          <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <h4 class="font-bold text-sm text-slate-800 mb-2">📸 DANH MỤC HÌNH ẢNH & SƠ ĐỒ KHỐI PHÁT HIỆN:</h4>
+          <div class="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-zinc-700 mb-2">Danh mục Hình ảnh & Sơ đồ khối phát hiện</h4>
             <div id="media-findings-list" class="space-y-3 text-xs"></div>
           </div>
-          <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <h4 class="font-bold text-sm text-slate-800 mb-2">📊 DANH MỤC BẢNG BIỂU SỐ LIỆU PHÁT HIỆN:</h4>
+          <div class="p-4 bg-zinc-50 rounded-lg border border-zinc-200">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-zinc-700 mb-2">Danh mục Bảng biểu số liệu phát hiện</h4>
             <div id="tables-findings-list" class="space-y-3 text-xs"></div>
           </div>
         </div>
@@ -499,137 +445,135 @@
 
     </main>
 
-    <!-- RIGHT: PAPERMARK ANALYTICS & FORENSIC INSPECTION SIDEBAR -->
-    <aside class="w-[390px] border-l border-slate-200 shrink-0 flex flex-col overflow-y-auto bg-white">
+    <!-- RIGHT: APPLE / STRIPE / LINEAR FORENSIC ANALYTICS SIDEBAR -->
+    <aside class="w-[396px] border-l border-zinc-200/90 shrink-0 flex flex-col overflow-y-auto bg-[#FAFAFA]">
 
       <!-- Sidebar Header -->
-      <div class="p-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50/80">
+      <div class="px-4 py-3 border-b border-zinc-200/80 flex items-center justify-between shrink-0 bg-white/95 backdrop-blur-md sticky top-0 z-20">
         <div class="flex items-center gap-2">
-          <span class="text-sm font-bold tracking-tight text-slate-900">KẾT QUẢ GIÁM ĐỊNH PHÁP Y</span>
+          <span class="w-1.5 h-3.5 rounded-xs bg-zinc-900 inline-block"></span>
+          <span class="text-[11.5px] font-bold uppercase tracking-[0.06em] text-zinc-900">BẢNG ĐIỀU KHIỂN PHÁP Y</span>
         </div>
         <span id="side-verdict-badge"
-          class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+          class="text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200/90">
           Chờ phân tích
         </span>
       </div>
 
-      <div class="p-4 space-y-4 flex-1">
+      <div class="p-3.5 space-y-3 flex-1">
 
         <!-- ================= CARD 1: TỔNG QUAN ĐỐI SOÁT & GIÁM ĐỊNH ĐA TẦNG (2 TRỤC ĐỘC LẬP) ================= -->
-        <div id="card-report-similarity" onclick="handleCardMetricClick('similarity')" class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white cursor-pointer hover:border-blue-300 transition-colors">
+        <div id="card-report-similarity" onclick="handleCardMetricClick('similarity')" class="pm-card p-3.5 rounded-xl space-y-3 cursor-pointer">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO I: ĐỐI SOÁT TRÙNG LẶP
-              (SIMILARITY)</span>
+            <span class="text-[10.5px] font-bold uppercase tracking-[0.05em] text-zinc-500">I. ĐỐI SOÁT TRÙNG LẶP (SIMILARITY)</span>
             <span
-              class="text-[9px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono-num font-semibold">
-              Chuẩn IEEE & TT 08/2021
+              class="text-[9.5px] px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200/80 font-mono-num font-medium">
+              IEEE &amp; TT 08/2021
             </span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="pm-subcard p-2 rounded-lg border border-blue-200 bg-blue-50/50">
-              <p class="text-[9px] text-blue-800 uppercase tracking-wide font-bold">Hiệu chỉnh</p>
-              <p id="stat-net-sim" class="text-lg font-bold font-mono-num text-blue-700">0%</p>
-              <p class="text-[8px] text-blue-600 font-mono mt-0.5">Net Similarity</p>
+          <div class="grid grid-cols-3 divide-x divide-zinc-200/80 border border-zinc-200/90 rounded-lg bg-zinc-50/50 text-center overflow-hidden">
+            <div class="p-2.5 bg-white/70">
+              <p class="text-[9.5px] text-zinc-600 uppercase tracking-wider font-semibold">Hiệu chỉnh</p>
+              <p id="stat-net-sim" class="text-lg font-bold font-mono-num text-blue-600 mt-0.5">0%</p>
+              <p class="text-[8.5px] text-zinc-400 font-mono mt-0.5">Net Similarity</p>
             </div>
-            <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80">
-              <p class="text-[9px] pm-muted-text uppercase tracking-wide">Trùng thô</p>
-              <p id="stat-raw-sim" class="text-lg font-bold font-mono-num text-slate-700">0%</p>
-              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Raw Similarity</p>
+            <div class="p-2.5">
+              <p class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium">Trùng thô</p>
+              <p id="stat-raw-sim" class="text-lg font-bold font-mono-num text-zinc-800 mt-0.5">0%</p>
+              <p class="text-[8.5px] text-zinc-400 font-mono mt-0.5">Raw Similarity</p>
             </div>
-            <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80">
-              <p class="text-[9px] pm-muted-text uppercase tracking-wide">Đơn nguồn</p>
-              <p id="stat-highest-source" class="text-lg font-bold font-mono-num text-slate-700">0%</p>
-              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Single-Source Max</p>
+            <div class="p-2.5">
+              <p class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium">Đơn nguồn</p>
+              <p id="stat-highest-source" class="text-lg font-bold font-mono-num text-zinc-800 mt-0.5">0%</p>
+              <p class="text-[8.5px] text-zinc-400 font-mono mt-0.5">Single-Source</p>
             </div>
           </div>
 
-          <p class="text-[9px] text-slate-500 italic text-center" id="stat-plag-note">
-            * Đã loại trừ trích dẫn trong ngoặc kép & Danh mục Tham khảo.
+          <p class="text-[10px] text-zinc-400 text-center leading-tight" id="stat-plag-note">
+            Đã loại trừ trích dẫn hợp lệ trong ngoặc kép &amp; Danh mục Tham khảo.
           </p>
         </div>
 
         <!-- ================= CARD 1B: BÁO CÁO II: GIÁM ĐỊNH NGUY CƠ AI (AI RISK ASSESSMENT) ================= -->
-        <div class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white">
+        <div class="pm-card p-3.5 rounded-xl space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO II: GIÁM ĐỊNH NGUY CƠ
-              AI</span>
+            <span class="text-[10.5px] font-bold uppercase tracking-[0.05em] text-zinc-500">II. GIÁM ĐỊNH NGUY CƠ AI</span>
             <span
-              class="text-[9px] px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-mono-num font-semibold">
-              Binoculars ICML 2024
+              class="text-[9.5px] px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200/80 font-mono-num font-medium">
+              Binoculars ICML '24
             </span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="pm-subcard p-2 rounded-lg border border-rose-200 bg-rose-50/50">
-              <p class="text-[9px] text-rose-800 uppercase tracking-wide font-bold">Xác suất AI</p>
-              <p id="stat-ai-pct" class="text-lg font-bold font-mono-num text-rose-600">0%</p>
-              <p id="stat-ai-ratio" class="text-[8px] text-rose-600 font-mono mt-0.5">0/0 câu</p>
+          <div class="grid grid-cols-3 divide-x divide-zinc-200/80 border border-zinc-200/90 rounded-lg bg-zinc-50/50 text-center overflow-hidden">
+            <div class="p-2.5 bg-white/70">
+              <p class="text-[9.5px] text-zinc-600 uppercase tracking-wider font-semibold">Xác suất AI</p>
+              <p id="stat-ai-pct" class="text-lg font-bold font-mono-num text-rose-600 mt-0.5">0%</p>
+              <p id="stat-ai-ratio" class="text-[8.5px] text-zinc-500 font-mono mt-0.5">0/0 câu</p>
             </div>
-            <div onclick="handleCardMetricClick('ci_95')" class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80 cursor-pointer hover:border-blue-300 transition-colors">
-              <p class="text-[9px] pm-muted-text uppercase tracking-wide">95% CI</p>
-              <p id="stat-ci-95" class="text-xs font-bold font-mono-num text-slate-800 mt-1">[0% - 2%]</p>
-              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Confidence</p>
+            <div onclick="handleCardMetricClick('ci_95')" class="p-2.5 cursor-pointer hover:bg-zinc-100/70 transition-colors">
+              <p class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium">95% CI</p>
+              <p id="stat-ci-95" class="text-xs font-bold font-mono-num text-zinc-800 mt-1.5">[0% - 2%]</p>
+              <p class="text-[8.5px] text-zinc-400 font-mono mt-1">Confidence</p>
             </div>
-            <div onclick="handleCardMetricClick('yule_k')" class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80 cursor-pointer hover:border-blue-300 transition-colors">
-              <p class="text-[9px] pm-muted-text uppercase tracking-wide">Yule's K</p>
-              <p id="stat-yule-k" class="text-lg font-bold font-mono-num text-emerald-700">85.0</p>
-              <p class="text-[8px] pm-muted-text font-mono mt-0.5">Từ vựng</p>
+            <div onclick="handleCardMetricClick('yule_k')" class="p-2.5 cursor-pointer hover:bg-zinc-100/70 transition-colors">
+              <p class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium">Yule's K</p>
+              <p id="stat-yule-k" class="text-lg font-bold font-mono-num text-emerald-700 mt-0.5">85.0</p>
+              <p class="text-[8.5px] text-zinc-400 font-mono mt-0.5">Từ vựng</p>
             </div>
           </div>
 
-          <div onclick="handleCardMetricClick('citation')" class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-[10px] cursor-pointer hover:border-blue-300 transition-colors">
-            <span class="font-semibold text-slate-700">Trích dẫn (Citation Matching):</span>
-            <span id="stat-cmr-badge" class="font-bold text-emerald-700 font-mono-num">Khớp 100% • 0 trích dẫn ảo</span>
+          <div onclick="handleCardMetricClick('citation')" class="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-50/80 border border-zinc-200/80 text-[10.5px] cursor-pointer hover:border-zinc-300 transition-colors">
+            <span class="font-medium text-zinc-600">Đối soát trích dẫn (CMR):</span>
+            <span id="stat-cmr-badge" class="font-semibold text-emerald-700 font-mono-num">Khớp 100% • 0 trích dẫn ảo</span>
           </div>
         </div>
 
         <!-- ================= CARD 2: CHẨN ĐOÁN BẢN CHẤT VĂN BẢN (HYBRID DOCUMENT) ================= -->
-        <div onclick="handleCardMetricClick('stylometry')" class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white cursor-pointer hover:border-blue-300 transition-colors">
+        <div onclick="handleCardMetricClick('stylometry')" class="pm-card p-3.5 rounded-xl space-y-3 cursor-pointer">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">Bản chất Văn bản & Hành
-              văn</span>
+            <span class="text-[10.5px] font-bold uppercase tracking-[0.05em] text-zinc-500">BẢN CHẤT VĂN BẢN &amp; HÀNH VĂN</span>
             <span
-              class="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono-num font-semibold">Forensic
+              class="text-[9.5px] px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200/80 font-mono-num font-medium">Forensic
               Stylometry</span>
           </div>
 
           <div id="stat-consistency-box"
-            class="p-2.5 pm-subcard rounded-lg border border-slate-200 text-xs font-times leading-relaxed text-slate-800 bg-slate-50/80">
+            class="p-2.5 rounded-lg border border-zinc-200/80 text-xs font-times leading-relaxed text-zinc-800 bg-zinc-50/60">
             Hệ thống sẵn sàng giám định tài liệu theo mô hình phân tích phân cực lai ghép (Hybrid Document).
           </div>
 
           <!-- Thông số NLP Khoa học Thực nghiệm (Perplexity & Burstiness) -->
-          <div class="grid grid-cols-2 gap-2 text-xs font-mono-num">
-            <div onclick="handleCardMetricClick('ppl')" class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80 cursor-pointer hover:border-blue-300 transition-colors">
-              <span class="text-[10px] pm-muted-text block">Perplexity (PPL):</span>
-              <strong id="m-ppl" class="text-sm text-amber-600">--</strong>
-              <span class="text-[9px] text-slate-500 block">Độ hỗn loạn ngôn ngữ</span>
+          <div class="grid grid-cols-2 divide-x divide-zinc-200/80 border border-zinc-200/90 rounded-lg bg-zinc-50/50 text-xs font-mono-num overflow-hidden">
+            <div onclick="handleCardMetricClick('ppl')" class="p-2.5 cursor-pointer hover:bg-zinc-100/70 transition-colors">
+              <span class="text-[10px] text-zinc-500 font-sans font-medium block">Perplexity (PPL)</span>
+              <strong id="m-ppl" class="text-sm text-zinc-900 mt-0.5 inline-block">--</strong>
+              <span class="text-[9px] text-zinc-400 font-sans block mt-0.5">Độ hỗn loạn ngôn ngữ</span>
             </div>
-            <div onclick="handleCardMetricClick('burstiness')" class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80 cursor-pointer hover:border-blue-300 transition-colors">
-              <span class="text-[10px] pm-muted-text block">Burstiness (B):</span>
-              <strong id="m-burst" class="text-sm text-sky-600">--</strong>
-              <span class="text-[9px] text-slate-500 block">Biến thiên nhịp câu</span>
+            <div onclick="handleCardMetricClick('burstiness')" class="p-2.5 cursor-pointer hover:bg-zinc-100/70 transition-colors">
+              <span class="text-[10px] text-zinc-500 font-sans font-medium block">Burstiness (B)</span>
+              <strong id="m-burst" class="text-sm text-zinc-900 mt-0.5 inline-block">--</strong>
+              <span class="text-[9px] text-zinc-400 font-sans block mt-0.5">Biến thiên nhịp câu</span>
             </div>
           </div>
 
           <!-- DẤU ẤN MÔ HÌNH LLM (MODEL ATTRIBUTION FINGERPRINT) -->
-          <div class="pm-subcard p-2 rounded-lg border border-slate-200 bg-slate-50/80 space-y-1">
-            <div class="flex items-center justify-between text-[10px]">
-              <span class="font-bold uppercase tracking-wider text-slate-700">Dấu ấn Mô hình:</span>
+          <div class="p-2.5 rounded-lg border border-zinc-200/80 bg-zinc-50/50 space-y-1.5">
+            <div class="flex items-center justify-between text-[10.5px]">
+              <span class="font-semibold text-zinc-700">Dấu ấn Mô hình:</span>
               <span id="stat-model-family-pill"
-                class="font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">Chờ phân tích (0%)</span>
+                class="font-mono-num font-semibold text-[10px] text-zinc-700 bg-white px-2 py-0.5 rounded-md border border-zinc-200/90 shadow-2xs">Chờ phân tích (0%)</span>
             </div>
-            <p id="stat-model-notes" class="text-[9.5px] text-slate-500 italic font-times leading-tight">
+            <p id="stat-model-notes" class="text-[10px] text-zinc-500 italic font-times leading-snug">
               Hệ thống sẵn sàng giám định phong cách ngôn ngữ và dấu ấn mô hình.
             </p>
           </div>
 
           <!-- Biểu đồ Phân bổ Mật độ AI theo Các Mục Thực tế của Tài liệu -->
-          <div class="space-y-1.5 pt-1">
+          <div class="space-y-1.5 pt-1 border-t border-zinc-100">
             <div class="flex items-center justify-between text-[11px]">
-              <span class="font-bold text-slate-800">Phân bổ AI theo các mục thực tế:</span>
-              <span class="text-[9.5px] pm-muted-text font-mono-num" id="section-chart-subtitle">Tài liệu gốc</span>
+              <span class="font-semibold text-zinc-800">Phân bổ AI theo cấu trúc mục:</span>
+              <span class="text-[9.5px] text-zinc-400 font-mono-num" id="section-chart-subtitle">Tài liệu gốc</span>
             </div>
             <div class="h-28 w-full">
               <canvas id="barChartSections"></canvas>
@@ -637,78 +581,83 @@
           </div>
 
           <!-- Biểu đồ Miền 5 Trục Pháp y -->
-          <div class="space-y-1.5 pt-1">
-            <span class="font-bold text-[11px] text-slate-800 block">Biểu đồ miền 5 trục tiêu chí học thuật:</span>
+          <div class="space-y-1.5 pt-1 border-t border-zinc-100">
+            <span class="font-semibold text-[11px] text-zinc-800 block">Biểu đồ 5 trục tiêu chí học thuật:</span>
             <div id="radar-chart-container" class="h-44 w-full flex items-center justify-center relative">
               <canvas id="radarChartIntegrity"></canvas>
               <div id="radar-locked-overlay" onclick="handleCardMetricClick('radar_chart')"
-                class="hidden absolute inset-0 rounded-lg border border-dashed border-slate-300 bg-slate-50/95 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100/95 transition p-3 text-center">
-                <span class="text-2xl mb-1">🔒</span>
-                <span class="text-xs font-bold text-slate-700">Biểu đồ miền 5 trục học thuật</span>
-                <span class="text-[10px] text-blue-600 font-semibold mt-1">Mở khóa ở gói trả phí (từ 3.000đ) &rarr;</span>
+                class="hidden absolute inset-0 rounded-lg border border-dashed border-zinc-300 bg-zinc-50/95 backdrop-blur-xs flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-100/95 transition p-3 text-center">
+                <div class="w-8 h-8 rounded-full bg-zinc-200/70 flex items-center justify-center mb-1.5 text-zinc-700">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-zinc-800">Biểu đồ miền 5 trục học thuật</span>
+                <span class="text-[10.5px] text-blue-600 font-medium mt-0.5">Mở khóa từ gói Tiêu chuẩn (3.000đ) &rarr;</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- ================= CARD III: BÁO CÁO KIỂM ĐỊNH CHÍNH TẢ & NGỮ PHÁP (2 NGÔN NGỮ VI - EN) ================= -->
-        <div onclick="handleCardMetricClick('spelling')" class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white cursor-pointer hover:border-blue-300 transition-colors">
+        <div onclick="handleCardMetricClick('spelling')" class="pm-card p-3.5 rounded-xl space-y-3 cursor-pointer">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">BÁO CÁO III: RÀ SOÁT CHÍNH TẢ & NGỮ PHÁP</span>
-            <span class="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono-num font-semibold">
-              VI · EN (100% TOÀN VĂN)
+            <span class="text-[10.5px] font-bold uppercase tracking-[0.05em] text-zinc-500">III. RÀ SOÁT CHÍNH TẢ &amp; NGỮ PHÁP</span>
+            <span class="text-[9.5px] px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200/80 font-mono-num font-medium">
+              VI · EN (TOÀN VĂN)
             </span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
-              <span class="text-[10px] text-slate-500 block">Tổng lỗi</span>
-              <span id="stat-spell-total" class="font-bold text-base text-rose-600 font-mono-num">0</span>
+          <div class="grid grid-cols-3 divide-x divide-zinc-200/80 border border-zinc-200/90 rounded-lg bg-zinc-50/50 text-center overflow-hidden">
+            <div class="p-2 bg-white/70">
+              <span class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium block">Tổng lỗi</span>
+              <span id="stat-spell-total" class="font-bold text-base text-rose-600 font-mono-num mt-0.5 inline-block">0</span>
             </div>
-            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
-              <span class="text-[10px] text-slate-500 block">Tiếng Việt</span>
-              <span id="stat-spell-vi" class="font-bold text-xs text-slate-700 font-mono-num">0</span>
+            <div class="p-2">
+              <span class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium block">Tiếng Việt</span>
+              <span id="stat-spell-vi" class="font-bold text-sm text-zinc-800 font-mono-num mt-0.5 inline-block">0</span>
             </div>
-            <div class="p-2 rounded-lg bg-slate-50 border border-slate-100">
-              <span class="text-[10px] text-slate-500 block">Tiếng Anh</span>
-              <span id="stat-spell-en" class="font-bold text-xs text-slate-700 font-mono-num">0</span>
+            <div class="p-2">
+              <span class="text-[9.5px] text-zinc-500 uppercase tracking-wider font-medium block">Tiếng Anh</span>
+              <span id="stat-spell-en" class="font-bold text-sm text-zinc-800 font-mono-num mt-0.5 inline-block">0</span>
             </div>
           </div>
 
-          <div class="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 flex items-center justify-between">
-            <p id="stat-spell-summary" class="text-[10.5px] text-indigo-900 leading-snug">
+          <div class="px-3 py-2 rounded-lg bg-zinc-50/80 border border-zinc-200/80 flex items-center justify-between">
+            <p id="stat-spell-summary" class="text-[10.5px] text-zinc-700 leading-snug">
               Chưa phát hiện lỗi chính tả hoặc ngữ pháp trong văn bản.
             </p>
           </div>
 
-          <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
             <button type="button" onclick="event.stopPropagation(); previewSpellGrammarReportPDF()"
-              class="py-1.5 px-2 bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-300 rounded-md font-semibold text-[10px] flex items-center justify-center gap-1 transition cursor-pointer">
-              <span>👁️</span> Đọc trước PDF
+              class="py-1.5 px-2.5 bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200/90 rounded-lg font-semibold text-[10.5px] flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs">
+              <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Đọc trước PDF</span>
             </button>
             <button type="button" id="btn-download-spell-pdf" onclick="event.stopPropagation(); handleSpellPdfDownloadClick()"
-              class="py-1.5 px-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-[10px] font-bold flex items-center justify-center gap-1 transition shadow-xs cursor-pointer">
-              <span>📑</span> Tải Báo cáo
+              class="py-1.5 px-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[10.5px] font-semibold flex items-center justify-center gap-1.5 transition shadow-2xs cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Tải Báo cáo</span>
             </button>
           </div>
         </div>
 
         <!-- ================= CARD: HƯỚNG DẪN ĐỌC CHỈ SỐ BÁO CÁO & BẢNG ĐỐI SÁNH TIÊU CHUẨN ================= -->
         <div
-          class="pm-card p-3.5 rounded-xl border border-sky-200/90 shadow-xs bg-gradient-to-br from-sky-50/60 via-white to-indigo-50/30 space-y-2.5">
+          class="pm-card p-3.5 rounded-xl space-y-2.5">
           <div class="flex items-center justify-between cursor-pointer select-none" onclick="toggleMetricGuide()">
-            <div class="flex items-center gap-2">
-              <span class="text-base leading-none">📘</span>
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-zinc-100 border border-zinc-200/80 flex items-center justify-center text-zinc-700 shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+              </div>
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900 block leading-tight">Hướng
-                  dẫn đọc chỉ số & Bảng đối sánh</span>
-                <span class="text-[9.5px] text-slate-500 font-sans">Tiêu chuẩn định lượng pháp y học thuật
-                  SYNAPES</span>
+                <span class="text-[11px] font-bold uppercase tracking-[0.04em] text-zinc-900 block leading-tight">Hướng
+                  dẫn đọc chỉ số &amp; Bảng đối sánh</span>
+                <span class="text-[9.5px] text-zinc-500">Tiêu chuẩn định lượng pháp y học thuật SYNAPES</span>
               </div>
             </div>
             <button type="button" id="guide-toggle-btn"
-              class="text-[9.5px] font-semibold text-sky-700 bg-sky-100/90 hover:bg-sky-200 px-2 py-0.5 rounded-full border border-sky-300/80 transition flex items-center gap-1 shrink-0">
-              <span>Chi tiết</span> <span id="guide-arrow">▼</span>
+              class="text-[10px] font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200/80 px-2.5 py-1 rounded-md border border-zinc-200/90 transition flex items-center gap-1 shrink-0">
+              <span>Chi tiết</span> <span id="guide-arrow" class="text-[9px]">▼</span>
             </button>
           </div>
 
@@ -716,35 +665,35 @@
           <div id="metric-guide-panel" class="space-y-2.5 text-[10.5px] pt-1">
             <!-- 1. Ý nghĩa các chỉ số khoa học -->
             <div
-              class="p-2.5 rounded-lg bg-white/95 border border-slate-200/90 space-y-2 text-[10px] leading-relaxed shadow-2xs">
+              class="p-2.5 rounded-lg bg-zinc-50/70 border border-zinc-200/80 space-y-2 text-[10px] leading-relaxed">
               <div>
-                <div class="font-bold text-slate-900 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  <span>Perplexity (PPL - Độ hỗn loạn ngôn ngữ):</span>
+                <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-800"></span>
+                  <span>Perplexity (PPL — Độ hỗn loạn ngôn ngữ):</span>
                 </div>
-                <p class="text-slate-600 pl-2.5 mt-0.5">
+                <p class="text-zinc-600 pl-3 mt-0.5">
                   Đo mức độ bất ngờ và phong phú của vốn từ vựng. Người viết tự nhiên có <strong>PPL cao (&gt;
                     85)</strong> do từ ngữ linh hoạt, bất quy tắc; AI có <strong>PPL thấp (&lt; 50)</strong> do chọn từ
                   theo xác suất dự đoán máy móc.
                 </p>
               </div>
-              <div class="border-t border-slate-100 pt-1.5">
-                <div class="font-bold text-slate-900 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-                  <span>Burstiness (B - Biến thiên nhịp câu):</span>
+              <div class="border-t border-zinc-200/60 pt-1.5">
+                <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-800"></span>
+                  <span>Burstiness (B — Biến thiên nhịp câu):</span>
                 </div>
-                <p class="text-slate-600 pl-2.5 mt-0.5">
+                <p class="text-zinc-600 pl-3 mt-0.5">
                   Đo sự co giãn và nhịp điệu giữa các câu liên tiếp. Người viết tự nhiên có <strong>B cao (&ge;
                     0.60)</strong> nhờ câu dài ngắn đan xen cảm xúc; AI có <strong>B thấp (&lt; 0.40)</strong> do tạo
                   các câu có độ dài đồng đều cơ học.
                 </p>
               </div>
-              <div class="border-t border-slate-100 pt-1.5">
-                <div class="font-bold text-slate-900 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  <span>Nguyên tắc Phân tích Hai trục Độc lập (COPE & IEEE):</span>
+              <div class="border-t border-zinc-200/60 pt-1.5">
+                <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-zinc-800"></span>
+                  <span>Nguyên tắc Hai trục Độc lập (COPE &amp; IEEE):</span>
                 </div>
-                <p class="text-slate-600 pl-2.5 mt-0.5">
+                <p class="text-zinc-600 pl-3 mt-0.5">
                   Trùng lặp (Similarity) và Tạo sinh AI (AI Risk) là hai trục không gian độc lập, không cộng dồn thành
                   100%. Hệ thống rà soát tách bạch giữa tỷ lệ trùng lặp hiệu chỉnh (Net Similarity) và nguy cơ AI kèm
                   khoảng tin cậy thống kê 95% CI.
@@ -753,56 +702,56 @@
             </div>
 
             <!-- 2. Bảng đối sánh mức độ chi tiết (Quantitative Benchmark Matrix) -->
-            <div class="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs">
+            <div class="rounded-lg border border-zinc-200/90 overflow-hidden bg-white">
               <div
-                class="bg-slate-100/90 px-2.5 py-1 text-[9.5px] font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 flex items-center justify-between">
+                class="bg-zinc-50 px-2.5 py-1.5 text-[9.5px] font-bold text-zinc-700 uppercase tracking-wider border-b border-zinc-200/90 flex items-center justify-between">
                 <span>BẢNG ĐỐI SÁNH PHÂN CẤP TIÊU CHUẨN</span>
-                <span class="text-[8.5px] text-slate-500 font-mono">ICML & Stylometry</span>
+                <span class="text-[8.5px] text-zinc-400 font-mono-num">ICML &amp; Stylometry</span>
               </div>
               <table class="w-full text-left text-[9.5px] border-collapse">
                 <thead>
-                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold text-center text-[9px]">
+                  <tr class="bg-zinc-50/50 border-b border-zinc-200/80 text-zinc-500 font-semibold text-center text-[9px]">
                     <th class="p-1.5 text-left">Phân cấp kết quả</th>
                     <th class="p-1.5">Xác suất AI</th>
                     <th class="p-1.5">PPL</th>
                     <th class="p-1.5">Burstiness</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr class="hover:bg-emerald-50/40">
-                    <td class="p-1.5 font-bold text-emerald-700 leading-tight">
-                      🟢 An toàn học thuật<br />
-                      <span class="text-[8px] font-normal text-slate-500">Thuần con người (Đạt chuẩn)</span>
+                <tbody class="divide-y divide-zinc-100">
+                  <tr class="hover:bg-zinc-50/80">
+                    <td class="p-1.5 font-semibold text-emerald-700 leading-tight">
+                      <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1"></span>An toàn học thuật<br />
+                      <span class="text-[8px] font-normal text-zinc-500 pl-2.5">Thuần con người (Đạt chuẩn)</span>
                     </td>
-                    <td class="p-1.5 text-center font-bold font-mono text-emerald-600">&lt; 20%</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-emerald-700">&ge; 65.0*</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-emerald-700">&ge; 0.50</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-emerald-700">&lt; 20%</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-zinc-700">&ge; 65.0*</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-zinc-700">&ge; 0.50</td>
                   </tr>
-                  <tr class="hover:bg-amber-50/40">
-                    <td class="p-1.5 font-bold text-amber-700 leading-tight">
-                      🟡 Văn bản Lai ghép<br />
-                      <span class="text-[8px] font-normal text-slate-500">Cần tác giả rà soát</span>
+                  <tr class="hover:bg-zinc-50/80">
+                    <td class="p-1.5 font-semibold text-amber-700 leading-tight">
+                      <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 mr-1"></span>Văn bản Lai ghép<br />
+                      <span class="text-[8px] font-normal text-zinc-500 pl-2.5">Cần tác giả rà soát</span>
                     </td>
-                    <td class="p-1.5 text-center font-bold font-mono text-amber-600">20% – 45%</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">45.0 – 65.0</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">0.35 – 0.49</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-amber-700">20% – 45%</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-zinc-700">45.0 – 65.0</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-zinc-700">0.35 – 0.49</td>
                   </tr>
-                  <tr class="hover:bg-rose-50/40">
-                    <td class="p-1.5 font-bold text-rose-700 leading-tight">
-                      🔴 Nguy cơ can thiệp cao<br />
-                      <span class="text-[8px] font-normal text-slate-500">Can thiệp AI diện rộng</span>
+                  <tr class="hover:bg-zinc-50/80">
+                    <td class="p-1.5 font-semibold text-rose-700 leading-tight">
+                      <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 mr-1"></span>Nguy cơ can thiệp cao<br />
+                      <span class="text-[8px] font-normal text-zinc-500 pl-2.5">Can thiệp AI diện rộng</span>
                     </td>
-                    <td class="p-1.5 text-center font-bold font-mono text-rose-600">&gt; 45%</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&lt; 45.0</td>
-                    <td class="p-1.5 text-center font-bold font-mono text-slate-700">&lt; 0.35</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-rose-700">&gt; 45%</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-zinc-700">&lt; 45.0</td>
+                    <td class="p-1.5 text-center font-semibold font-mono-num text-zinc-700">&lt; 0.35</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             <!-- Khuyến nghị hành động -->
-            <div class="text-[9px] text-slate-600 leading-snug p-2 bg-slate-50/90 rounded-lg border border-slate-200">
-              💡 <strong>Khuyến nghị:</strong> Đạt chuẩn xuất bản khi <strong>Xác suất AI &lt; 20%</strong>, PPL &ge;
+            <div class="text-[9.5px] text-zinc-600 leading-snug p-2.5 bg-zinc-50/80 rounded-lg border border-zinc-200/80">
+              <strong class="text-zinc-900">Khuyến nghị:</strong> Đạt chuẩn xuất bản khi <strong>Xác suất AI &lt; 20%</strong>, PPL &ge;
               65.0 (Toán - Tin/Kỹ thuật) hoặc &ge; 75.0 (Xã hội), và Burstiness &ge; 0.50. <em>*Trong tài liệu Khoa học
                 Máy tính/Toán học, việc lặp thuật ngữ chuẩn hóa và công thức hình thức tự nhiên đưa PPL về dải 65.0 –
                 80.0, hoàn toàn đạt chuẩn tác giả con người.</em>
@@ -811,144 +760,159 @@
         </div>
 
         <!-- ================= CARD 3: THẨM ĐỊNH & ĐỐI SOÁT NGUỒN (3 DẠNG) ================= -->
-        <div onclick="handleCardMetricClick('sources')" class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white cursor-pointer hover:border-blue-300 transition-colors">
+        <div onclick="handleCardMetricClick('sources')" class="pm-card p-3.5 rounded-xl space-y-3 cursor-pointer">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
-              <span>📚</span> Thẩm định Nguồn Trích dẫn (3 Dạng)
+            <span class="text-[10.5px] font-bold uppercase tracking-[0.05em] text-zinc-500">
+              IV. THẨM ĐỊNH NGUỒN TRÍCH DẪN (3 DẠNG)
             </span>
             <span id="badge-total-sources"
-              class="text-[9px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-mono-num font-semibold">
+              class="text-[9.5px] px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200/80 font-mono-num font-semibold">
               0 nguồn
             </span>
           </div>
 
           <!-- Dạng 1: Nguồn thiếu kiểm chứng -->
-          <div class="pm-subcard p-2.5 rounded-lg border border-rose-200 bg-rose-50/40 space-y-1.5">
+          <div class="p-2.5 rounded-lg border border-zinc-200/90 bg-zinc-50/40 space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-bold text-rose-700">Dạng 1: Nguồn thiếu kiểm chứng</span>
+              <span class="text-[11px] font-semibold text-zinc-900 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <span>Dạng 1: Nguồn thiếu kiểm chứng</span>
+              </span>
               <span id="badge-sources-type1"
-                class="text-[9px] px-1.5 py-0.2 bg-rose-100 text-rose-700 rounded-full border border-rose-200 font-mono-num font-medium">0
+                class="text-[9.5px] px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md border border-rose-200/80 font-mono-num font-semibold">0
                 nguồn</span>
             </div>
-            <p class="text-[9.5px] text-slate-600 font-times italic leading-snug">
+            <p class="text-[10px] text-zinc-500 leading-snug pl-3">
               Mạng xã hội, diễn đàn, báo lá cải, blog cá nhân (Cần cảnh báo / loại bỏ).
             </p>
             <div class="flex gap-1.5 pt-1">
               <button onclick="previewSourceReportPDF('type1')"
-                class="flex-1 py-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-medium transition flex items-center justify-center gap-1 shadow-2xs">
-                <span>👁️</span> Đọc trước PDF
+                class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-200/90 bg-white hover:bg-zinc-50 text-zinc-700 text-[10px] font-semibold transition flex items-center justify-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Đọc trước PDF</span>
               </button>
               <button onclick="downloadSourceReportPDF('type1')"
-                class="flex-1 py-1 px-1 rounded-md border border-rose-600 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-medium transition flex items-center justify-center gap-1 shadow-2xs">
-                <span>📥</span> Tải Báo cáo
+                class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-900 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-semibold transition flex items-center justify-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Tải Báo cáo</span>
               </button>
             </div>
           </div>
 
           <!-- Dạng 2: Nguồn khoa học uy tín -->
-          <div class="pm-subcard p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/40 space-y-1.5">
+          <div class="p-2.5 rounded-lg border border-zinc-200/90 bg-zinc-50/40 space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-bold text-emerald-700">Dạng 2: Nguồn khoa học uy tín</span>
+              <span class="text-[11px] font-semibold text-zinc-900 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Dạng 2: Nguồn khoa học uy tín</span>
+              </span>
               <span id="badge-sources-type2"
-                class="text-[9px] px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200 font-mono-num font-medium">0
+                class="text-[9.5px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200/80 font-mono-num font-semibold">0
                 nguồn</span>
             </div>
-            <p class="text-[9.5px] text-slate-600 font-times italic leading-snug">
+            <p class="text-[10px] text-zinc-500 leading-snug pl-3">
               Google Scholar, CrossRef DOI, bài báo quốc tế (IEEE, ACM, Scopus, Nature).
             </p>
             <div class="flex gap-1.5 pt-1">
               <button onclick="previewSourceReportPDF('type2')"
-                class="flex-1 py-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-medium transition flex items-center justify-center gap-1 shadow-2xs">
-                <span>👁️</span> Đọc trước PDF
+                class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-200/90 bg-white hover:bg-zinc-50 text-zinc-700 text-[10px] font-semibold transition flex items-center justify-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Đọc trước PDF</span>
               </button>
               <button onclick="downloadSourceReportPDF('type2')"
-                class="flex-1 py-1 px-1 rounded-md border border-emerald-600 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-medium transition flex items-center justify-center gap-1 shadow-2xs">
-                <span>📥</span> Tải Báo cáo
+                class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-900 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-semibold transition flex items-center justify-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Tải Báo cáo</span>
               </button>
             </div>
           </div>
 
           <!-- Dạng 3: Ma trận tổng hợp toàn diện -->
-          <div class="pm-subcard p-2.5 rounded-lg border border-indigo-200 bg-indigo-50/40 space-y-1.5">
+          <div class="p-2.5 rounded-lg border border-zinc-200/90 bg-zinc-50/40 space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-[10.5px] font-bold text-indigo-700">Dạng 3: Ma trận tổng hợp toàn diện</span>
+              <span class="text-[11px] font-semibold text-zinc-900 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                <span>Dạng 3: Ma trận tổng hợp toàn diện</span>
+              </span>
               <span id="badge-sources-type3"
-                class="text-[9px] px-1.5 py-0.2 bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200 font-mono-num font-medium">0
+                class="text-[9.5px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md border border-blue-200/80 font-mono-num font-semibold">0
                 nguồn</span>
             </div>
-            <p class="text-[9.5px] text-slate-600 font-times italic leading-snug">
-              Tổng hòa tất cả các nguồn tham chiếu toàn văn (chính thống & phi chính thống).
+            <p class="text-[10px] text-zinc-500 leading-snug pl-3">
+              Tổng hòa tất cả các nguồn tham chiếu toàn văn (chính thống &amp; phi chính thống).
             </p>
             <div class="flex gap-1.5 pt-1">
               <button onclick="previewSourceReportPDF('type3')"
-                class="flex-1 py-1 px-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-medium transition flex items-center justify-center gap-1 shadow-2xs">
-                <span>👁️</span> Đọc trước PDF
+                class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-200/90 bg-white hover:bg-zinc-50 text-zinc-700 text-[10px] font-semibold transition flex items-center justify-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-zinc-500" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Đọc trước PDF</span>
               </button>
               <button onclick="downloadSourceReportPDF('type3')"
-                class="flex-1 py-1 px-1 rounded-md border border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-medium transition flex items-center justify-center gap-1 shadow-2xs">
-                <span>📥</span> Tải Báo cáo
+                class="flex-1 py-1.5 px-2 rounded-lg border border-zinc-900 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-semibold transition flex items-center justify-center gap-1 shadow-2xs">
+                <svg class="w-3 h-3 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Tải Báo cáo</span>
               </button>
             </div>
           </div>
         </div>
 
         <!-- ================= CARD 4: CHI TIẾT CÂU ĐANG CHỌN (SENTENCE DEEP-DIVE) ================= -->
-        <div onclick="handleCardMetricClick('sentence_dive')" class="pm-card p-3.5 rounded-xl border border-slate-200 space-y-3 shadow-xs bg-white cursor-pointer hover:border-blue-300 transition-colors">
+        <div onclick="handleCardMetricClick('sentence_dive')" class="pm-card p-3.5 rounded-xl space-y-3 cursor-pointer">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold uppercase tracking-wider pm-muted-text">Chi tiết Câu đang chọn</span>
+            <span class="text-[10.5px] font-bold uppercase tracking-[0.05em] text-zinc-500">V. CHI TIẾT CÂU ĐANG CHỌN</span>
             <span id="active-sent-id"
-              class="text-[9.5px] px-2 py-0.5 pm-subcard rounded-full border border-slate-200 font-mono-num text-slate-700">Câu
+              class="text-[9.5px] px-2 py-0.5 rounded-md bg-zinc-100 border border-zinc-200/80 font-mono-num font-semibold text-zinc-700">Câu
               #--</span>
           </div>
 
           <div
-            class="p-3 pm-subcard rounded-lg border border-slate-200 font-times text-xs italic leading-relaxed text-slate-800 bg-slate-50/80"
+            class="p-3 rounded-lg border border-zinc-200/80 font-times text-xs italic leading-relaxed text-zinc-800 bg-zinc-50/60"
             id="active-sent-quote">
             “Chọn một câu bất kỳ trên trang tài liệu để xem phân tích pháp y chi tiết...”
           </div>
 
-          <div class="space-y-1 text-xs">
+          <div class="space-y-1.5 text-xs">
             <div class="flex items-center justify-between">
-              <span class="pm-muted-text">Mức độ nghi vấn:</span>
-              <span id="active-sent-score" class="font-bold text-slate-500">--</span>
+              <span class="text-zinc-500 text-[11px]">Mức độ nghi vấn:</span>
+              <span id="active-sent-score" class="font-bold text-zinc-700 font-mono-num">--</span>
             </div>
-            <div class="space-y-1 pt-1">
-              <span class="font-bold text-amber-700 block text-[11px]">Chẩn đoán pháp y ngôn ngữ:</span>
-              <ul id="active-sent-diags" class="list-disc list-inside space-y-1 text-[11px] text-slate-600 font-times">
+            <div class="space-y-1 pt-1 border-t border-zinc-100">
+              <span class="font-semibold text-zinc-800 block text-[11px]">Chẩn đoán pháp y ngôn ngữ:</span>
+              <ul id="active-sent-diags" class="list-disc list-inside space-y-1 text-[11px] text-zinc-600 font-times">
                 <li>Chưa chọn câu</li>
               </ul>
             </div>
           </div>
 
           <!-- Đề xuất biên tập học thuật bảo toàn ngữ pháp -->
-          <div id="rewrite-box" class="pt-2 border-t border-slate-200 space-y-1.5 hidden">
+          <div id="rewrite-box" class="pt-2 border-t border-zinc-200/80 space-y-1.5 hidden">
             <div class="flex items-center justify-between">
-              <strong class="text-emerald-700 text-[11px] font-bold">Đề xuất biên tập học thuật:</strong>
+              <strong class="text-emerald-700 text-[11px] font-semibold">Đề xuất biên tập học thuật:</strong>
               <button onclick="copyRewriteText()"
-                class="text-[10px] text-indigo-600 hover:text-indigo-700 font-mono-num font-semibold">
+                class="text-[10px] text-zinc-700 hover:text-zinc-900 underline font-mono-num font-semibold">
                 Sao chép
               </button>
             </div>
             <div id="rewrite-text"
-              class="p-2.5 bg-emerald-50 rounded-lg border border-emerald-200 text-xs text-emerald-950 font-times leading-relaxed">
+              class="p-2.5 bg-emerald-50/70 rounded-lg border border-emerald-200/80 text-xs text-emerald-950 font-times leading-relaxed">
               --
             </div>
-            <p id="rewrite-guidance" class="text-[10px] text-slate-500 italic font-times">
+            <p id="rewrite-guidance" class="text-[10px] text-zinc-500 italic font-times">
               --
             </p>
           </div>
 
           <!-- KHU VỰC PHẢN BIỆN & GIẢI TRÌNH HỌC THUẬT (INTERACTIVE REBUTTAL MODE) -->
-          <div id="rebuttal-box" class="pt-2 border-t border-slate-200 space-y-2">
+          <div id="rebuttal-box" class="pt-2.5 border-t border-zinc-200/80 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-sky-800 uppercase tracking-wide">Giải trình Học thuật
+              <span class="text-[10.5px] font-bold text-zinc-700 uppercase tracking-wider">Giải trình Học thuật
                 (Rebuttal):</span>
               <span id="rebuttal-status-pill"
-                class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">Chưa
+                class="text-[9.5px] font-semibold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 border border-zinc-200/80">Chưa
                 giải trình</span>
             </div>
             <select id="rebuttal-reason-select"
-              class="w-full text-[11px] bg-white border border-slate-300 rounded-md p-1.5 font-sans focus:ring-1 focus:ring-sky-500">
+              class="w-full text-[11px] bg-white border border-zinc-300 rounded-lg p-1.5 font-sans text-zinc-800 focus:outline-none focus:border-zinc-900">
               <option value="cs_algorithm">Cấu trúc giải thuật / Giả mã CLRS chuẩn mực</option>
               <option value="math_formula">Ký hiệu Toán học / Bất biến logic hình thức</option>
               <option value="standard_term">Thuật ngữ chuyên ngành bắt buộc</option>
@@ -956,14 +920,15 @@
               <option value="other">Giải trình khác...</option>
             </select>
             <textarea id="rebuttal-notes" rows="2" placeholder="Ghi chú minh chứng của tác giả (tùy chọn)..."
-              class="w-full text-[11px] bg-slate-50 border border-slate-300 rounded-md p-1.5 font-sans focus:bg-white resize-none"></textarea>
+              class="w-full text-[11px] bg-zinc-50/70 border border-zinc-300 rounded-lg p-2 font-sans focus:bg-white focus:outline-none focus:border-zinc-900 resize-none"></textarea>
             <div class="flex items-center gap-2">
               <button onclick="submitAcademicRebuttal()"
-                class="flex-1 text-[11px] font-bold py-1.5 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-md shadow-2xs transition flex items-center justify-center gap-1">
-                <span>⚖️</span> Lưu Giải trình
+                class="flex-1 text-[11px] font-semibold py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg shadow-2xs transition flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Lưu Giải trình</span>
               </button>
               <button onclick="clearAcademicRebuttal()" id="btn-clear-rebuttal"
-                class="text-[10px] py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md transition hidden">
+                class="text-[10.5px] py-1.5 px-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-lg transition hidden">
                 Hủy
               </button>
             </div>
@@ -973,13 +938,14 @@
       </div>
 
       <!-- Footer tác giả trên Sidebar -->
-      <div class="p-3 border-t border-slate-200 text-[11px] text-slate-500 text-center font-mono-num bg-slate-50">
-        <div>Giám định viên: <strong class="text-indigo-600">KS Nguyễn Hoàng Thiện [SYNAPES EDU]</strong></div>
+      <div class="px-4 py-3 border-t border-zinc-200/80 text-[11px] text-zinc-500 text-center bg-white">
+        <div>Giám định viên: <strong class="text-zinc-900 font-semibold">KS Nguyễn Hoàng Thiện [SYNAPES EDU]</strong></div>
         <a href="https://mail.google.com/mail/?view=cm&fs=1&to=nguyenhoangthien.hvt.15@gmail.com&su=LI%C3%8AN%20H%E1%BB%86%20NH%C3%80%20PH%C3%81T%20TRI%E1%BB%82N"
            target="_blank"
            rel="noopener noreferrer"
-           class="inline-block mt-1 text-[10px] text-slate-400 hover:text-indigo-600 transition-colors underline decoration-dotted tracking-wide">
-          Liên hệ nhà phát triển
+           class="inline-flex items-center gap-1 mt-1 text-[10.5px] text-zinc-500 hover:text-zinc-900 transition-colors underline underline-offset-2 decoration-zinc-300">
+          <span>Liên hệ nhà phát triển</span>
+          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
         </a>
       </div>
 
@@ -987,71 +953,74 @@
 
   </div>
 
-  <!-- ================= UPLOAD MODAL DIALOG (PAPERMARK CLEAN LIGHT) ================= -->
+  <!-- ================= UPLOAD MODAL DIALOG (APPLE / LINEAR CLEAN DIALOG) ================= -->
   <div id="upload-modal"
-    class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 text-slate-900 shadow-2xl space-y-5">
+    class="fixed inset-0 bg-zinc-950/45 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl border border-zinc-200/90 max-w-lg w-full p-6 text-zinc-900 shadow-2xl space-y-5">
 
-      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center justify-between border-b border-zinc-200/80 pb-3.5">
         <div class="flex items-center gap-3">
           <div
-            class="h-9 w-9 rounded-lg bg-white p-0.5 shadow-2xs border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-slate-100">
+            class="h-9 w-9 rounded-lg bg-white p-0.5 shadow-2xs border border-zinc-200/90 flex items-center justify-center shrink-0 overflow-hidden">
             <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo"
               class="h-full w-full object-contain rounded-md select-none" />
           </div>
           <div>
-            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <span>Thẩm định Toàn văn Tài liệu Học thuật</span>
+            <h3 class="text-sm font-bold text-zinc-900 tracking-tight">
+              Thẩm định Toàn văn Tài liệu Học thuật
             </h3>
-            <p class="text-[10.5px] text-slate-500">SYNAPES AUDIT • Tiêu chuẩn Liêm chính Học thuật Quốc gia</p>
+            <p class="text-[11px] text-zinc-500">SYNAPES AUDIT • Hệ thống Giám định Liêm chính Học thuật</p>
           </div>
         </div>
         <button onclick="hideUploadModal()"
-          class="text-slate-400 hover:text-slate-700 text-2xl font-bold p-1 leading-none transition">&times;</button>
+          class="w-7 h-7 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 flex items-center justify-center text-lg font-medium transition">&times;</button>
       </div>
 
       <div id="modal-dropzone" onclick="document.getElementById('modal-file-input').click()"
         ondragover="handleModalDrag(event, true)" ondragleave="handleModalDrag(event, false)"
         ondrop="handleModalDrop(event)"
-        class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-xl p-8 text-center cursor-pointer bg-slate-50 hover:bg-slate-100/70 transition space-y-2">
+        class="border border-dashed border-zinc-300 hover:border-zinc-800 rounded-xl p-8 text-center cursor-pointer bg-zinc-50/70 hover:bg-zinc-100/60 transition space-y-2.5 group">
         <input type="file" id="modal-file-input" class="hidden" accept=".docx,.pdf,.txt,.doc"
           onchange="onModalFileSelect(event)">
-        <div class="text-3xl">📁</div>
-        <p class="font-semibold text-sm text-slate-800" id="modal-file-name-display">Kéo thả tệp Word (.docx) hoặc PDF
+        <div class="w-11 h-11 rounded-xl bg-white border border-zinc-200/90 shadow-2xs mx-auto flex items-center justify-center text-zinc-600 group-hover:text-zinc-900 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <p class="font-semibold text-sm text-zinc-900" id="modal-file-name-display">Kéo thả tệp Word (.docx) hoặc PDF
           vào đây</p>
-        <p class="text-xs text-slate-500">Hệ thống hỗ trợ tệp dung lượng lên tới 50MB, tự động nhận diện sơ đồ, bảng
-          biểu & bóc tách 100% câu từ đầu đến cuối.</p>
+        <p class="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">Hỗ trợ tệp dung lượng lên tới 50MB. Tự động nhận diện sơ đồ, bảng biểu và bóc tách 100% câu từ đầu đến cuối.</p>
       </div>
 
       <!-- Nút hành động trước khi tải -->
-      <div id="modal-action-buttons" class="flex justify-end gap-2.5 pt-2">
+      <div id="modal-action-buttons" class="flex justify-end gap-2 pt-1">
         <button onclick="hideUploadModal()"
-          class="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs text-slate-700 font-semibold transition cursor-pointer">Hủy</button>
+          class="px-4 py-2 rounded-lg border border-zinc-200/90 hover:bg-zinc-100 text-xs text-zinc-700 font-semibold transition cursor-pointer">Hủy</button>
         <button id="modal-submit-btn" onclick="runModalAnalysis()"
-          class="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer">
-          <span id="modal-submit-icon">⚡</span>
+          class="px-5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition flex items-center gap-2 shadow-2xs cursor-pointer">
+          <span id="modal-submit-icon" class="inline-flex items-center">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </span>
           <span id="modal-submit-label">Bắt đầu Thẩm định</span>
         </button>
       </div>
 
-      <!-- Thanh chạy tiến trình Phần trăm RGB Sóng Biển Lượn Sóng (Ocean Wave RGB Progress Bar) -->
+      <!-- Thanh chạy tiến trình Phân tích Học thuật -->
       <div id="modal-progress-wrapper" class="hidden w-full pt-3 pb-1 space-y-2">
         <div class="flex items-center justify-between text-xs px-0.5">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="relative flex h-2.5 w-2.5 shrink-0">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+            <span class="relative flex h-2 w-2 shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
             </span>
             <span id="modal-progress-stage-text"
-              class="font-semibold text-slate-700 truncate tracking-tight text-[11.5px]">Đang bóc tách tệp & tiền xử lý
+              class="font-medium text-zinc-700 truncate tracking-tight text-[11.5px]">Đang bóc tách tệp &amp; tiền xử lý
               công thức...</span>
           </div>
           <span id="modal-progress-percent"
-            class="font-mono font-extrabold text-sm bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent shrink-0">0%</span>
+            class="font-mono-num font-bold text-xs text-zinc-900 shrink-0">0%</span>
         </div>
 
-        <!-- Khung chứa thanh tiến trình sóng biển -->
-        <div class="ocean-wave-progress-container relative w-full h-7 rounded-full overflow-hidden p-0.5">
+        <!-- Khung chứa thanh tiến trình -->
+        <div class="ocean-wave-progress-container relative w-full h-5 rounded-full overflow-hidden p-0.5">
           <div id="modal-progress-bar" class="ocean-wave-bar h-full rounded-full transition-all duration-300 ease-out"
             style="width: 5%;">
             <div class="ocean-wave-layer ocean-wave-layer-1"></div>
@@ -1060,9 +1029,9 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between text-[10.5px] text-slate-500 px-1 pt-0.5">
-          <span>Chu trình phân tích AI & MinHash LSH đa tầng</span>
-          <span class="font-mono text-slate-400">100% Khớp Toán Học</span>
+        <div class="flex items-center justify-between text-[10.5px] text-zinc-400 px-1 pt-0.5">
+          <span>Chu trình phân tích AI &amp; MinHash LSH đa tầng</span>
+          <span class="font-mono-num">100% Khớp Toán Học</span>
         </div>
       </div>
 
@@ -1071,64 +1040,65 @@
 
   <!-- ================= MODAL XEM TRƯỚC BÁO CÁO NGUỒN PDF (PDF PREVIEW MODAL) ================= -->
   <div id="pdf-preview-modal"
-    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-5">
+    class="fixed inset-0 z-50 bg-zinc-950/65 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-5">
     <div
-      class="bg-white border border-slate-200 rounded-2xl w-full max-w-4xl h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      class="bg-white border border-zinc-200/90 rounded-2xl w-full max-w-4xl h-[92vh] flex flex-col shadow-2xl overflow-hidden">
       <!-- Modal Header -->
-      <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+      <div class="px-5 py-3 border-b border-zinc-200/90 flex items-center justify-between bg-white">
         <div class="flex items-center gap-3">
           <div
-            class="h-8 w-8 rounded-lg bg-white p-0.5 shadow-2xs border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-slate-100">
+            class="h-8 w-8 rounded-lg bg-white p-0.5 shadow-2xs border border-zinc-200/90 flex items-center justify-center shrink-0 overflow-hidden">
             <img src="/static/img/synapes-logo.jpg" alt="SYNAPES Logo"
               class="h-full w-full object-contain rounded-md select-none" />
           </div>
           <div>
-            <h3 id="preview-modal-title" class="text-sm font-bold text-slate-900 font-times">Xem trước Báo cáo Giám định
+            <h3 id="preview-modal-title" class="text-sm font-bold text-zinc-900">Xem trước Báo cáo Giám định
               Nguồn</h3>
-            <p id="preview-modal-subtitle" class="text-[11px] text-slate-500 font-times">Quy chuẩn thể thức hành chính &
+            <p id="preview-modal-subtitle" class="text-[11px] text-zinc-500">Quy chuẩn thể thức hành chính &amp;
               font 100% Times New Roman</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <button id="preview-modal-download-btn"
-            class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition">
-            <span>📥</span> Tải file PDF này
+            class="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition">
+            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Tải file PDF này</span>
           </button>
           <button onclick="closePdfPreviewModal()"
-            class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-xs font-bold transition">
-            ✕ Đóng
+            class="px-3 py-1.5 bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200/90 rounded-lg text-xs font-semibold transition">
+            Đóng
           </button>
         </div>
       </div>
       <!-- Modal Body (Preview Pages) -->
       <div id="preview-modal-body"
-        class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#0E1015] flex flex-col items-center gap-6">
+        class="flex-1 overflow-y-auto p-4 sm:p-6 bg-zinc-900 flex flex-col items-center gap-6">
         <!-- Rendered A4 preview pages will be inserted here -->
       </div>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL THANH TOÁN & NÂNG CẤP GÓI DỊCH VỤ (SYNAPES MONETIZATION SUITE) -->
+  <!-- MODAL THANH TOÁN & NÂNG CẤP GÓI DỊCH VỤ (STRIPE / APPLE HIG CHECKOUT) -->
   <!-- ========================================================================= -->
   <div id="synapes-payment-modal"
-    class="fixed inset-0 z-[60] bg-slate-900/70 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5 select-none">
-    <div class="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+    class="fixed inset-0 z-[60] bg-zinc-950/65 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-5 select-none">
+    <div class="bg-white border border-zinc-200/90 rounded-2xl w-full max-w-2xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
       
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-slate-50">
+      <div class="px-6 py-4 border-b border-zinc-200/80 flex items-center justify-between bg-white">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl text-amber-600 shadow-2xs">
-            💎
+          <div class="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center shadow-2xs shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              NÂNG CẤP DỊCH VỤ & MỞ KHÓA TÍNH NĂNG
+            <h3 class="text-sm font-bold text-zinc-900 tracking-tight uppercase">
+              NÂNG CẤP DỊCH VỤ &amp; MỞ KHÓA TÍNH NĂNG
             </h3>
-            <p class="text-xs text-slate-500">Hệ thống Giám định Tính toàn vẹn Học thuật SYNAPES AUDIT</p>
+            <p class="text-[11px] text-zinc-500">Hệ thống Giám định Tính toàn vẹn Học thuật SYNAPES AUDIT</p>
           </div>
         </div>
-        <button onclick="closePaymentModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition flex items-center justify-center text-sm font-bold">
+        <button onclick="closePaymentModal()" class="w-8 h-8 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900 transition flex items-center justify-center text-sm font-semibold">
           ✕
         </button>
       </div>
@@ -1136,11 +1106,11 @@
       <!-- Modal Body -->
       <div class="p-5 sm:p-6 overflow-y-auto space-y-5">
         <!-- Thông báo điều kiện kích hoạt -->
-        <div class="p-3 bg-amber-50/80 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed">
-          <span class="text-base shrink-0 mt-0.5">ℹ️</span>
+        <div class="p-3.5 bg-zinc-50 border border-zinc-200/90 rounded-xl flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+          <svg class="w-4 h-4 text-zinc-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <div>
-            <span class="font-bold">Quy chuẩn hạn mức dịch vụ:</span>
-            Mỗi địa chỉ IP được sử dụng <strong class="text-amber-950 font-bold underline">miễn phí 2 lần duy nhất</strong>.
+            <span class="font-semibold text-zinc-900">Quy chuẩn hạn mức dịch vụ:</span>
+            Mỗi địa chỉ IP được sử dụng <strong class="text-zinc-900 font-semibold underline underline-offset-2">miễn phí 2 lần duy nhất</strong>.
             Thông báo này kích hoạt khi bạn hết hạn dùng miễn phí hoặc bấm vào các tính năng nâng cao (bảng phân tích chuyên sâu, trích xuất nguồn, tải báo cáo PDF).
           </div>
         </div>
@@ -1150,101 +1120,102 @@
           
           <!-- LỰA CHỌN 1: GÓI TIÊU CHUẨN (3.000 VND) -->
           <div id="pkg-card-1" onclick="selectPaymentPackage(1)"
-            class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-400 bg-white transition-all cursor-pointer relative flex flex-col justify-between shadow-xs hover:shadow-md space-y-3">
-            <div class="space-y-2">
+            class="p-4 rounded-xl border-2 border-zinc-200 hover:border-zinc-400 bg-white transition-all cursor-pointer relative flex flex-col justify-between shadow-2xs space-y-3">
+            <div class="space-y-2.5">
               <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 border border-zinc-200">
                   Lựa chọn 1
                 </span>
-                <span class="text-xs font-semibold text-slate-400">1 lượt xem chỉ số</span>
+                <span class="text-[11px] font-medium text-zinc-500">1 lượt xem chỉ số</span>
               </div>
               <div class="space-y-0.5">
-                <h4 class="text-sm font-bold text-slate-900">Gói Tiêu Chuẩn (Biết Chỉ Số)</h4>
-                <div class="text-xl font-extrabold text-blue-600 font-mono-num">
-                  3.000 <span class="text-xs font-normal text-slate-500">VND</span>
+                <h4 class="text-sm font-bold text-zinc-900">Gói Tiêu Chuẩn (Biết Chỉ Số)</h4>
+                <div class="text-xl font-extrabold text-zinc-900 font-mono-num">
+                  3.000 <span class="text-xs font-normal text-zinc-500">VND</span>
                 </div>
               </div>
-              <ul class="text-[11.5px] text-slate-600 space-y-1.5 pt-1 border-t border-slate-100">
+              <ul class="text-[11.5px] text-zinc-600 space-y-1.5 pt-2 border-t border-zinc-100">
                 <li class="flex items-start gap-1.5">
-                  <span class="text-emerald-500 font-bold">✓</span>
-                  <span><strong>Biết toàn bộ các chỉ số định lượng</strong> (% AI, % Đạo văn, Net Sim, Raw Sim, Liêm chính)</span>
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span><strong class="text-zinc-900">Biết toàn bộ các chỉ số định lượng</strong> (% AI, % Đạo văn, Net Sim, Raw Sim, Liêm chính)</span>
                 </li>
                 <li class="flex items-start gap-1.5">
-                  <span class="text-emerald-500 font-bold">✓</span>
-                  <span>Xem biểu đồ radar 5 trục & thống kê tổng quan lỗi chính tả</span>
+                  <span class="text-emerald-600 font-bold">✓</span>
+                  <span>Xem biểu đồ radar 5 trục &amp; thống kê tổng quan lỗi chính tả</span>
                 </li>
                 <li class="flex items-start gap-1.5">
-                  <span class="text-emerald-500 font-bold">✓</span>
+                  <span class="text-emerald-600 font-bold">✓</span>
                   <span>Đọc và phân tích thông tin mức độ an toàn học thuật</span>
                 </li>
-                <li class="flex items-start gap-1.5 text-rose-500 font-medium">
+                <li class="flex items-start gap-1.5 text-zinc-400">
                   <span>✕</span>
                   <span>Không cho phép check cụ thể từng câu trên bài</span>
                 </li>
-                <li class="flex items-start gap-1.5 text-rose-500 font-medium">
+                <li class="flex items-start gap-1.5 text-zinc-400">
                   <span>✕</span>
-                  <span>Không được xem trước báo cáo & Không tải về báo cáo (PDF)</span>
+                  <span>Không được xem trước báo cáo &amp; Không tải về báo cáo (PDF)</span>
                 </li>
               </ul>
             </div>
-            <button type="button" onclick="selectPaymentPackage(1)" class="w-full py-2 px-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white font-bold text-xs transition border border-blue-200">
+            <button type="button" onclick="selectPaymentPackage(1)" class="w-full py-2 px-3 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-zinc-900 hover:text-white font-semibold text-xs transition border border-zinc-200/90">
               Thanh toán ngay (3.000đ)
             </button>
           </div>
 
           <!-- LỰA CHỌN 2: GÓI CHUYÊN GIA CAO CẤP (10.000 VND - GIẢM TỪ 20.000 VND - 2 LƯỢT CHECK) -->
           <div id="pkg-card-2" onclick="selectPaymentPackage(2)"
-            class="p-4 rounded-2xl border-2 border-amber-300 ring-2 ring-amber-400/20 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 hover:border-amber-500 transition-all cursor-pointer relative flex flex-col justify-between shadow-xs hover:shadow-md space-y-3">
-            <div class="space-y-2">
+            class="p-4 rounded-xl border-2 border-zinc-900 bg-zinc-50/40 hover:bg-white transition-all cursor-pointer relative flex flex-col justify-between shadow-sm space-y-3">
+            <div class="space-y-2.5">
               <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-2xs">
-                  ⭐ Lựa chọn 2 (Khuyên dùng)
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-900 text-white">
+                  Lựa chọn 2 • Khuyên dùng
                 </span>
-                <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                <span class="text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/90">
                   2 lượt cao cấp
                 </span>
               </div>
               <div class="space-y-1">
-                <h4 class="text-sm font-bold text-slate-900">Gói Chuyên Gia Cao Cấp</h4>
+                <h4 class="text-sm font-bold text-zinc-900">Gói Chuyên Gia Cao Cấp</h4>
                 <div class="flex items-baseline gap-2">
-                  <div class="text-2xl font-extrabold text-amber-600 font-mono-num">
-                    10.000 <span class="text-xs font-normal text-slate-500">VND</span>
+                  <div class="text-2xl font-extrabold text-zinc-900 font-mono-num">
+                    10.000 <span class="text-xs font-normal text-zinc-500">VND</span>
                   </div>
-                  <div class="text-xs text-slate-400 line-through font-mono">
+                  <div class="text-xs text-zinc-400 line-through font-mono-num">
                     20.000 VND
                   </div>
-                  <span class="text-[9.5px] font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full border border-rose-200">
+                  <span class="text-[10px] font-bold bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded-md border border-rose-200/80">
                     -50%
                   </span>
                 </div>
-                <div class="text-[10.5px] text-amber-800 font-semibold flex items-center gap-1 bg-amber-50/80 px-2 py-0.5 rounded-md border border-amber-200">
-                  <span>⏰</span> Ưu đãi chỉ diễn ra đến 31/12/2026
+                <div class="text-[10.5px] text-amber-800 font-medium flex items-center gap-1.5 bg-amber-50/80 px-2 py-1 rounded-md border border-amber-200/80">
+                  <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>Ưu đãi chỉ diễn ra đến 31/12/2026</span>
                 </div>
               </div>
-              <ul class="text-[11.5px] text-slate-700 space-y-1.5 pt-1 border-t border-amber-100 font-medium">
+              <ul class="text-[11.5px] text-zinc-700 space-y-1.5 pt-2 border-t border-zinc-200/80">
                 <li class="flex items-start gap-1.5">
-                  <span class="text-amber-600 font-bold">★</span>
-                  <span><strong>Cung cấp 2 lượt truy cập cao cấp</strong> (thay vì 1 lượt)</span>
+                  <span class="text-zinc-900 font-bold">✓</span>
+                  <span><strong class="text-zinc-900">Cung cấp 2 lượt truy cập cao cấp</strong> (thay vì 1 lượt)</span>
                 </li>
                 <li class="flex items-start gap-1.5">
-                  <span class="text-amber-600 font-bold">★</span>
+                  <span class="text-zinc-900 font-bold">✓</span>
                   <span>Truy cập tối đa 100% mọi tính năng của công cụ</span>
                 </li>
                 <li class="flex items-start gap-1.5">
-                  <span class="text-amber-600 font-bold">★</span>
+                  <span class="text-zinc-900 font-bold">✓</span>
                   <span>Kiểm tra chi tiết 100% từng câu (Highlight AI, Đạo văn, Gạch chân lỗi chính tả)</span>
                 </li>
                 <li class="flex items-start gap-1.5">
-                  <span class="text-amber-600 font-bold">★</span>
-                  <span><strong>Xem trước & Tải về toàn bộ các báo cáo</strong> (PDF Times New Roman, Báo cáo nguồn 3 dạng, Báo cáo chính tả)</span>
+                  <span class="text-zinc-900 font-bold">✓</span>
+                  <span><strong class="text-zinc-900">Xem trước &amp; Tải về toàn bộ các báo cáo</strong> (PDF Times New Roman, Báo cáo nguồn 3 dạng, Báo cáo chính tả)</span>
                 </li>
                 <li class="flex items-start gap-1.5">
-                  <span class="text-amber-600 font-bold">★</span>
+                  <span class="text-zinc-900 font-bold">✓</span>
                   <span>Xem xét các báo cáo chuyên gia, chỉ số logic và dẫn nguồn chính xác</span>
                 </li>
               </ul>
             </div>
-            <button type="button" onclick="selectPaymentPackage(2)" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs transition shadow-xs hover:from-amber-600 hover:to-orange-600">
+            <button type="button" onclick="selectPaymentPackage(2)" class="w-full py-2 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition shadow-2xs">
               Thanh toán ngay (10.000đ - 2 lượt)
             </button>
           </div>
@@ -1252,51 +1223,51 @@
         </div>
 
         <!-- KHU VỰC QUÉT MÃ QR THANH TOÁN (HIỂN THỊ KHI ĐÃ BẤM CHỌN GÓI) -->
-        <div id="payment-checkout-section" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-          <div class="text-center space-y-1">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">QUÉT MÃ VIETQR QUA APP NGÂN HÀNG</span>
-            <h4 id="checkout-pkg-title" class="text-sm font-bold text-slate-900">Gói đã chọn: Gói Tiêu Chuẩn (3.000đ)</h4>
+        <div id="payment-checkout-section" class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/90 space-y-4">
+          <div class="text-center space-y-0.5">
+            <span class="text-[10.5px] font-bold uppercase tracking-wider text-zinc-400">QUÉT MÃ VIETQR QUA APP NGÂN HÀNG</span>
+            <h4 id="checkout-pkg-title" class="text-sm font-bold text-zinc-900">Gói đã chọn: Gói Tiêu Chuẩn (3.000đ)</h4>
           </div>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
             <!-- Ảnh QR tương ứng gói (Dual preloaded containers - 0ms switch) -->
-            <div class="p-2 bg-white rounded-xl border border-slate-200 shadow-sm shrink-0 flex flex-col items-center">
+            <div class="p-2.5 bg-white rounded-xl border border-zinc-200/90 shadow-2xs shrink-0 flex flex-col items-center">
               <div id="qr-container-1" class="flex flex-col items-center">
                 <img id="checkout-qr-img-1" src="/static/img/qr_3k.jpg?v=3.5.2" alt="Mã QR Thanh Toán 3.000đ" class="w-44 h-auto rounded-lg object-contain" />
-                <span class="text-[10px] text-blue-600 mt-1.5 font-bold">VietQR 3.000đ • Napas 24/7 Chuẩn hóa</span>
+                <span class="text-[10px] text-zinc-600 mt-1.5 font-semibold font-mono-num">VietQR 3.000đ • Napas 24/7</span>
               </div>
               <div id="qr-container-2" class="flex flex-col items-center hidden">
                 <img id="checkout-qr-img-2" src="/static/img/qr_10k.jpg?v=3.5.2" alt="Mã QR Thanh Toán 10.000đ" class="w-44 h-auto rounded-lg object-contain" />
-                <span class="text-[10px] text-amber-600 mt-1.5 font-bold">VietQR 10.000đ (2 Lượt) • Napas 24/7 Chuẩn hóa</span>
+                <span class="text-[10px] text-zinc-900 mt-1.5 font-semibold font-mono-num">VietQR 10.000đ (2 Lượt) • Napas 24/7</span>
               </div>
               <!-- Fallback element for script backward-compatibility -->
               <img id="checkout-qr-img" src="/static/img/qr_3k.jpg?v=3.5.2" alt="Mã QR Thanh Toán" class="hidden" />
             </div>
 
             <!-- Thông tin chuyển khoản chi tiết -->
-            <div class="space-y-2 text-xs text-slate-700 w-full max-w-xs font-mono">
-              <div class="p-2 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
-                <span class="text-slate-500">Ngân hàng:</span>
-                <span class="font-bold text-slate-900">Timo (BVBank)</span>
+            <div class="space-y-2 text-xs text-zinc-700 w-full max-w-xs font-mono-num">
+              <div class="px-3 py-2 bg-white rounded-lg border border-zinc-200/90 flex justify-between items-center">
+                <span class="text-zinc-500 font-sans">Ngân hàng:</span>
+                <span class="font-bold text-zinc-900">Timo (BVBank)</span>
               </div>
-              <div class="p-2 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
-                <span class="text-slate-500">Số tài khoản:</span>
-                <span class="font-bold text-slate-900 text-sm">0983396354</span>
+              <div class="px-3 py-2 bg-white rounded-lg border border-zinc-200/90 flex justify-between items-center">
+                <span class="text-zinc-500 font-sans">Số tài khoản:</span>
+                <span class="font-bold text-zinc-900 text-sm">0983396354</span>
               </div>
-              <div class="p-2 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
-                <span class="text-slate-500">Chủ tài khoản:</span>
-                <span class="font-bold text-slate-900">NGUYEN HOANG THIEN</span>
+              <div class="px-3 py-2 bg-white rounded-lg border border-zinc-200/90 flex justify-between items-center">
+                <span class="text-zinc-500 font-sans">Chủ tài khoản:</span>
+                <span class="font-bold text-zinc-900">NGUYEN HOANG THIEN</span>
               </div>
-              <div class="p-2 bg-white rounded-lg border border-slate-200 flex justify-between items-center">
-                <span class="text-slate-500">Số tiền:</span>
+              <div class="px-3 py-2 bg-white rounded-lg border border-zinc-200/90 flex justify-between items-center">
+                <span class="text-zinc-500 font-sans">Số tiền:</span>
                 <span id="checkout-amount-display" class="font-bold text-rose-600 text-sm">3.000 VND</span>
               </div>
-              <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 space-y-1">
-                <div class="text-[11px] font-sans font-bold text-amber-900 flex items-center justify-between">
+              <div class="p-2.5 bg-amber-50/70 rounded-lg border border-amber-200/90 space-y-1">
+                <div class="text-[11px] font-sans font-semibold text-amber-900 flex items-center justify-between">
                   <span>Nội dung chuyển khoản (bắt buộc):</span>
-                  <button onclick="copyTransferDesc()" class="text-[10px] text-blue-600 hover:underline">Copy</button>
+                  <button onclick="copyTransferDesc()" class="text-[10px] text-zinc-900 font-bold hover:underline">Copy</button>
                 </div>
-                <div id="checkout-transfer-desc" class="font-bold text-slate-900 text-sm tracking-wider select-all">
+                <div id="checkout-transfer-desc" class="font-bold text-zinc-900 text-sm tracking-wider select-all">
                   BUY CHECK SYNAPESEDU 1
                 </div>
               </div>
@@ -1304,16 +1275,16 @@
           </div>
 
           <!-- NÚT XÁC NHẬN "BẠN ĐÃ THANH TOÁN ? HÃY BẤM ĐỂ TIẾP TỤC..." -->
-          <div class="pt-2 space-y-1">
+          <div class="pt-2 space-y-1.5">
             <button id="btn-user-paid-confirm" onclick="startPaymentVerificationProcess()"
-              class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 transform active:scale-[0.99]">
-              <span class="text-lg">✓</span>
+              class="w-full py-3 px-6 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-sm tracking-tight shadow-sm transition-all flex items-center justify-center gap-2 transform active:scale-[0.99]">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.25" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
               <span>Bạn đã thanh toán ? Hãy bấm để tiếp tục...</span>
             </button>
             <p class="text-[11px] text-center text-amber-700 font-semibold mt-1.5 font-sans">
               Hãy đảm bảo bạn đã thanh toán chính xác trước khi xác nhận nhé !
             </p>
-            <p class="text-[10px] text-center text-slate-500 font-sans">
+            <p class="text-[10px] text-center text-zinc-500 font-sans">
               Hệ thống sẽ đối soát thông báo thanh toán từ Timo trong khung thời gian xác nhận để kích hoạt gói ngay lập tức.
             </p>
           </div>
@@ -1325,11 +1296,11 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- OVERLAY KIỂM TRA THANH TOÁN (10s COUNTDOWN + PIXEL STICKER ĐỘNG DỄ THƯƠNG) -->
+  <!-- OVERLAY KIỂM TRA THANH TOÁN (15s COUNTDOWN + PIXEL STICKER ĐỘNG) -->
   <!-- ========================================================================= -->
   <div id="synapes-verifying-modal"
-    class="fixed inset-0 z-[70] bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 select-none">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 shadow-2xl text-white animate-fade-in relative overflow-hidden">
+    class="fixed inset-0 z-[70] bg-zinc-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 select-none">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 shadow-2xl text-white animate-fade-in relative overflow-hidden">
       
       <!-- STICKER ĐỘNG PIXEL DẠNG RETRO 8-BIT ROBOT/BOT -->
       <div class="w-24 h-24 mx-auto relative flex items-center justify-center">
@@ -1358,22 +1329,22 @@
       </div>
 
       <div class="space-y-1.5">
-        <h3 class="text-base font-bold text-white tracking-wide">
+        <h3 class="text-base font-bold text-white tracking-tight">
           Hệ thống đang kiểm tra thanh toán. Bạn chờ chút nhé !
         </h3>
-        <p class="text-xs text-slate-400 leading-relaxed font-sans">
+        <p class="text-xs text-zinc-400 leading-relaxed font-sans">
           Đang kết nối cổng đối soát ngân hàng và kiểm tra hóa đơn thanh toán...
         </p>
       </div>
 
-      <!-- Animated 10s Progress Bar -->
+      <!-- Animated Progress Bar -->
       <div class="space-y-2 pt-2">
-        <div class="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
-          <div id="verify-countdown-bar" class="h-full bg-gradient-to-r from-sky-400 via-emerald-400 to-teal-400 rounded-full transition-all duration-300" style="width: 10%;"></div>
+        <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-zinc-700">
+          <div id="verify-countdown-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-300" style="width: 10%;"></div>
         </div>
-        <div class="flex justify-between text-[11px] text-slate-400 font-mono">
+        <div class="flex justify-between text-[11px] text-zinc-400 font-mono-num">
           <span id="verify-countdown-step">Hệ thống đang kiểm tra hóa đơn thanh toán...</span>
-          <span id="verify-countdown-time" class="font-bold text-sky-400">15s</span>
+          <span id="verify-countdown-time" class="font-bold text-emerald-400">15s</span>
         </div>
       </div>
 
@@ -1384,8 +1355,8 @@
   <!-- MODAL CHÚC MỪNG THANH TOÁN THÀNH CÔNG (PIXEL STICKER GẬT ĐẦU CẢM ƠN) -->
   <!-- ========================================================================= -->
   <div id="synapes-success-modal"
-    class="fixed inset-0 z-[80] bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 select-none">
-    <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 shadow-2xl text-white animate-fade-in relative">
+    class="fixed inset-0 z-[80] bg-zinc-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 select-none">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 shadow-2xl text-white animate-fade-in relative">
       
       <!-- STICKER ĐỘNG PIXEL NGƯỜI GẬT ĐẦU CẢM ƠN (8-BIT NODDING CHARACTER) -->
       <div class="w-24 h-24 mx-auto relative flex items-center justify-center">
@@ -1416,19 +1387,19 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="text-lg font-bold text-emerald-400">
+        <h3 class="text-lg font-bold text-emerald-400 tracking-tight">
           Bạn đã thanh toán thành công ! Xin chúc mừng...
         </h3>
-        <p class="text-xs text-slate-300 leading-relaxed font-sans">
+        <p class="text-xs text-zinc-300 leading-relaxed font-sans">
           Giờ đây bạn có thể truy cập các tính năng giới hạn của chúng tôi !
         </p>
-        <div class="p-2.5 bg-emerald-950/60 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 font-mono" id="success-granted-details">
+        <div class="p-2.5 bg-emerald-950/60 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 font-mono-num" id="success-granted-details">
           Đã kích hoạt: Gói 1 lượt kiểm tra cao cấp
         </div>
       </div>
 
       <button onclick="closeSuccessModal()"
-        class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/30 transition">
+        class="w-full py-3 px-5 rounded-xl bg-white hover:bg-zinc-100 text-zinc-900 font-bold text-sm tracking-tight shadow-sm transition">
         Bắt đầu trải nghiệm ngay
       </button>
 
@@ -1843,7 +1814,7 @@
 
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <!-- ================= TỆP MÃ NGUỒN ĐƯỢC MÃ HÓA BẢO VỆ ĐA TẦNG ================= -->
-  <script src="/static/js/synapes.bundle.min.js?v=4.4.0" defer></script>
+  <script src="/static/js/synapes.bundle.min.js?v=4.5.0" defer></script>
 </body>
 
 </html>
