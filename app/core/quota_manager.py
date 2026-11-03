@@ -1,13 +1,32 @@
 """
-SYNAPES IP QUOTA & MONETIZATION TIER MANAGER (STRICT PERSISTENCE ENGINE)
+SYNAPES IP QUOTA & MONETIZATION TIER MANAGER (STRICT PERSISTENCE & ANTI-RESET ENGINE)
 Quản lý hạn mức sử dụng (2 lượt miễn phí / IP) và phân hạng gói dịch vụ (Gói 1: 3.000đ, Gói 2: 10.000đ).
-Dữ liệu lưu trữ bền vững trên đĩa tại storage/ip_quotas.json với cơ chế fsync và auto-reload.
+Dữ liệu lưu trữ bền vững trên đĩa tại storage/ip_quotas.json kết hợp đồng bộ trạng thái bất biến (Monotonic State Sync)
+giúp bảo toàn 100% hạn mức ngay cả sau khi cập nhật trang web hoặc khởi động lại container.
 """
 
 import os
 import json
 import time
 from typing import Dict, Any, Optional
+
+# Các mã email giao dịch lịch sử trước đây được khóa cố định để không bao giờ bị khớp nhầm
+HISTORICAL_CONSUMED_MSG_IDS = {
+    "1a19d225b7010982",
+    "1a19d73da05e83c6",
+    "1a19db4af552e7cf",
+    "1a19f9f34234bfd5",
+    "1a19fc3a5e7965ac",
+    "1a19fc49a32b0fb4",
+    "1a19fc523c819565",
+    "1a1a006133d2f22b",
+    "1a19f9f30daa6108",
+    "1a19fc3a139c02fd",
+    "1a19fc4974b49801",
+    "1a19fc51e1b0d814",
+    "1a1a006164b72039"
+}
+
 
 class QuotaManager:
     _instance = None
@@ -19,18 +38,18 @@ class QuotaManager:
         return cls._instance
 
     def _init_storage(self):
-        self._quotas: Dict[str, Dict[str, Any]] = {}
-        # app/core/quota_manager.py -> app/core -> app -> root
+        self._quotas: Dict[str, Any] = {
+            "_consumed_tx": {mid: {"status": "HISTORICAL_LOCKED"} for mid in HISTORICAL_CONSUMED_MSG_IDS},
+            "_exhausted_tx": {}
+        }
         curr_dir = os.path.dirname(os.path.abspath(__file__))
         app_dir = os.path.dirname(curr_dir)
         root_dir = os.path.dirname(app_dir)
-        
-        # Tạo thư mục storage ở cả app/storage và /app/storage
+
         storage_dir = os.path.join(app_dir, "storage")
         os.makedirs(storage_dir, exist_ok=True)
         self._db_path = os.path.join(storage_dir, "ip_quotas.json")
-        
-        # Dự phòng thêm đường dẫn cấp root nếu có
+
         self._backup_db_path = os.path.join(root_dir, "storage", "ip_quotas.json")
         try:
             os.makedirs(os.path.dirname(self._backup_db_path), exist_ok=True)
@@ -48,11 +67,20 @@ class QuotaManager:
                     with open(path, "r", encoding="utf-8") as f:
                         data = json.load(f)
                         if isinstance(data, dict):
-                            self._quotas.update(data)
+                            for k, v in data.items():
+                                if k in ("_consumed_tx", "_exhausted_tx") and isinstance(v, dict):
+                                    self._quotas.setdefault(k, {}).update(v)
+                                else:
+                                    self._quotas[k] = v
                             loaded = True
                             break
             except Exception as e:
                 print(f"[QuotaManager] Lỗi đọc {path}: {e}")
+        # Đảm bảo các ID lịch sử luôn nằm trong _consumed_tx
+        consumed = self._quotas.setdefault("_consumed_tx", {})
+        for mid in HISTORICAL_CONSUMED_MSG_IDS:
+            consumed.setdefault(mid, {"status": "HISTORICAL_LOCKED"})
+        self._quotas.setdefault("_exhausted_tx", {})
         return loaded
 
     def _save_to_disk(self):
@@ -71,21 +99,100 @@ class QuotaManager:
             except Exception as e:
                 print(f"[QuotaManager] Lỗi ghi {p}: {e}")
 
+    def is_tx_consumed(self, msg_id: str) -> bool:
+        """Kiểm tra xem email giao dịch Timo (theo Gmail Message ID) đã được cấp cho IP nào chưa"""
+        self._load_from_disk()
+        clean_id = (msg_id or "").strip().lower()
+        if not clean_id:
+            return True
+        consumed = self._quotas.get("_consumed_tx", {})
+        return (clean_id in consumed) or (msg_id in consumed)
+
+    def mark_tx_consumed(self, msg_id: str, ip: str, package_id: int, amount: int):
+        """Khóa vĩnh viễn Gmail Message ID cho địa chỉ IP vừa xác nhận thành công"""
+        self._load_from_disk()
+        clean_id = (msg_id or "").strip().lower()
+        consumed = self._quotas.setdefault("_consumed_tx", {})
+        consumed[clean_id] = {
+            "ip": ip,
+            "package": package_id,
+            "amount": amount,
+            "consumed_at": int(time.time() * 1000)
+        }
+        self._save_to_disk()
+
     def get_record(self, ip: str) -> Dict[str, Any]:
         """Lấy bản ghi hạn mức của IP (tự động nạp mới từ đĩa)"""
         self._load_from_disk()
         clean_ip = (ip or "127.0.0.1").strip()
-        if clean_ip not in self._quotas:
+        if clean_ip not in self._quotas or not isinstance(self._quotas[clean_ip], dict):
             self._quotas[clean_ip] = {
                 "ip": clean_ip,
                 "free_used": 0,
                 "paid_tier": 0,      # 0: Free, 1: Gói 3.000đ, 2: Gói 10.000đ
                 "paid_credits": 0,   # Số lượt kiểm tra trả phí còn lại
+                "last_tx_id": "",
                 "history": [],
                 "created_at": time.time()
             }
             self._save_to_disk()
         return self._quotas[clean_ip]
+
+    def sync_client_state(
+        self,
+        ip: str,
+        client_free_used: Optional[int] = None,
+        client_paid_tier: Optional[int] = None,
+        client_paid_credits: Optional[int] = None,
+        client_tx_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Đồng bộ hóa bất biến (Monotonic Sync) giữa Client và Server:
+        Đảm bảo sau mỗi lần trang web được cập nhật / redeploy container:
+        1. Số lượt miễn phí đã dùng (free_used) KHÔNG BAO GIỜ bị quay về 0.
+        2. Số lượt gói trả phí hợp lệ (paid_credits kèm mã giao dịch TIMO-...) KHÔNG BAO GIỜ bị mất.
+        """
+        rec = self.get_record(ip)
+        changed = False
+
+        # 1. Bảo toàn tuyệt đối số lượt miễn phí đã dùng (chỉ tăng, không bao giờ giảm về cũ)
+        if client_free_used is not None:
+            try:
+                cfu = max(0, min(2, int(client_free_used)))
+                if cfu > rec.get("free_used", 0):
+                    rec["free_used"] = cfu
+                    changed = True
+            except Exception:
+                pass
+
+        # 2. Khôi phục hạn mức trả phí nếu container vừa cập nhật mới và client còn lượt hợp lệ
+        if client_paid_credits is not None and client_paid_tier is not None and client_tx_id:
+            try:
+                cpc = max(0, min(2, int(client_paid_credits)))
+                cpt = int(client_paid_tier)
+                ctx = str(client_tx_id).strip()
+                exhausted_map = self._quotas.get("_exhausted_tx", {})
+
+                if (
+                    cpc > 0
+                    and cpt in (1, 2)
+                    and ctx.startswith("TIMO-")
+                    and len(ctx) >= 12
+                    and ctx not in exhausted_map
+                    and rec.get("paid_credits", 0) == 0
+                    and rec.get("last_tx_id", "") != ctx
+                ):
+                    rec["paid_tier"] = cpt
+                    rec["paid_credits"] = cpc
+                    rec["last_tx_id"] = ctx
+                    changed = True
+            except Exception:
+                pass
+
+        if changed:
+            self._save_to_disk()
+
+        return rec
 
     def get_quota_status(self, ip: str) -> Dict[str, Any]:
         """Tính toán trạng thái hạn mức và quyền truy cập hiện tại của IP"""
@@ -93,6 +200,7 @@ class QuotaManager:
         free_used = rec.get("free_used", 0)
         paid_tier = rec.get("paid_tier", 0)
         paid_credits = rec.get("paid_credits", 0)
+        last_tx_id = rec.get("last_tx_id", "")
         free_remaining = max(0, 2 - free_used)
         can_scan = (free_remaining > 0) or (paid_credits > 0)
         active_tier = paid_tier if paid_credits > 0 else 0
@@ -103,6 +211,7 @@ class QuotaManager:
             "free_remaining": free_remaining,
             "paid_tier": paid_tier,
             "paid_credits": paid_credits,
+            "last_tx_id": last_tx_id,
             "active_tier": active_tier,
             "can_scan": can_scan,
             "tier_name": "Gói 2 (10.000đ - Chuyên gia)" if active_tier == 2 else ("Gói 1 (3.000đ - Tiêu chuẩn)" if active_tier == 1 else "Bản Miễn Phí (Free)")
@@ -127,6 +236,9 @@ class QuotaManager:
             rec["paid_credits"] = paid_credits - 1
             if rec["paid_credits"] <= 0:
                 rec["paid_tier"] = 0
+                last_tx = rec.get("last_tx_id", "")
+                if last_tx:
+                    self._quotas.setdefault("_exhausted_tx", {})[last_tx] = now_str
             rec.setdefault("history", []).append({
                 "action": "CONSUME_SCAN",
                 "type": "PAID",
@@ -185,6 +297,8 @@ class QuotaManager:
         rec = self.get_record(ip)
         rec["paid_tier"] = package_id
         rec["paid_credits"] = 2 if package_id == 2 else 1
+        if tx_id:
+            rec["last_tx_id"] = tx_id
         now_str = time.strftime("%Y-%m-%d %H:%M:%S UTC+7", time.gmtime(time.time() + 7 * 3600))
         rec.setdefault("history", []).append({
             "action": "PURCHASE_PACKAGE",
@@ -196,5 +310,6 @@ class QuotaManager:
         self._save_to_disk()
         print(f"[QuotaManager] ĐÃ CẤP QUYỀN IP {ip} -> Gói {package_id} (Số tiền: {amount}đ, TX: {tx_id})")
         return self.get_quota_status(ip)
+
 
 quota_manager = QuotaManager()

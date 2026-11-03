@@ -1,6 +1,7 @@
 import uuid
 import json
 import time
+import re
 import urllib.request
 import urllib.parse
 import hashlib
@@ -41,6 +42,37 @@ def _extract_ip(request: Request) -> str:
         return request.client.host.strip()
 
     return "127.0.0.1"
+
+
+def _sync_quota_from_request(request: Request, client_ip: str):
+    """Đồng bộ hóa trạng thái hạn mức bất biến từ Client Headers / Query / Cookie để không bao giờ mất hạn mức khi cập nhật web"""
+    c_free = request.headers.get("x-client-free-used") or request.query_params.get("client_free_used")
+    c_tier = request.headers.get("x-client-paid-tier") or request.query_params.get("client_paid_tier")
+    c_cred = request.headers.get("x-client-paid-credits") or request.query_params.get("client_paid_credits")
+    c_tx = request.headers.get("x-client-tx-id") or request.query_params.get("client_tx_id")
+
+    if c_free is None and "synapes_q" in request.cookies:
+        try:
+            cookie_val = urllib.parse.unquote(request.cookies["synapes_q"])
+            q_obj = json.loads(cookie_val)
+            if isinstance(q_obj, dict):
+                c_free = q_obj.get("free_used")
+                c_tier = q_obj.get("paid_tier")
+                c_cred = q_obj.get("paid_credits")
+                c_tx = q_obj.get("last_tx_id")
+        except Exception:
+            pass
+
+    quota_manager.sync_client_state(
+        client_ip,
+        client_free_used=c_free,
+        client_paid_tier=c_tier,
+        client_paid_credits=c_cred,
+        client_tx_id=c_tx
+    )
+
+
+_payment_verify_lock = asyncio.Lock()
 
 class ScanSubmissionRequest(BaseModel):
     content: str = Field(..., min_length=20, description="Nội dung văn bản cần kiểm tra")
@@ -305,10 +337,11 @@ async def process_document_background(task_id: str, filename: str, file_bytes: b
 async def submit_file_scan_async(request: Request, file: UploadFile = File(...)):
     """
     Tiếp nhận tệp vào hàng đợi xử lý ngầm.
-    QUY TẮC BẢO TOÀN HẠN MỨC: Trừ lượt kiểm tra NGAY LẬP TỨC tại thời điểm tải tài liệu lên.
+    QUY TẮC BẢO TOÀN HẠN MỨC: Đồng bộ trạng thái bất biến và trừ lượt kiểm tra NGAY LẬP TỨC tại thời điểm tải tài liệu lên.
     Nếu hết hạn mức -> Chặn ngay lập tức với HTTP 402.
     """
     client_ip = _extract_ip(request)
+    _sync_quota_from_request(request, client_ip)
 
     # 1. Trừ ngay lập tức 1 lượt kiểm tra của IP tại thời điểm nộp tệp
     consume_res = quota_manager.consume_scan(client_ip)
@@ -438,75 +471,173 @@ class PaymentVerificationRequest(BaseModel):
 
 @router.get("/quota/status")
 def get_ip_quota_status(request: Request):
-    """Truy vấn hạn mức kiểm tra khả dụng của địa chỉ IP hiện tại"""
+    """Truy vấn và đồng bộ hóa hạn mức kiểm tra khả dụng của địa chỉ IP hiện tại"""
     client_ip = _extract_ip(request)
+    _sync_quota_from_request(request, client_ip)
     return quota_manager.get_quota_status(client_ip)
+
+
+def _fetch_gas_emails_sync(gas_url: str) -> list:
+    """Truy vấn danh sách thư đến thời gian thực từ Google Apps Script Gateway"""
+    url = f"{gas_url}?action=debug_emails&_t={int(time.time() * 1000)}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Synapes-EduCheck-Backend/4.3"}
+    )
+    with urllib.request.urlopen(req, timeout=12) as response:
+        raw_body = response.read().decode("utf-8")
+        if raw_body.strip().startswith("{"):
+            data = json.loads(raw_body)
+            if isinstance(data, dict) and isinstance(data.get("emails"), list):
+                return data["emails"]
+    return []
+
+
+def _trigger_gas_sheet_audit_sync(gas_url: str, client_ip: str, pkg: int, click_time_ms: int):
+    """Ghi sổ kế toán lên Google Sheets thông qua GAS (chạy ngầm)"""
+    try:
+        params = urllib.parse.urlencode({
+            "action": "verify",
+            "ip": client_ip,
+            "package": str(pkg),
+            "timestamp": str(click_time_ms)
+        })
+        req = urllib.request.Request(
+            f"{gas_url}?{params}",
+            headers={"User-Agent": "Synapes-EduCheck-Backend/4.3"}
+        )
+        with urllib.request.urlopen(req, timeout=15) as _:
+            pass
+    except Exception:
+        pass
+
 
 @router.post("/payment/verify-timo")
 async def verify_timo_payment(req_body: PaymentVerificationRequest, request: Request, admin_test: Optional[str] = Query(None)):
     """
-    Xác thực thanh toán qua Ngân hàng Timo & Hộp thư Gmail (nguyenhoangthien.hvt.15@gmail.com)
-    Kết nối với Google Apps Script Web App để đối soát biến động số dư và ghi sổ Google Sheets.
-    TUYỆT ĐỐI KHÔNG CẤP QUYỀN NẾU CHƯA XÁC MINH ĐƯỢC GIAO DỊCH TRONG GMAIL!
+    Xác thực thanh toán qua Ngân hàng Timo & Hộp thư Gmail:
+    - Khi người dùng bấm "Bạn đã thanh toán...", hệ thống kiểm tra hộp thư đến Gmail
+      trong khung thời gian trước 10 giây (kèm đệm thao tác chuyển khoản an toàn 45s) và sau 15 giây.
+    - CHỈ kiểm tra các thư thông báo từ Ngân hàng Timo báo TÀI KHOẢN TĂNG tương ứng với giá gói
+      (3.000 VND hoặc 10.000 VND) và nội dung mô tả đính kèm QR Code ('BUY CHECK SYNAPESEDU 1' / '2').
+    - Nếu khớp trong khoảng thời gian đã định, cấp ngay hạn mức gói cho đúng địa chỉ IP đang xác nhận.
     """
     client_ip = _extract_ip(request)
-    pkg = req_body.package if req_body.package in [1, 2] else 1
-    req_time = req_body.timestamp or int(time.time() * 1000)
+    _sync_quota_from_request(request, client_ip)
 
-    # 1. Gọi trực tiếp Google Apps Script Web App của dự án
+    pkg = req_body.package if req_body.package in [1, 2] else 1
+    amount = 3000 if pkg == 1 else 10000
+
+    # Thời điểm chuẩn trên máy chủ khi người dùng bấm "Bạn đã thanh toán..."
+    server_click_ms = int(time.time() * 1000)
+
+    # Khung thời gian kiểm tra:
+    # Trước 10 giây (cộng biên độ trễ chuyển khoản/đồng hồ 35s = 45s trước lúc bấm) đến Sau 15 giây (+15.000ms)
+    window_start_ms = server_click_ms - 45000
+    window_end_ms = server_click_ms + 15000
+
     gas_url = "https://script.google.com/macros/s/AKfycbymTGeB1IW5KjCuYXVjaZ7jnfM9WKJzBHXVyaWa76HlXRzHLXI0b5mXINTDWNR0QeGqUw/exec"
-    params = urllib.parse.urlencode({
-        "action": "verify",
-        "ip": client_ip,
-        "package": str(pkg),
-        "timestamp": str(req_time)
-    })
-    target_url = f"{gas_url}?{params}"
 
     payment_verified = False
     tx_id = ""
-    amount = 3000 if pkg == 1 else 10000
     gas_message = ""
 
-    # Cho phép Admin test giả lập nếu truyền đúng khóa bí mật
     if admin_test == "synapes_admin_verify_2026":
         payment_verified = True
-        tx_id = f"ADMIN-TEST-{int(time.time())}"
+        tx_id = f"TIMO-ADMIN{int(time.time())}"
     else:
-        try:
-            req = urllib.request.Request(
-                target_url,
-                headers={"User-Agent": "Synapes-EduCheck-Backend/3.5"}
-            )
-            with urllib.request.urlopen(req, timeout=25) as response:
-                raw_body = response.read().decode('utf-8')
-                if raw_body.strip().startswith("{"):
-                    res_data = json.loads(raw_body)
-                    if res_data.get("success") is True:
+        # Quét hộp thư Gmail liên tục trong suốt cửa sổ 15 giây sau khi bấm nút
+        max_polls = 5
+        for poll_idx in range(max_polls):
+            try:
+                emails = await asyncio.to_thread(_fetch_gas_emails_sync, gas_url)
+                async with _payment_verify_lock:
+                    for em in emails:
+                        msg_id = str(em.get("id", "")).strip()
+                        if not msg_id or quota_manager.is_tx_consumed(msg_id):
+                            continue
+
+                        sender = str(em.get("from", "")).lower()
+                        subject = str(em.get("subject", ""))
+                        body = str(em.get("body", ""))
+                        date_str = str(em.get("date", "")).strip()
+
+                        # 1. CHỈ kiểm tra các thư thông báo từ Ngân hàng Timo
+                        if "timo.vn" not in sender and "timo support" not in sender:
+                            continue
+
+                        # 2. CHỈ kiểm tra thư báo TÀI KHOẢN TĂNG (loại bỏ hoàn toàn thư báo giảm tiền)
+                        lower_body = body.lower()
+                        if "vừa tăng" not in lower_body and "tăng " not in lower_body:
+                            continue
+                        if "vừa giảm" in lower_body:
+                            continue
+
+                        # 3. Kiểm tra thời gian thư đến nằm trong khung [-10s (đệm 45s), +15s]
+                        try:
+                            dt_obj = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+                            msg_ms = int(dt_obj.timestamp() * 1000)
+                        except Exception:
+                            continue
+
+                        if msg_ms < window_start_ms or msg_ms > (window_end_ms + 10000):
+                            continue
+
+                        # 4. Kiểm tra chính xác số tiền tăng theo gói (3.000 VND hoặc 10.000 VND)
+                        if pkg == 1:
+                            amt_ok = bool(re.search(r"(?:vừa\s+tăng|tăng)\s*(?:3[.,]?000|3000)\s*(?:VND|VNĐ|Đ|D)?", body, re.IGNORECASE))
+                        else:
+                            amt_ok = bool(re.search(r"(?:vừa\s+tăng|tăng)\s*(?:10[.,]?000|10000)\s*(?:VND|VNĐ|Đ|D)?", body, re.IGNORECASE))
+
+                        if not amt_ok:
+                            continue
+
+                        # 5. Kiểm tra nội dung mô tả đính kèm QR Code ('BUY CHECK SYNAPESEDU 1' hoặc '2')
+                        clean_full = re.sub(r"[^A-Z0-9]", "", (subject + " " + body).upper())
+                        if pkg == 1:
+                            kw_ok = ("BUYCHECKSYNAPESEDU1" in clean_full or "SYNAPESEDU1" in clean_full) and ("SYNAPESEDU2" not in clean_full)
+                        else:
+                            kw_ok = ("BUYCHECKSYNAPESEDU2" in clean_full or "SYNAPESEDU2" in clean_full) and ("SYNAPESEDU1" not in clean_full)
+
+                        if not kw_ok:
+                            continue
+
+                        # ĐÃ TÌM THẤY THƯ BÁO TĂNG TÀI KHOẢN TIMO HỢP LỆ TRONG KHUNG THỜI GIAN!
+                        # Khóa ngay lập tức thư này cho địa chỉ IP đang bấm xác nhận
+                        quota_manager.mark_tx_consumed(msg_id, client_ip, pkg, amount)
                         payment_verified = True
-                        tx_id = res_data.get("tx_id", f"TIMO-{int(time.time())}")
-                        amount = res_data.get("amount", amount)
-                    else:
-                        gas_message = res_data.get("message", "Chưa tìm thấy email thông báo ngân hàng khớp với giao dịch.")
-                else:
-                    gas_message = "Hệ thống đang chờ đồng bộ hóa đơn thanh toán từ ngân hàng."
-                    print(f"[PaymentVerify] GAS returned non-JSON HTML (Permission required).")
-        except Exception as e:
-            print(f"[PaymentVerify] GAS check error: {e}")
-            gas_message = f"Không thể kết nối đến hệ thống đối soát hóa đơn thanh toán: {str(e)}"
+                        tx_id = f"TIMO-{msg_id.upper()}"
+                        break
+
+                if payment_verified:
+                    # Kích hoạt ghi sổ kế toán Google Sheets ngầm
+                    asyncio.create_task(asyncio.to_thread(_trigger_gas_sheet_audit_sync, gas_url, client_ip, pkg, server_click_ms))
+                    break
+
+            except Exception as e:
+                print(f"[PaymentVerify] Lỗi kết nối GAS ở lần quét {poll_idx + 1}: {e}")
+                gas_message = "Hệ thống đang kiểm tra hóa đơn thanh toán, vui lòng thử lại sau giây lát."
+
+            # Nếu chưa hết cửa sổ 15 giây sau khi bấm, chờ 3.2 giây rồi kiểm tra tiếp hộp thư đến
+            now_ms = int(time.time() * 1000)
+            if poll_idx < max_polls - 1 and (now_ms + 3000) <= window_end_ms:
+                await asyncio.sleep(3.2)
+            else:
+                break
 
     # NẾU CHƯA HOẶC KHÔNG THỂ XÁC THỰC -> TUYỆT ĐỐI TỪ CHỐI CẤP QUYỀN
     if not payment_verified:
+        amt_str = "3.000" if pkg == 1 else "10.000"
         return {
             "success": False,
             "package": pkg,
             "ip": client_ip,
-            "message": gas_message or f"Hệ thống chưa tìm thấy hóa đơn thanh toán với nội dung 'BUY CHECK SYNAPESEDU {pkg}'. Vui lòng kiểm tra lại thông tin chuyển khoản hoặc chờ trong giây lát rồi thử lại.",
+            "message": f"Chưa nhận được thông báo biến động số dư tăng {amt_str} VND từ Ngân hàng Timo với nội dung 'BUY CHECK SYNAPESEDU {pkg}' trong khung thời gian xác nhận.\n\nHãy đảm bảo bạn đã thanh toán chính xác trước khi xác nhận nhé!",
             "error_code": "PAYMENT_NOT_FOUND",
             "quota": quota_manager.get_quota_status(client_ip)
         }
 
-    # NẾU ĐÃ XÁC THỰC THÀNH CÔNG -> CẤP QUYỀN VÀ GHI SỔ KẾ TOÁN
+    # NẾU ĐÃ XÁC THỰC THÀNH CÔNG -> CẤP NGAY HẠN MỨC GÓI CHO ĐỊA CHỈ IP ĐÓ
     new_quota = quota_manager.grant_package(client_ip, package_id=pkg, tx_id=tx_id, amount=amount)
 
     return {

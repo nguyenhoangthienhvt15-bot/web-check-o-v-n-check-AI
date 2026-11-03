@@ -3,7 +3,8 @@
  * SYNAPES EDU CHECK - AUTOMATED PAYMENT VERIFICATION & REVENUE AUDIT GATEWAY
  * =========================================================================
  * Tu dong hoa giam sat Hop thu Gmail (tai khoan nguyenhoangthien.hvt.15@gmail.com)
- * Doi chieu giao dich Ngan hang Timo va ghi so ke toan Google Sheets tu dong.
+ * Doi chieu giao dich Ngan hang Timo (chi kiem tra thu bao tai khoan tang tu Timo
+ * trong khung thoi gian [-10s, +15s] quanh thoi diem xac nhan) va ghi so Google Sheets.
  */
 
 const CONFIG = {
@@ -87,7 +88,7 @@ function handleRequest(params) {
     }
 
     if (action === "verify" || action === "check") {
-      var verification = checkTimoPaymentInGmail(requestedPkg, clientTime, clientIp);
+      var verification = checkTimoPaymentInGmailWithWindow(requestedPkg, clientTime, clientIp);
       if (verification.found) {
         var auditRecord = logTransactionToSpreadsheet(clientIp, requestedPkg, verification);
 
@@ -99,7 +100,7 @@ function handleRequest(params) {
         response.message = "Ban da thanh toan thanh cong ! Xin chuc mung...";
       } else {
         response.success = false;
-        response.message = verification.reason || "Chua tim thay thong bao thanh toan hop le.";
+        response.message = verification.reason || "Chua tim thay thong bao thanh toan hop le tu Timo trong khung thoi gian xac nhan.";
       }
       return createJsonResponse(response);
     }
@@ -120,91 +121,115 @@ function handleRequest(params) {
 }
 
 /**
- * Quet hop thu Gmail tim thong bao giao dich Timo tuong ung
+ * Quet hop thu Gmail tim thong bao giao dich Timo bao TAI KHOAN TANG
+ * trong khung thoi gian [-10 giay (kem dem chuyen khoan), +15 giay] tinh tu thoi diem bam nut.
  */
-function checkTimoPaymentInGmail(pkgId, clientTimestamp, clientIp) {
+function checkTimoPaymentInGmailWithWindow(pkgId, clickTimestamp, clientIp) {
   var targetPkg = CONFIG.PACKAGES[pkgId] || CONFIG.PACKAGES[1];
-  var expectedAmount = targetPkg.amount; // 3000 hoặc 10000
+  var expectedAmount = targetPkg.amount; // 3000 hoac 10000
+  var baseClickTime = clickTimestamp || Date.now();
 
-  // Tìm kiếm email rộng rãi trong 2 ngày gần nhất:
-  // 1. Chứa từ khóa SYNAPESEDU hoặc SYNAPES
-  // 2. Hoặc từ Timo / BVBank / Spend Account / bien dong so du
-  var query = 'newer_than:2d (SYNAPESEDU OR SYNAPES OR timo OR BVBank OR "Spend Account" OR "biến động" OR "tăng")';
-  var threads = GmailApp.search(query, 0, 20);
-
-  if (!threads || threads.length === 0) {
-    return { found: false, reason: "Không tìm thấy email thông báo ngân hàng nào trong hộp thư 2 ngày gần đây." };
-  }
+  // Khung thoi gian kiem tra:
+  // Truoc 10 giay (kem bu sai lech dong ho / thao tac chuyen khoan 45s) den Sau 15 giay
+  var windowStart = baseClickTime - 45000;
+  var strictWindowEnd = baseClickTime + 15000;
 
   var scriptProps = PropertiesService.getScriptProperties();
-  var now = Date.now();
+  var maxAttempts = 4;
 
-  for (var i = 0; i < threads.length; i++) {
-    var messages = threads[i].getMessages();
-    for (var j = messages.length - 1; j >= 0; j--) {
-      var msg = messages[j];
-      var msgId = msg.getId();
-      var msgDate = msg.getDate().getTime();
-      var body = msg.getPlainBody() || "";
-      var subject = msg.getSubject() || "";
-      var fullText = subject + "\n" + body;
+  for (var attempt = 0; attempt < maxAttempts; attempt++) {
+    var query = 'newer_than:1d (from:timo.vn OR "Timo Support" OR "Thông báo thay đổi số dư tài khoản")';
+    var threads = GmailApp.search(query, 0, 10);
 
-      // 1. Kiểm tra từ khóa gói:
-      // Chuẩn hóa văn bản: bỏ toàn bộ khoảng trắng để so khớp linh hoạt
-      // Ví dụ: "SYNAPESEDU 1", "SYNAPESEDU1", "SYNAPES EDU 1", "BUY CHECK SYNAPESEDU 1"
-      var cleanFull = fullText.toUpperCase().replace(/[\s\-_.:,]+/g, '');
-      var hasKeyword = false;
+    if (threads && threads.length > 0) {
+      for (var i = 0; i < threads.length; i++) {
+        var messages = threads[i].getMessages();
+        for (var j = messages.length - 1; j >= 0; j--) {
+          var msg = messages[j];
+          var msgId = msg.getId();
+          var msgDate = msg.getDate().getTime();
+          var sender = (msg.getFrom() || "").toLowerCase();
+          var subject = msg.getSubject() || "";
+          var body = msg.getPlainBody() || "";
+          var fullText = subject + "\n" + body;
 
-      if (pkgId === 1) {
-        hasKeyword = cleanFull.indexOf("SYNAPESEDU1") !== -1 ||
-                     cleanFull.indexOf("SYNAPES1") !== -1 ||
-                     cleanFull.indexOf("SYNAPESEDU") !== -1;
-      } else if (pkgId === 2) {
-        hasKeyword = cleanFull.indexOf("SYNAPESEDU2") !== -1 ||
-                     cleanFull.indexOf("SYNAPES2") !== -1 ||
-                     cleanFull.indexOf("SYNAPESEDU") !== -1;
-      }
+          // 1. CHI kiem tra cac thu thong bao tu Ngan hang Timo
+          if (sender.indexOf("timo.vn") === -1 && sender.indexOf("timo") === -1) {
+            continue;
+          }
 
-      // 2. Kiểm tra số tiền:
-      var hasAmount = false;
-      if (expectedAmount === 3000) {
-        hasAmount = /(?:3[.,]?000|3000)\s*(?:VND|VNĐ|Đ|D)?/i.test(fullText);
-      } else if (expectedAmount === 10000) {
-        hasAmount = /(?:10[.,]?000|10000)\s*(?:VND|VNĐ|Đ|D)?/i.test(fullText);
-      }
+          // 2. CHI kiem tra thu bao TAI KHOAN TANG (khong phai giao dich giam tien)
+          var lowerBody = body.toLowerCase();
+          if (lowerBody.indexOf("vừa tăng") === -1 && lowerBody.indexOf("tăng ") === -1) {
+            continue;
+          }
+          if (lowerBody.indexOf("vừa giảm") !== -1) {
+            continue;
+          }
 
-      if (hasKeyword && hasAmount) {
-        // Dùng Gmail Message ID làm khóa định danh duy nhất tuyệt đối để không bao giờ bị va chạm từ khóa
-        var txId = "TIMO-" + msgId.substring(0, 16).toUpperCase();
-        var propKey = "PROCESSED_MSG_" + msgId;
+          // 3. Kiem tra khung thoi gian [-10s (buffer 45s), +15s]
+          if (msgDate < windowStart || msgDate > strictWindowEnd + 5000) {
+            continue;
+          }
 
-        if (scriptProps.getProperty(propKey)) {
-          continue; // Đã tiêu thụ tin nhắn này, bỏ qua để chống double-spend
-        }
+          // 4. Kiem tra noi dung mo ta chuyen khoan dinh kem QR Code
+          var cleanFull = fullText.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          var hasKeyword = false;
+          if (pkgId === 1) {
+            hasKeyword = (cleanFull.indexOf("BUYCHECKSYNAPESEDU1") !== -1 || cleanFull.indexOf("SYNAPESEDU1") !== -1) &&
+                         cleanFull.indexOf("SYNAPESEDU2") === -1;
+          } else if (pkgId === 2) {
+            hasKeyword = (cleanFull.indexOf("BUYCHECKSYNAPESEDU2") !== -1 || cleanFull.indexOf("SYNAPESEDU2") !== -1) &&
+                         cleanFull.indexOf("SYNAPESEDU1") === -1;
+          }
 
-        // Kiểm tra khung thời gian: cho phép trong vòng 24 giờ gần đây (86.400.000 ms)
-        var timeDiff = Math.abs(now - msgDate);
-        if (timeDiff <= 86400000) {
-          scriptProps.setProperty(propKey, JSON.stringify({
-            ip: clientIp,
-            pkg: pkgId,
-            usedAt: now,
-            msgDate: msgDate
-          }));
+          // 5. Kiem tra chinh xac so tien tang
+          var hasAmount = false;
+          if (expectedAmount === 3000) {
+            hasAmount = /(?:vừa\s+tăng|tăng)\s*(?:3[.,]?000|3000)\s*(?:VND|VNĐ|Đ|D)?/i.test(body);
+          } else if (expectedAmount === 10000) {
+            hasAmount = /(?:vừa\s+tăng|tăng)\s*(?:10[.,]?000|10000)\s*(?:VND|VNĐ|Đ|D)?/i.test(body);
+          }
 
-          return {
-            found: true,
-            txId: txId,
-            amount: expectedAmount,
-            msgDate: msgDate,
-            rawSnippet: fullText.substring(0, 200)
-          };
+          if (hasKeyword && hasAmount) {
+            var propKey = "PROCESSED_MSG_" + msgId;
+            if (scriptProps.getProperty(propKey)) {
+              continue; // Thu nay da duoc cap cho IP khac truoc do
+            }
+
+            var txId = "TIMO-" + msgId.toUpperCase();
+            scriptProps.setProperty(propKey, JSON.stringify({
+              ip: clientIp,
+              pkg: pkgId,
+              amount: expectedAmount,
+              usedAt: Date.now(),
+              msgDate: msgDate
+            }));
+
+            return {
+              found: true,
+              txId: txId,
+              amount: expectedAmount,
+              msgDate: msgDate,
+              rawSnippet: fullText.substring(0, 200)
+            };
+          }
         }
       }
     }
+
+    // Neu chua het 15 giay sau khi bam nut, doi 3.5 giay roi quet lai Gmail
+    if (Date.now() + 3500 <= strictWindowEnd && attempt < maxAttempts - 1) {
+      Utilities.sleep(3500);
+    } else {
+      break;
+    }
   }
 
-  return { found: false, reason: "Chưa nhận được giao dịch khớp với nội dung chuyển khoản 'SYNAPESEDU " + pkgId + "' và số tiền " + expectedAmount + "đ." };
+  return {
+    found: false,
+    reason: "Chưa tìm thấy thư thông báo biến động số dư tăng " + expectedAmount + "đ từ Ngân hàng Timo với nội dung 'BUY CHECK SYNAPESEDU " + pkgId + "' trong khung thời gian xác nhận (-10s đến +15s)."
+  };
 }
 
 /**
